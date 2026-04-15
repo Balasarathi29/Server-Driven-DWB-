@@ -214,9 +214,9 @@ export const AIChat = ({
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-60">
+    <div className="fixed bottom-20 right-5 z-60 md:bottom-8 md:right-6">
       {isOpen ? (
-        <div className="bg-white rounded-3xl shadow-2xl w-96 h-125 flex flex-col overflow-hidden border border-gray-100 animate-in slide-in-from-bottom-5 duration-300">
+        <div className="bg-white rounded-3xl shadow-2xl w-88 h-[72vh] max-h-180 min-h-105 flex flex-col overflow-hidden border border-gray-100 animate-in slide-in-from-bottom-5 duration-300">
           <div className="bg-blue-600 p-4 text-white flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="w-6 h-6" />
@@ -330,12 +330,15 @@ export const AIChat = ({
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-blue-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 flex items-center gap-2 group"
+          className="bg-blue-600 text-white p-3.5 rounded-2xl shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 group border border-blue-500/40"
+          title="Open AI Assistant"
         >
           <div className="bg-white/20 p-1.5 rounded-full">
-            <MessageSquare className="w-6 h-6" />
+            <MessageSquare className="w-5 h-5" />
           </div>
-          <span className="font-bold text-sm pr-2">Ask AI Assistant</span>
+          <span className="font-bold text-xs pr-1.5 tracking-wide uppercase">
+            AI
+          </span>
         </button>
       )}
     </div>

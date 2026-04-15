@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef, use } from "react";
+import React, { useEffect, useState, useRef, use, useMemo } from "react";
 import { Editor, Frame, Element, useEditor } from "@craftjs/core";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -90,6 +90,8 @@ const getDeviceWidthLabel = (device: DeviceMode): string => {
   if (device === "mobile") return "390px";
   return "100%";
 };
+
+const canAutoSavePage = (pageData: EditorPageData) => !pageData.useHtml;
 
 // ─── Full-Page HTML Preview Overlay ─────────────────────────────────────────
 const FullPagePreview = ({
@@ -468,10 +470,19 @@ const EditorWrapper = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [genStatus, setGenStatus] = useState("");
   const [showCodeEditor, setShowCodeEditor] = useState(false);
+  const lastAutoSaveRef = useRef<string>("");
+  const autoSaveTimerRef = useRef<number | null>(null);
   const [modalConfig, setModalConfig] = useState<{
     open: boolean;
     isEdit: boolean;
   }>({ open: false, isEdit: false });
+  const serializedQuery = useMemo(() => {
+    try {
+      return query.serialize();
+    } catch {
+      return "";
+    }
+  }, [query]);
 
   // Initial AI check
   useEffect(() => {
@@ -589,6 +600,36 @@ const EditorWrapper = ({
       .catch(() => toast.error("Auto-save failed"));
     toast.success("Code applied!");
   };
+
+  useEffect(() => {
+    if (!pageData?._id || !canAutoSavePage(pageData)) return;
+    if (!serializedQuery || serializedQuery === lastAutoSaveRef.current) return;
+
+    if (autoSaveTimerRef.current) {
+      window.clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = window.setTimeout(() => {
+      pagesApi
+        .updatePage(pageData._id, {
+          jsonConfig: JSON.parse(serializedQuery),
+          htmlContent: pageData.htmlContent,
+          useHtml: pageData.useHtml,
+        })
+        .then(() => {
+          lastAutoSaveRef.current = serializedQuery;
+        })
+        .catch((error) => {
+          console.error("Auto-save failed:", error);
+        });
+    }, 1200);
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        window.clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [serializedQuery, pageData]);
 
   const handleSwitchToBlocks = () => {
     onUpdatePageData({ ...pageData, useHtml: false });

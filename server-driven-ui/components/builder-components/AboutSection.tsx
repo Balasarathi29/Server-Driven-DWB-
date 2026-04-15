@@ -24,6 +24,10 @@ interface AboutSectionProps {
   marginRight?: string;
   marginBottom?: string;
   marginLeft?: string;
+  positionMode?: "flow" | "absolute";
+  x?: string;
+  y?: string;
+  zIndex?: string;
 }
 
 export const AboutSection = ({
@@ -47,6 +51,10 @@ export const AboutSection = ({
   marginRight = "0px",
   marginBottom = "0px",
   marginLeft = "0px",
+  positionMode = "flow",
+  x = "0px",
+  y = "0px",
+  zIndex = "1",
 }: AboutSectionProps) => {
   const {
     id,
@@ -56,6 +64,8 @@ export const AboutSection = ({
   const aboutClass = `sdui-about-${id.replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const padding = `${paddingTop} ${paddingRight} ${paddingBottom} ${paddingLeft}`;
   const margin = `${marginTop} ${marginRight} ${marginBottom} ${marginLeft}`;
+  const isAbsolute = positionMode === "absolute";
+  const parsedZIndex = Number.parseInt(zIndex, 10);
 
   const imageEl = imageUrl ? (
     <div className="rounded-lg overflow-hidden">
@@ -73,6 +83,10 @@ export const AboutSection = ({
           border-radius: ${borderRadius};
           padding: ${padding};
           margin: ${margin};
+          position: ${isAbsolute ? "absolute" : "relative"};
+          left: ${isAbsolute ? x : "auto"};
+          top: ${isAbsolute ? y : "auto"};
+          z-index: ${Number.isNaN(parsedZIndex) ? 1 : parsedZIndex};
         }
       `}</style>
       <div
@@ -450,6 +464,10 @@ AboutSection.craft = {
     marginRight: "0px",
     marginBottom: "0px",
     marginLeft: "0px",
+    positionMode: "flow",
+    x: "0px",
+    y: "0px",
+    zIndex: "1",
   },
   related: {
     toolbar: AboutSectionSettings,
