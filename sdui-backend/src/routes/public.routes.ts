@@ -1,31 +1,44 @@
-import { Router } from 'express';
-import { param, query } from 'express-validator';
-import pageController from '../controllers/page.controller';
-import authController from '../controllers/auth.controller';
-import { validate } from '../middleware/validate.middleware';
+import { Router } from "express";
+import { param, query } from "express-validator";
+import pageController from "../controllers/page.controller";
+import authController from "../controllers/auth.controller";
+import { validate } from "../middleware/validate.middleware";
 
 const router = Router();
 
+// Health check endpoint
+router.get("/health", (_req, res) => {
+  res
+    .status(200)
+    .json({ status: "online", timestamp: new Date().toISOString() });
+});
+
 // Get all institutions
-router.get('/institutions', authController.getInstitutions);
+router.get("/institutions", authController.getInstitutions);
 
 // Get all published pages
 router.get(
-  '/pages',
+  "/pages",
   validate([
-    query('institutionId').optional().isMongoId().withMessage('Invalid institution ID'),
+    query("institutionId")
+      .optional()
+      .isMongoId()
+      .withMessage("Invalid institution ID"),
   ]),
-  pageController.getPublishedPages
+  pageController.getPublishedPages,
 );
 
 // Get published page by slug
 router.get(
-  '/pages/:slug',
+  "/pages/:slug",
   validate([
-    param('slug').trim().notEmpty().withMessage('Slug is required'),
-    query('institutionId').optional().isMongoId().withMessage('Invalid institution ID'),
+    param("slug").trim().notEmpty().withMessage("Slug is required"),
+    query("institutionId")
+      .optional()
+      .isMongoId()
+      .withMessage("Invalid institution ID"),
   ]),
-  pageController.getPublishedPage
+  pageController.getPublishedPage,
 );
 
 export default router;

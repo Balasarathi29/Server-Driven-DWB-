@@ -1,9 +1,9 @@
-import Anthropic from '@anthropic-ai/sdk';
-import OpenAI from 'openai';
-import env from '../config/env';
-import { AppError } from '../middleware/error.middleware';
-import { PageJSON } from '../types/page.types';
-import { getTemplate, suggestTemplate } from '../templates/site-templates';
+import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
+import env from "../config/env";
+import { AppError } from "../middleware/error.middleware";
+import { PageJSON } from "../types/page.types";
+import { getTemplate, suggestTemplate } from "../templates/site-templates";
 
 export class AIService {
   private anthropic: Anthropic | null = null;
@@ -19,37 +19,47 @@ export class AIService {
     if (env.groqApiKey) {
       this.groq = new OpenAI({
         apiKey: env.groqApiKey,
-        baseURL: 'https://api.groq.com/openai/v1',
+        baseURL: "https://api.groq.com/openai/v1",
       });
     }
 
     if (!this.anthropic && !this.groq) {
-      console.warn('⚠️ No AI API keys configured. AI features will be disabled.');
+      console.warn(
+        "⚠️ No AI API keys configured. AI features will be disabled.",
+      );
     }
   }
 
-  private async getChatCompletion(prompt: string, jsonMode: boolean = false): Promise<string> {
+  private async getChatCompletion(
+    prompt: string,
+    jsonMode: boolean = false,
+  ): Promise<string> {
     if (this.anthropic) {
       const message = await this.anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: "claude-3-5-sonnet-20241022",
         max_tokens: jsonMode ? 2000 : 1000,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{ role: "user", content: prompt }],
       });
-      return message.content[0].type === 'text' ? message.content[0].text : '';
+      return message.content[0].type === "text" ? message.content[0].text : "";
     } else if (this.groq) {
-      console.log(`Calling Groq using model: llama-3.3-70b-versatile ${jsonMode ? '(JSON Mode)' : ''}`);
+      console.log(
+        `Calling Groq using model: llama-3.3-70b-versatile ${jsonMode ? "(JSON Mode)" : ""}`,
+      );
       const response = await this.groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'user', content: prompt }],
-        response_format: jsonMode ? { type: 'json_object' } : undefined,
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: prompt }],
+        response_format: jsonMode ? { type: "json_object" } : undefined,
       });
-      return response.choices[0].message.content || '';
+      return response.choices[0].message.content || "";
     }
-    throw new AppError('AI service not configured', 503, 'AI_NOT_CONFIGURED');
+    throw new AppError("AI service not configured", 503, "AI_NOT_CONFIGURED");
   }
 
   // Process natural language command
-  async processCommand(command: string, context: any): Promise<{
+  async processCommand(
+    command: string,
+    context: any,
+  ): Promise<{
     success: boolean;
     operation?: any;
     error?: string;
@@ -84,66 +94,89 @@ CRITICAL: If the user says "full", "website", or "html page", DO NOT use "insert
 Only respond with valid JSON, no explanations.`;
 
       const responseText = await this.getChatCompletion(prompt, true);
-      console.log('AI Raw Response:', responseText);
+      console.log("AI Raw Response:", responseText);
       const jsonOperation = JSON.parse(responseText);
 
       // Validation: If it seems like a full page request, convert it to generate_full_html
       const lowerCommand = command.toLowerCase();
-      const isFullPageRequest = lowerCommand.match(/full|website|template|landing|college|university|hospital|school/);
-      
-      console.log('Is Full Page Request:', !!isFullPageRequest);
+      const isFullPageRequest = lowerCommand.match(
+        /full|website|template|landing|college|university|hospital|school/,
+      );
 
-      if (isFullPageRequest && jsonOperation.action !== 'generate_full_html') {
-          console.log('Overriding action to generate_full_html');
-          jsonOperation.action = 'generate_full_html';
-          jsonOperation.prompt = command;
+      console.log("Is Full Page Request:", !!isFullPageRequest);
+
+      if (isFullPageRequest && jsonOperation.action !== "generate_full_html") {
+        console.log("Overriding action to generate_full_html");
+        jsonOperation.action = "generate_full_html";
+        jsonOperation.prompt = command;
       }
 
       // If it's an insert with an unknown type, convert it to generate_full_html
-      if (jsonOperation.action === 'insert' && !['HeroBanner', 'TextBlock', 'Container', 'AboutSection', 'Statistics', 'FacultyGrid', 'FAQAccordion', 'ContactForm', 'DynamicSection', 'Button', 'RawHTML'].includes(jsonOperation.component?.type)) {
-          console.log('Unknown component type, reverting to generate_full_html');
-          jsonOperation.action = 'generate_full_html';
-          jsonOperation.prompt = command;
+      if (
+        jsonOperation.action === "insert" &&
+        ![
+          "HeroBanner",
+          "TextBlock",
+          "Container",
+          "AboutSection",
+          "Statistics",
+          "FacultyGrid",
+          "FAQAccordion",
+          "ContactForm",
+          "DynamicSection",
+          "Button",
+          "RawHTML",
+        ].includes(jsonOperation.component?.type)
+      ) {
+        console.log("Unknown component type, reverting to generate_full_html");
+        jsonOperation.action = "generate_full_html";
+        jsonOperation.prompt = command;
       }
 
-      console.log('Final AI Operation:', JSON.stringify(jsonOperation, null, 2));
+      console.log(
+        "Final AI Operation:",
+        JSON.stringify(jsonOperation, null, 2),
+      );
 
       return {
         success: true,
         operation: jsonOperation,
       };
     } catch (error) {
-      console.error('AI command processing error:', error);
+      console.error("AI command processing error:", error);
       return {
         success: false,
-        error: 'Failed to process command',
+        error: "Failed to process command",
       };
     }
   }
 
   // Generate content
-  async generateContent(type: string, params: any): Promise<{
+  async generateContent(
+    type: string,
+    params: any,
+  ): Promise<{
     success: boolean;
     content?: string;
     error?: string;
   }> {
     try {
-      let prompt = '';
+      let prompt = "";
 
       switch (type) {
-        case 'department':
+        case "department":
           prompt = `Write a professional 200-word description for the ${params.departmentName} department at ${params.collegeName}.
         
 Include:
 - Overview of the department
-- Programs offered: ${params.programs.join(', ')}
+- Programs offered: ${params.programs.join(", ")}
 - Key focus areas
 - Career opportunities
 
 Write in a professional, inspiring tone suitable for a college website.`;
           break;
 
-        case 'event':
+        case "event":
           prompt = `Write a 100-word description for this event:
         
 Event Name: ${params.eventName}
@@ -153,7 +186,7 @@ Type: ${params.eventType}
 Include key highlights and who should attend.`;
           break;
 
-        case 'course':
+        case "course":
           prompt = `Write a 150-word description for this course:
         
 Course Name: ${params.courseName}
@@ -163,7 +196,7 @@ Duration: ${params.duration}
 Include course objectives, key topics, and expected outcomes.`;
           break;
 
-        case 'faculty':
+        case "faculty":
           prompt = `Write a 150-word professional biography for:
         
 Name: ${params.name}
@@ -185,10 +218,10 @@ Include education, research interests, and achievements.`;
         content,
       };
     } catch (error) {
-      console.error('Content generation error:', error);
+      console.error("Content generation error:", error);
       return {
         success: false,
-        error: 'Failed to generate content',
+        error: "Failed to generate content",
       };
     }
   }
@@ -232,10 +265,10 @@ Only respond with valid JSON array.`;
         suggestions,
       };
     } catch (error) {
-      console.error('Suggestion generation error:', error);
+      console.error("Suggestion generation error:", error);
       return {
         success: false,
-        error: 'Failed to generate suggestions',
+        error: "Failed to generate suggestions",
       };
     }
   }
@@ -282,10 +315,10 @@ Only respond with valid JSON.`;
         issues: validation.issues,
       };
     } catch (error) {
-      console.error('Design validation error:', error);
+      console.error("Design validation error:", error);
       return {
         success: false,
-        error: 'Failed to validate design',
+        error: "Failed to validate design",
       };
     }
   }
@@ -303,7 +336,11 @@ Only respond with valid JSON.`;
     error?: string;
   }> {
     if (!this.groq) {
-      throw new AppError('Groq AI service not configured', 503, 'AI_NOT_CONFIGURED');
+      throw new AppError(
+        "Groq AI service not configured",
+        503,
+        "AI_NOT_CONFIGURED",
+      );
     }
 
     try {
@@ -331,17 +368,19 @@ You can use these existing types: HeroBanner, TextBlock, Container, AboutSection
 If the component requested doesn't fit the others, use "RawHTML" and put the full HTML/Tailwind code in the "html" prop.
 Only return valid JSON. Do not include markdown code blocks or explanations.`;
 
-      console.log(`Generating component with Groq using model: llama-3.3-70b-versatile`);
+      console.log(
+        `Generating component with Groq using model: llama-3.3-70b-versatile`,
+      );
       const response = await this.groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
+        model: "llama-3.3-70b-versatile",
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompt },
         ],
-        response_format: { type: 'json_object' }
+        response_format: { type: "json_object" },
       });
 
-      const responseText = response.choices[0].message.content || '{}';
+      const responseText = response.choices[0].message.content || "{}";
       const componentData = JSON.parse(responseText);
 
       return {
@@ -349,10 +388,16 @@ Only return valid JSON. Do not include markdown code blocks or explanations.`;
         component: componentData,
       };
     } catch (error: any) {
-      console.error('Groq component generation error:', error?.response?.data || error);
+      console.error(
+        "Groq component generation error:",
+        error?.response?.data || error,
+      );
       return {
         success: false,
-        error: error?.response?.data?.error?.message || error.message || 'Failed to generate component using Groq',
+        error:
+          error?.response?.data?.error?.message ||
+          error.message ||
+          "Failed to generate component using Groq",
       };
     }
   }
@@ -360,7 +405,12 @@ Only return valid JSON. Do not include markdown code blocks or explanations.`;
   // Plan a full multi-page website structure from a single prompt
   async planSite(prompt: string): Promise<{
     success: boolean;
-    pages?: Array<{ name: string; slug: string; purpose: string; templateType: string }>;
+    pages?: Array<{
+      name: string;
+      slug: string;
+      purpose: string;
+      templateType: string;
+    }>;
     error?: string;
   }> {
     try {
@@ -397,47 +447,55 @@ Respond with ONLY a JSON object (no markdown):
 
       if (this.anthropic) {
         const message = await this.anthropic.messages.create({
-          model: 'claude-3-5-sonnet-20241022',
+          model: "claude-3-5-sonnet-20241022",
           max_tokens: 1500,
-          messages: [{ role: 'user', content: planPrompt }],
+          messages: [{ role: "user", content: planPrompt }],
         });
-        responseText = message.content[0].type === 'text' ? message.content[0].text : '{}';
+        responseText =
+          message.content[0].type === "text" ? message.content[0].text : "{}";
         // Strip markdown fences if present
-        responseText = responseText.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+        responseText = responseText
+          .replace(/```json\s*/gi, "")
+          .replace(/```\s*/gi, "")
+          .trim();
       } else if (this.groq) {
         const response = await this.groq.chat.completions.create({
-          model: 'llama-3.3-70b-versatile',
-          messages: [{ role: 'user', content: planPrompt }],
-          response_format: { type: 'json_object' },
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: planPrompt }],
+          response_format: { type: "json_object" },
           max_tokens: 1500,
         });
-        responseText = response.choices[0].message.content || '{}';
+        responseText = response.choices[0].message.content || "{}";
       } else {
-        throw new AppError('AI service not configured', 503, 'AI_NOT_CONFIGURED');
+        throw new AppError(
+          "AI service not configured",
+          503,
+          "AI_NOT_CONFIGURED",
+        );
       }
 
       const parsed = JSON.parse(responseText);
-      const pages: Array<{ name: string; slug: string; purpose: string }> = Array.isArray(parsed)
-        ? parsed
-        : (parsed.pages ?? []);
+      const pages: Array<{ name: string; slug: string; purpose: string }> =
+        Array.isArray(parsed) ? parsed : (parsed.pages ?? []);
 
       // Sanitize slugs just in case
       const sanitized = pages.map((p) => ({
         name: p.name,
         slug: p.slug
           .toLowerCase()
-          .replace(/\s+/g, '-')
-          .replace(/[^a-z0-9-]/g, '')
-          .replace(/-+/g, '-')
-          .replace(/^-|-$/g, ''),
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, ""),
         purpose: p.purpose,
-        templateType: (p as any).templateType ?? suggestTemplate(p.name, p.purpose),
+        templateType:
+          (p as any).templateType ?? suggestTemplate(p.name, p.purpose),
       }));
 
       return { success: true, pages: sanitized };
     } catch (error: any) {
-      console.error('Site planning error:', error);
-      return { success: false, error: error.message || 'Failed to plan site' };
+      console.error("Site planning error:", error);
+      return { success: false, error: error.message || "Failed to plan site" };
     }
   }
 
@@ -450,10 +508,13 @@ Respond with ONLY a JSON object (no markdown):
     return Array.from(matches);
   }
 
-  private fillTemplate(template: string, values: Record<string, string>): string {
+  private fillTemplate(
+    template: string,
+    values: Record<string, string>,
+  ): string {
     let result = template;
     for (const [key, value] of Object.entries(values)) {
-      result = result.split(`[${key}]`).join(value ?? '');
+      result = result.split(`[${key}]`).join(value ?? "");
     }
     return result;
   }
@@ -466,7 +527,7 @@ Respond with ONLY a JSON object (no markdown):
    * Returns { compactKeys, expandFn } where expandFn restores the flat map.
    */
   private compressPlaceholders(keys: string[]): {
-    compactKeys: string[];                                      // compact key names for the prompt
+    compactKeys: string[]; // compact key names for the prompt
     expandFn: (aiValues: Record<string, any>) => Record<string, string>; // restores flat map
   } {
     // Group keys that match PREFIX<digit>[_SUFFIX] into arrays
@@ -477,7 +538,7 @@ Respond with ONLY a JSON object (no markdown):
     for (const key of keys) {
       const m = key.match(/^([A-Z_]+?)(\d+)(_[A-Z0-9_]+)?$/);
       if (m) {
-        const groupKey = m[1].replace(/_$/, '') + (m[3] ?? ''); // e.g. STAT_N
+        const groupKey = m[1].replace(/_$/, "") + (m[3] ?? ""); // e.g. STAT_N
         if (!groups.has(groupKey)) groups.set(groupKey, []);
         groups.get(groupKey)!.push(key);
       } else {
@@ -498,10 +559,14 @@ Respond with ONLY a JSON object (no markdown):
     const compactKeys: string[] = [
       ...singles,
       // compact format: "STAT_N[]" signals array of values
-      ...Array.from(realGroups.keys()).map((k) => `${k}[] (${realGroups.get(k)!.length} items)`),
+      ...Array.from(realGroups.keys()).map(
+        (k) => `${k}[] (${realGroups.get(k)!.length} items)`,
+      ),
     ];
 
-    const expandFn = (aiValues: Record<string, any>): Record<string, string> => {
+    const expandFn = (
+      aiValues: Record<string, any>,
+    ): Record<string, string> => {
       const flat: Record<string, string> = {};
 
       // Copy single keys directly
@@ -513,7 +578,7 @@ Respond with ONLY a JSON object (no markdown):
       for (const [gk, members] of realGroups) {
         const arr: any[] = aiValues[gk] ?? aiValues[`${gk}[]`] ?? [];
         members.forEach((origKey, i) => {
-          flat[origKey] = arr[i] !== undefined ? String(arr[i]) : '';
+          flat[origKey] = arr[i] !== undefined ? String(arr[i]) : "";
         });
       }
 
@@ -527,13 +592,20 @@ Respond with ONLY a JSON object (no markdown):
   // Instead of sending the full template (~12k chars) to the AI, we extract
   // only the placeholder KEYS, ask AI for a small JSON object, then fill
   // the template server-side. This keeps each request well under 2k tokens.
-  async generateFullPageHTML(prompt: string, context: { pages: { name: string, slug: string }[], currentSlug?: string, templateType?: string }): Promise<{
+  async generateFullPageHTML(
+    prompt: string,
+    context: {
+      pages: { name: string; slug: string }[];
+      currentSlug?: string;
+      templateType?: string;
+    },
+  ): Promise<{
     success: boolean;
     html?: string;
     error?: string;
   }> {
     if (!this.groq && !this.anthropic) {
-      throw new AppError('AI service not configured', 503, 'AI_NOT_CONFIGURED');
+      throw new AppError("AI service not configured", 503, "AI_NOT_CONFIGURED");
     }
 
     try {
@@ -542,7 +614,8 @@ Respond with ONLY a JSON object (no markdown):
       const year = new Date().getFullYear();
 
       // Pick template
-      const templateType = context.templateType ?? suggestTemplate(currentSlug ?? '', prompt);
+      const templateType =
+        context.templateType ?? suggestTemplate(currentSlug ?? "", prompt);
       const templateHtml = getTemplate(templateType);
 
       // Build nav links — white-on-dark style matching SHARED_NAV (dark blue navbar)
@@ -551,15 +624,19 @@ Respond with ONLY a JSON object (no markdown):
         .map((p) =>
           p.slug === currentSlug
             ? `<a href="/${p.slug}" style="color:#ffffff;font-weight:800;text-decoration:underline;text-underline-offset:4px;white-space:nowrap">${p.name}</a>`
-            : `<a href="/${p.slug}" style="color:rgba(191,219,254,0.8);font-weight:500;white-space:nowrap" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(191,219,254,0.8)'">${p.name}</a>`
+            : `<a href="/${p.slug}" style="color:rgba(191,219,254,0.8);font-weight:500;white-space:nowrap" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(191,219,254,0.8)'">${p.name}</a>`,
         )
-        .join('<span style="color:rgba(255,255,255,0.15);margin:0 8px">|</span>');
+        .join(
+          '<span style="color:rgba(255,255,255,0.15);margin:0 8px">|</span>',
+        );
 
-      const pageSlugList = allPages.map((p) => `/${p.slug}`).join(', ');
+      const pageSlugList = allPages.map((p) => `/${p.slug}`).join(", ");
 
       // Extract placeholder keys — exclude ones we fill ourselves
-      const autoFilled = new Set(['NAV_LINKS', 'YEAR']);
-      const placeholders = this.extractPlaceholders(templateHtml).filter((k) => !autoFilled.has(k));
+      const autoFilled = new Set(["NAV_LINKS", "YEAR"]);
+      const placeholders = this.extractPlaceholders(templateHtml).filter(
+        (k) => !autoFilled.has(k),
+      );
 
       // Compress numbered sequences into arrays to shrink the prompt significantly
       const { compactKeys, expandFn } = this.compressPlaceholders(placeholders);
@@ -567,41 +644,51 @@ Respond with ONLY a JSON object (no markdown):
       const fillPrompt = `College page content needed. Return compact JSON only.
 
 College info: ${prompt}
-Page: /${currentSlug ?? ''} | Site pages: ${allPages.map((p) => `${p.name}→/${p.slug}`).join(' ')}
+Page: /${currentSlug ?? ""} | Site pages: ${allPages.map((p) => `${p.name}→/${p.slug}`).join(" ")}
 
 Fill these keys (keys ending in [] = return array of values, one per item):
-${compactKeys.join(', ')}
+${compactKeys.join(", ")}
 
 Key rules: _LINK/_URL=use a real slug from ${pageSlugList} | _IMG/_SEED=one descriptive word | _ICON=one emoji | _DAY=2-digit day | _MON=3-letter month | _ABBR=short abbreviation | LOGO_ABBR=2-3 uppercase letters | PAGE_TITLE=browser tab title
 
 Return ONLY valid JSON.`;
 
-      console.log(`[generateFullPageHTML] template=${templateType} slug=${currentSlug} keys=${placeholders.length}→${compactKeys.length} promptLen=${fillPrompt.length}`);
+      console.log(
+        `[generateFullPageHTML] template=${templateType} slug=${currentSlug} keys=${placeholders.length}→${compactKeys.length} promptLen=${fillPrompt.length}`,
+      );
 
       let jsonText: string;
 
       if (this.anthropic) {
         const message = await this.anthropic.messages.create({
-          model: 'claude-3-5-sonnet-20241022',
+          model: "claude-3-5-sonnet-20241022",
           max_tokens: 2000,
-          messages: [{ role: 'user', content: fillPrompt }],
+          messages: [{ role: "user", content: fillPrompt }],
         });
-        jsonText = message.content[0].type === 'text' ? message.content[0].text : '{}';
+        jsonText =
+          message.content[0].type === "text" ? message.content[0].text : "{}";
       } else if (this.groq) {
         await new Promise((r) => setTimeout(r, 300));
         const response = await this.groq.chat.completions.create({
-          model: 'llama-3.3-70b-versatile',
-          messages: [{ role: 'user', content: fillPrompt }],
-          response_format: { type: 'json_object' },
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: fillPrompt }],
+          response_format: { type: "json_object" },
           max_tokens: 2000,
         });
-        jsonText = response.choices[0].message.content || '{}';
+        jsonText = response.choices[0].message.content || "{}";
       } else {
-        throw new AppError('AI service not configured', 503, 'AI_NOT_CONFIGURED');
+        throw new AppError(
+          "AI service not configured",
+          503,
+          "AI_NOT_CONFIGURED",
+        );
       }
 
       // Strip markdown fences if AI ignored instructions
-      jsonText = jsonText.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+      jsonText = jsonText
+        .replace(/```json\s*/gi, "")
+        .replace(/```\s*/gi, "")
+        .trim();
 
       let aiValues: Record<string, any> = {};
       try {
@@ -614,29 +701,34 @@ Return ONLY valid JSON.`;
       const values: Record<string, string> = expandFn(aiValues);
 
       // Always override these with our correct values
-      values['NAV_LINKS'] = navLinksHtml;
-      values['YEAR'] = String(year);
+      values["NAV_LINKS"] = navLinksHtml;
+      values["YEAR"] = String(year);
 
       const filledHtml = this.fillTemplate(templateHtml, values);
 
-      console.log(`[generateFullPageHTML] done — filledLen=${filledHtml.length}`);
+      console.log(
+        `[generateFullPageHTML] done — filledLen=${filledHtml.length}`,
+      );
 
       return { success: true, html: filledHtml };
-
     } catch (error: any) {
       let msg: string =
         error?.response?.data?.error?.message ||
         error?.message ||
-        'Failed to generate page HTML';
+        "Failed to generate page HTML";
 
-      if (msg.includes('429') || msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('tokens per day')) {
+      if (
+        msg.includes("429") ||
+        msg.toLowerCase().includes("rate limit") ||
+        msg.toLowerCase().includes("tokens per day")
+      ) {
         const waitMatch = msg.match(/try again in ([^.]+)/i);
         msg = waitMatch
           ? `AI daily limit reached. Try again in ${waitMatch[1]}.`
-          : 'AI daily token limit reached. Please try again in a few hours.';
+          : "AI daily token limit reached. Please try again in a few hours.";
       }
 
-      console.error('[generateFullPageHTML] ERROR:', msg);
+      console.error("[generateFullPageHTML] ERROR:", msg);
       return { success: false, error: msg };
     }
   }
@@ -645,46 +737,55 @@ Return ONLY valid JSON.`;
   async modifyFullPageHTML(
     prompt: string,
     currentHtml: string,
-    context?: { pages?: { name: string; slug: string }[]; currentSlug?: string }
+    context?: {
+      pages?: { name: string; slug: string }[];
+      currentSlug?: string;
+    },
   ): Promise<{
     success: boolean;
     html?: string;
     error?: string;
   }> {
     if (!this.groq && !this.anthropic) {
-      throw new AppError('AI service not configured', 503, 'AI_NOT_CONFIGURED');
+      throw new AppError("AI service not configured", 503, "AI_NOT_CONFIGURED");
     }
 
     try {
       // Build page navigation context for cross-page linking
-      let pageLinksContext = '';
+      let pageLinksContext = "";
       if (context?.pages && context.pages.length > 0) {
         const currentIndex = context?.currentSlug
           ? context.pages.findIndex((p) => p.slug === context.currentSlug)
           : -1;
-        const nextPage = currentIndex >= 0 && currentIndex < context.pages.length - 1
-          ? context.pages[currentIndex + 1]
-          : null;
-        const prevPage = currentIndex > 0
-          ? context.pages[currentIndex - 1]
-          : null;
+        const nextPage =
+          currentIndex >= 0 && currentIndex < context.pages.length - 1
+            ? context.pages[currentIndex + 1]
+            : null;
+        const prevPage =
+          currentIndex > 0 ? context.pages[currentIndex - 1] : null;
 
         const pageList = context.pages
-          .map((p, i) => `  ${i + 1}. "${p.name}" → URL: /${p.slug}${context.currentSlug === p.slug ? ' (CURRENT PAGE)' : ''}`)
-          .join('\n');
+          .map(
+            (p, i) =>
+              `  ${i + 1}. "${p.name}" → URL: /${p.slug}${context.currentSlug === p.slug ? " (CURRENT PAGE)" : ""}`,
+          )
+          .join("\n");
 
-        const otherPages = context.pages.filter((p) => p.slug !== context.currentSlug);
+        const otherPages = context.pages.filter(
+          (p) => p.slug !== context.currentSlug,
+        );
         const applyLikeHint =
-          otherPages.find((p) => /apply|admission|form|register|signup/i.test(p.name)) ||
-          otherPages[0];
+          otherPages.find((p) =>
+            /apply|admission|form|register|signup/i.test(p.name),
+          ) || otherPages[0];
 
         pageLinksContext = `
 PAGE NAVIGATION CONTEXT:
 The following pages exist in this web app. Use their URLs when the user asks to redirect or link between pages:
 ${pageList}
-${nextPage ? `- "next page" means: /${nextPage.slug} (${nextPage.name})` : ''}
-${prevPage ? `- "previous page" means: /${prevPage.slug} (${prevPage.name})` : ''}
-${!nextPage && otherPages.length > 0 ? `- There is no "next" page in list order after the current one. For vague phrases like "another page" or "go to the apply page", match by page name (e.g. Apply → slug) or use: /${applyLikeHint.slug} (${applyLikeHint.name}) if it fits the user's intent.` : ''}
+${nextPage ? `- "next page" means: /${nextPage.slug} (${nextPage.name})` : ""}
+${prevPage ? `- "previous page" means: /${prevPage.slug} (${prevPage.name})` : ""}
+${!nextPage && otherPages.length > 0 ? `- There is no "next" page in list order after the current one. For vague phrases like "another page" or "go to the apply page", match by page name (e.g. Apply → slug) or use: /${applyLikeHint.slug} (${applyLikeHint.name}) if it fits the user's intent.` : ""}
 When adding redirect buttons or links, always use the actual page URL paths listed above (paths start with /, e.g. href="/my-slug").
 
 BUTTON → PAGE REDIRECTS (CRITICAL):
@@ -714,20 +815,25 @@ ${currentHtml}`;
 
       if (this.anthropic) {
         const message = await this.anthropic.messages.create({
-          model: 'claude-3-5-sonnet-20241022',
+          model: "claude-3-5-sonnet-20241022",
           max_tokens: 8000,
-          messages: [{ role: 'user', content: systemPrompt }],
+          messages: [{ role: "user", content: systemPrompt }],
         });
-        responseText = message.content[0].type === 'text' ? message.content[0].text : '';
+        responseText =
+          message.content[0].type === "text" ? message.content[0].text : "";
       } else if (this.groq) {
         const response = await this.groq.chat.completions.create({
-          model: 'llama-3.1-8b-instant',
-          messages: [{ role: 'user', content: systemPrompt }],
+          model: "llama-3.1-8b-instant",
+          messages: [{ role: "user", content: systemPrompt }],
           max_tokens: 8000,
         });
-        responseText = response.choices[0].message.content || '';
+        responseText = response.choices[0].message.content || "";
       } else {
-        throw new AppError('AI service not configured', 503, 'AI_NOT_CONFIGURED');
+        throw new AppError(
+          "AI service not configured",
+          503,
+          "AI_NOT_CONFIGURED",
+        );
       }
 
       const cleanHtml = this.extractHTML(responseText);
@@ -737,10 +843,10 @@ ${currentHtml}`;
         html: cleanHtml,
       };
     } catch (error: any) {
-      console.error('HTML modification error:', error);
+      console.error("HTML modification error:", error);
       return {
         success: false,
-        error: error.message || 'Failed to modify page HTML',
+        error: error.message || "Failed to modify page HTML",
       };
     }
   }
@@ -750,11 +856,11 @@ ${currentHtml}`;
     let cleanHtml = responseText;
 
     // 1. Strip markdown code fences anywhere in the string (multiline)
-    cleanHtml = cleanHtml.replace(/```html\s*/gi, '').replace(/```\s*/gi, '');
+    cleanHtml = cleanHtml.replace(/```html\s*/gi, "").replace(/```\s*/gi, "");
 
     // 2. Find where the actual HTML document starts
-    const doctypeIdx = cleanHtml.toLowerCase().indexOf('<!doctype');
-    const htmlTagIdx = cleanHtml.toLowerCase().indexOf('<html');
+    const doctypeIdx = cleanHtml.toLowerCase().indexOf("<!doctype");
+    const htmlTagIdx = cleanHtml.toLowerCase().indexOf("<html");
 
     if (doctypeIdx !== -1) {
       cleanHtml = cleanHtml.slice(doctypeIdx);
@@ -763,7 +869,7 @@ ${currentHtml}`;
     }
 
     // 3. Trim any trailing whitespace / leftover text after </html>
-    const closingIdx = cleanHtml.toLowerCase().lastIndexOf('</html>');
+    const closingIdx = cleanHtml.toLowerCase().lastIndexOf("</html>");
     if (closingIdx !== -1) {
       cleanHtml = cleanHtml.slice(0, closingIdx + 7);
     }
@@ -771,7 +877,10 @@ ${currentHtml}`;
     cleanHtml = cleanHtml.trim();
 
     // 4. Safety net: if we still don't have a valid document, wrap what we have
-    if (!cleanHtml.toLowerCase().includes('<!doctype') && !cleanHtml.toLowerCase().startsWith('<html')) {
+    if (
+      !cleanHtml.toLowerCase().includes("<!doctype") &&
+      !cleanHtml.toLowerCase().startsWith("<html")
+    ) {
       cleanHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -788,6 +897,199 @@ ${cleanHtml}
     }
 
     return cleanHtml;
+  }
+
+  // Advanced parsing methods for AI command interpretation
+
+  // Parse color from text - supports named colors, hex, and common misspellings
+  parseColor(text: string): string {
+    const lower = text.toLowerCase().trim();
+
+    // Hex color pattern
+    const hexMatch = lower.match(/#[0-9a-f]{3}([0-9a-f]{3})?/);
+    if (hexMatch) return hexMatch[0];
+
+    // Named colors map (with fuzzy matching support)
+    const colorMap: Record<string, string> = {
+      red: "#ef4444",
+      "red-500": "#ef4444",
+      blue: "#3b82f6",
+      "blue-600": "#3b82f6",
+      green: "#22c55e",
+      "green-600": "#22c55e",
+      yellow: "#eab308",
+      "yellow-400": "#eab308",
+      purple: "#a855f7",
+      "purple-600": "#a855f7",
+      pink: "#ec4899",
+      "pink-500": "#ec4899",
+      orange: "#f97316",
+      "orange-500": "#f97316",
+      gray: "#6b7280",
+      "gray-500": "#6b7280",
+      black: "#000000",
+      white: "#ffffff",
+      cyan: "#06b6d4",
+      teal: "#14b8a6",
+      indigo: "#6366f1",
+    };
+
+    for (const [colorName, hexValue] of Object.entries(colorMap)) {
+      if (lower.includes(colorName)) return hexValue;
+    }
+
+    return "#000000"; // Default fallback
+  }
+
+  // Parse css dimensions from text - supports px, em, %, vh, vw
+  parseDimension(text: string, defaultValue: string = "0px"): string {
+    const lower = text.toLowerCase().trim();
+
+    // Match number followed by unit
+    const match = lower.match(/(\d+(?:\.\d+)?)(px|em|%|rem|vh|vw|pt|cm|mm)/);
+    if (match) {
+      return `${match[1]}${match[2]}`;
+    }
+
+    // Match just a number (assume px)
+    const justNumber = lower.match(/^\d+(?:\.\d+)?$/);
+    if (justNumber) {
+      return `${justNumber[0]}px`;
+    }
+
+    // Convert common text values to sizes
+    if (lower.includes("small")) return "12px";
+    if (lower.includes("medium")) return "16px";
+    if (lower.includes("large")) return "24px";
+    if (lower.includes("extra")) return "32px";
+    if (lower.includes("full")) return "100%";
+    if (lower.includes("half")) return "50%";
+
+    return defaultValue;
+  }
+
+  // Parse quantity from text - e.g., "2 buttons" → 2
+  parseQuantity(text: string): number {
+    const match = text.match(/(\d+)\s*(?:button|component|section|item)/i);
+    return match ? parseInt(match[1]) : 1;
+  }
+
+  // Detect intent type from command
+  detectIntent(
+    command: string,
+  ): "add" | "update" | "delete" | "move" | "unknown" {
+    const lower = command.toLowerCase();
+
+    if (lower.match(/add|create|insert|new|make|build|generate/)) return "add";
+    if (lower.match(/change|update|modify|edit|adjust|set|apply|make/))
+      return "update";
+    if (lower.match(/remove|delete|destroy|clear|erase/)) return "delete";
+    if (lower.match(/move|reorder|rearrange|swap|shift|position/))
+      return "move";
+
+    return "unknown";
+  }
+
+  // Parse style variant from text - e.g., "outline button" → "outline"
+  parseStyleVariant(text: string): "solid" | "outline" | "ghost" | "primary" {
+    const lower = text.toLowerCase();
+
+    if (lower.includes("outline")) return "outline";
+    if (lower.includes("ghost")) return "ghost";
+    if (lower.includes("primary")) return "primary";
+
+    return "solid";
+  }
+
+  // Parse positioning mode from text
+  parsePositionMode(text: string): "flow" | "absolute" {
+    const lower = text.toLowerCase();
+
+    if (
+      lower.includes("absolute") ||
+      lower.includes("fixed") ||
+      lower.includes("position")
+    ) {
+      return "absolute";
+    }
+
+    return "flow";
+  }
+
+  // Parse target/destination from text (with fuzzy matching for common misspellings)
+  parseTarget(text: string, availableComponents: string[] = []): string | null {
+    const lower = text.toLowerCase().trim();
+
+    // Remove common words
+    const cleaned = lower
+      .replace(/add|insert|inside|within|to|into/g, "")
+      .trim();
+
+    // Direct match
+    if (availableComponents.some((c) => lower.includes(c.toLowerCase()))) {
+      return (
+        availableComponents.find((c) => lower.includes(c.toLowerCase())) || null
+      );
+    }
+
+    // Fuzzy match for common types
+    const typeMap: Record<string, string> = {
+      txt: "TextBlock",
+      text: "TextBlock",
+      heading: "TextBlock",
+      title: "TextBlock",
+      btn: "ActionButton",
+      button: "ActionButton",
+      action: "ActionButton",
+      box: "Container",
+      container: "Container",
+      div: "Container",
+      section: "Container",
+      card: "Container",
+    };
+
+    for (const [keyword, component] of Object.entries(typeMap)) {
+      if (cleaned.includes(keyword)) {
+        return availableComponents.includes(component) ? component : component;
+      }
+    }
+
+    return null;
+  }
+
+  // Create a snapshot for undo/redo functionality
+  createSnapshot(pageData: any): string {
+    return JSON.stringify({
+      timestamp: new Date().toISOString(),
+      data: pageData,
+    });
+  }
+
+  // Parse landing page generic intent - auto-creates starter components
+  parseLandingPageIntent(prompt: string): string[] {
+    const lower = prompt.toLowerCase();
+    const components: string[] = [];
+
+    // Check what sections are mentioned
+    if (lower.match(/hero|welcome|title|main|banner/))
+      components.push("HeroBanner");
+    if (lower.match(/about|intro|description|company|mission/))
+      components.push("AboutSection");
+    if (lower.match(/feature|service|solution|benefit|ability/))
+      components.push("Statistics");
+    if (lower.match(/team|staff|faculty|member|people|who/))
+      components.push("FacultyGrid");
+    if (lower.match(/faq|question|answer|help|support/))
+      components.push("FAQAccordion");
+    if (lower.match(/contact|reach|email|form|phone|inquiry/))
+      components.push("ContactForm");
+
+    // Default starter for any landing page
+    if (components.length === 0) {
+      components.push("HeroBanner", "TextBlock", "Statistics", "ContactForm");
+    }
+
+    return [...new Set(components)]; // Remove duplicates
   }
 }
 

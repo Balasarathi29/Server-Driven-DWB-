@@ -1,17 +1,17 @@
 "use client";
 /* eslint-disable */
 
+import React from "react";
 import { useNode } from "@craftjs/core";
-import { Link } from "lucide-react";
+import { Link, ExternalLink } from "lucide-react";
 
-interface TextBlockProps {
-  content?: string;
-  fontSize?: string;
-  color?: string;
-  textAlign?: "left" | "center" | "right";
+interface ActionButtonProps {
+  label?: string;
+  variant?: "solid" | "outline";
   width?: string;
   height?: string;
   backgroundColor?: string;
+  textColor?: string;
   borderRadius?: string;
   paddingTop?: string;
   paddingRight?: string;
@@ -29,19 +29,18 @@ interface TextBlockProps {
   target?: "_self" | "_blank";
 }
 
-export const TextBlock = ({
-  content = "Enter your text here...",
-  fontSize = "16px",
-  color = "#000000",
-  textAlign = "left",
-  width = "100%",
-  height = "auto",
-  backgroundColor = "transparent",
-  borderRadius = "0px",
-  paddingTop = "0px",
-  paddingRight = "0px",
-  paddingBottom = "0px",
-  paddingLeft = "0px",
+export const ActionButton = ({
+  label = "Click Me",
+  variant = "solid",
+  width = "auto",
+  height = "44px",
+  backgroundColor = "#3b82f6",
+  textColor = "#ffffff",
+  borderRadius = "8px",
+  paddingTop = "10px",
+  paddingRight = "16px",
+  paddingBottom = "10px",
+  paddingLeft = "16px",
   marginTop = "0px",
   marginRight = "0px",
   marginBottom = "0px",
@@ -52,64 +51,85 @@ export const TextBlock = ({
   zIndex = "1",
   href = "",
   target = "_self",
-}: TextBlockProps) => {
+}: ActionButtonProps) => {
   const {
     id,
     connectors: { connect, drag },
   } = useNode((node) => ({ id: node.id }));
 
-  const textBlockClass = `sdui-text-${id.replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const actionButtonClass = `sdui-action-btn-${id.replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
   const padding = `${paddingTop} ${paddingRight} ${paddingBottom} ${paddingLeft}`;
   const margin = `${marginTop} ${marginRight} ${marginBottom} ${marginLeft}`;
 
-  const inner = (
+  const cssRule =
+    variant === "outline"
+      ? `
+      background-color: transparent;
+      border: 2px solid ${backgroundColor};
+      color: ${backgroundColor};
+    `
+      : `
+      background-color: ${backgroundColor};
+      color: ${textColor};
+      border: none;
+    `;
+
+  const scopedStyle = (
+    <style>{`
+    .${actionButtonClass} {
+      ${cssRule}
+      width: ${width};
+      height: ${height};
+      border-radius: ${borderRadius};
+      padding: ${padding};
+      margin: ${margin};
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      position: ${positionMode === "absolute" ? "absolute" : "relative"};
+      left: ${positionMode === "absolute" ? x : "auto"};
+      top: ${positionMode === "absolute" ? y : "auto"};
+      z-index: ${parseInt(zIndex) || 1};
+    }
+  `}</style>
+  );
+
+  const buttonElement = (
     <>
-      <style>{`
-        .${textBlockClass} {
-          font-size: ${fontSize};
-          color: ${color};
-          text-align: ${textAlign};
-          width: ${width};
-          height: ${height};
-          background-color: ${backgroundColor};
-          border-radius: ${borderRadius};
-          padding: ${padding};
-          margin: ${margin};
-          position: ${positionMode === "absolute" ? "absolute" : "relative"};
-          left: ${positionMode === "absolute" ? x : "auto"};
-          top: ${positionMode === "absolute" ? y : "auto"};
-          z-index: ${parseInt(zIndex) || 1};
-        }
-      `}</style>
-      <div
-        ref={(ref: HTMLDivElement | null) => {
+      {scopedStyle}
+      <button
+        ref={(ref: HTMLButtonElement | null) => {
           if (ref) connect(drag(ref));
         }}
-        className={textBlockClass}
+        className={`${actionButtonClass} font-semibold hover:opacity-90 active:scale-95 transition-all`}
       >
-        {content}
-      </div>
+        {label}
+      </button>
     </>
   );
 
   if (href) {
     return (
-      <a
-        href={href}
-        target={target}
-        rel={target === "_blank" ? "noopener noreferrer" : undefined}
-        className="block no-underline text-inherit"
-      >
-        {inner}
-      </a>
+      <>
+        {scopedStyle}
+        <a
+          href={href}
+          target={target}
+          rel={target === "_blank" ? "noopener noreferrer" : undefined}
+          className={`${actionButtonClass} no-underline inline-block`}
+        >
+          {label}
+        </a>
+      </>
     );
   }
 
-  return inner;
+  return buttonElement;
 };
 
-export const TextBlockSettings = () => {
+export const ActionButtonSettings = () => {
   const {
     actions: { setProp },
     props,
@@ -120,32 +140,31 @@ export const TextBlockSettings = () => {
     "100%",
     "50%",
     "100px",
+    "150px",
     "200px",
     "300px",
-    "500px",
   ];
-  const spacingOptions = [
+  const heightOptions = [
+    "auto",
+    "32px",
+    "40px",
+    "44px",
+    "48px",
+    "52px",
+    "56px",
+    "64px",
+  ];
+  const spacingOptions = ["0px", "4px", "8px", "12px", "16px", "20px", "24px"];
+  const radiusOptions = [
     "0px",
     "4px",
+    "6px",
     "8px",
     "12px",
     "16px",
     "20px",
     "24px",
     "32px",
-  ];
-  const radiusOptions = ["0px", "4px", "8px", "12px", "16px", "20px", "24px"];
-  const fontSizes = [
-    "12px",
-    "14px",
-    "16px",
-    "18px",
-    "20px",
-    "24px",
-    "28px",
-    "32px",
-    "36px",
-    "48px",
   ];
   const zIndexNumber = Number.parseInt(String(props.zIndex ?? "1"), 10);
   const safeZIndexValue = Number.isNaN(zIndexNumber)
@@ -154,45 +173,62 @@ export const TextBlockSettings = () => {
 
   return (
     <div className="p-4 space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto">
-      {/* Content Section */}
+      {/* Label Section */}
       <div className="border-b pb-4">
         <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
           Content
         </h4>
-        <textarea
-          value={props.content ?? ""}
-          onChange={(e) => setProp((p: any) => (p.content = e.target.value))}
+        <input
+          type="text"
+          value={props.label ?? ""}
+          onChange={(e) => setProp((p: any) => (p.label = e.target.value))}
           className="w-full px-3 py-2 border rounded text-sm"
-          rows={4}
-          title="Enter text content"
+          placeholder="Button text"
+          title="Enter button label"
         />
       </div>
 
-      {/* Typography Section */}
+      {/* Variant & colors */}
       <div className="border-b pb-4">
         <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
-          Typography
+          Style
         </h4>
 
         <div className="space-y-3">
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Font Size
+              Variant
             </label>
-            <select
-              value={props.fontSize ?? "16px"}
-              onChange={(e) =>
-                setProp((p: any) => (p.fontSize = e.target.value))
-              }
-              className="w-full px-3 py-2 border rounded text-sm"
-              title="Select font size"
-            >
-              {fontSizes.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
+            <div className="grid grid-cols-2 gap-2">
+              {["solid", "outline"].map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setProp((p: any) => (p.variant = v))}
+                  className={`px-3 py-2 rounded border text-xs font-semibold ${
+                    props.variant === v
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-600 border-gray-200"
+                  }`}
+                >
+                  {v.charAt(0).toUpperCase() + v.slice(1)}
+                </button>
               ))}
-            </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Background Color
+            </label>
+            <input
+              type="color"
+              value={props.backgroundColor ?? "#3b82f6"}
+              onChange={(e) =>
+                setProp((p: any) => (p.backgroundColor = e.target.value))
+              }
+              className="w-full h-10 border rounded cursor-pointer"
+              title="Choose background color"
+            />
           </div>
 
           <div>
@@ -201,32 +237,13 @@ export const TextBlockSettings = () => {
             </label>
             <input
               type="color"
-              value={props.color ?? "#000000"}
-              onChange={(e) => setProp((p: any) => (p.color = e.target.value))}
+              value={props.textColor ?? "#ffffff"}
+              onChange={(e) =>
+                setProp((p: any) => (p.textColor = e.target.value))
+              }
               className="w-full h-10 border rounded cursor-pointer"
               title="Choose text color"
             />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Text Align
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {["left", "center", "right"].map((align) => (
-                <button
-                  key={align}
-                  onClick={() => setProp((p: any) => (p.textAlign = align))}
-                  className={`px-3 py-2 rounded border text-xs font-semibold ${
-                    props.textAlign === align
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  {align.charAt(0).toUpperCase() + align.slice(1)}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -243,10 +260,10 @@ export const TextBlockSettings = () => {
               Width
             </label>
             <select
-              value={props.width ?? "100%"}
+              value={props.width ?? "auto"}
               onChange={(e) => setProp((p: any) => (p.width = e.target.value))}
               className="w-full px-2 py-1.5 border rounded text-xs"
-              title="Set text block width"
+              title="Select button width"
             >
               {sizeOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -260,13 +277,12 @@ export const TextBlockSettings = () => {
               Height
             </label>
             <select
-              value={props.height ?? "auto"}
+              value={props.height ?? "44px"}
               onChange={(e) => setProp((p: any) => (p.height = e.target.value))}
               className="w-full px-2 py-1.5 border rounded text-xs"
-              title="Set text block height"
+              title="Select button height"
             >
-              <option value="auto">Auto</option>
-              {sizeOptions.map((opt) => (
+              {heightOptions.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
                 </option>
@@ -276,47 +292,30 @@ export const TextBlockSettings = () => {
         </div>
       </div>
 
-      {/* Styling Section */}
+      {/* Appearance */}
       <div className="border-b pb-4">
         <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
-          Styling
+          Appearance
         </h4>
 
-        <div className="space-y-3">
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Background Color
-            </label>
-            <input
-              type="color"
-              value={props.backgroundColor ?? "transparent"}
-              onChange={(e) =>
-                setProp((p: any) => (p.backgroundColor = e.target.value))
-              }
-              className="w-full h-10 border rounded cursor-pointer"
-              title="Choose background color"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Border Radius
-            </label>
-            <select
-              value={props.borderRadius ?? "0px"}
-              onChange={(e) =>
-                setProp((p: any) => (p.borderRadius = e.target.value))
-              }
-              className="w-full px-3 py-2 border rounded text-sm"
-              title="Set border radius"
-            >
-              {radiusOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Border Radius
+          </label>
+          <select
+            value={props.borderRadius ?? "8px"}
+            onChange={(e) =>
+              setProp((p: any) => (p.borderRadius = e.target.value))
+            }
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Select border radius"
+          >
+            {radiusOptions.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -338,7 +337,7 @@ export const TextBlockSettings = () => {
                 {label}
               </label>
               <select
-                value={(props as any)[key] ?? "0px"}
+                value={(props as any)[key] ?? "10px"}
                 onChange={(e) =>
                   setProp((p: any) => ((p as any)[key] = e.target.value))
                 }
@@ -511,21 +510,20 @@ export const TextBlockSettings = () => {
   );
 };
 
-TextBlock.craft = {
-  displayName: "Text Block",
+ActionButton.craft = {
+  displayName: "Action Button",
   props: {
-    content: "Enter your text here...",
-    fontSize: "16px",
-    color: "#000000",
-    textAlign: "left",
-    width: "100%",
-    height: "auto",
-    backgroundColor: "transparent",
-    borderRadius: "0px",
-    paddingTop: "0px",
-    paddingRight: "0px",
-    paddingBottom: "0px",
-    paddingLeft: "0px",
+    label: "Click Me",
+    variant: "solid",
+    width: "auto",
+    height: "44px",
+    backgroundColor: "#3b82f6",
+    textColor: "#ffffff",
+    borderRadius: "8px",
+    paddingTop: "10px",
+    paddingRight: "16px",
+    paddingBottom: "10px",
+    paddingLeft: "16px",
     marginTop: "0px",
     marginRight: "0px",
     marginBottom: "0px",
@@ -538,6 +536,6 @@ TextBlock.craft = {
     target: "_self",
   },
   related: {
-    toolbar: TextBlockSettings,
+    toolbar: ActionButtonSettings,
   },
 };

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/context/AuthContext";
 import { Toaster } from "sonner";
+import { React19WarningFilter } from "@/components/React19WarningFilter";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,6 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
         <AuthProvider>
+          <React19WarningFilter />
           {children}
           <Toaster position="top-right" />
         </AuthProvider>

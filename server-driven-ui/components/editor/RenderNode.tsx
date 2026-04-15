@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useEffect, useRef, useCallback } from 'react';
-import { useNode, useEditor } from '@craftjs/core';
-import { Trash2, Move } from 'lucide-react';
-import ReactDOM from 'react-dom';
+import React, { useEffect, useRef, useCallback } from "react";
+import { useNode, useEditor } from "@craftjs/core";
+import { Trash2, Move } from "lucide-react";
+import ReactDOM from "react-dom";
 
 export const RenderNode = ({ render }: { render: React.ReactElement }) => {
   const { id } = useNode();
@@ -17,7 +17,7 @@ export const RenderNode = ({ render }: { render: React.ReactElement }) => {
     actions: { setProp },
     name,
   } = useNode((node) => ({
-    isRoot: node.id === 'ROOT',
+    isRoot: node.id === "ROOT",
     name: node.data.custom.displayName || node.data.displayName,
   }));
 
@@ -26,9 +26,9 @@ export const RenderNode = ({ render }: { render: React.ReactElement }) => {
   useEffect(() => {
     if (currentElement.current) {
       if (isActive || query.node(id).isHovered()) {
-        currentElement.current.classList.add('component-selected');
+        currentElement.current.classList.add("component-selected");
       } else {
-        currentElement.current.classList.remove('component-selected');
+        currentElement.current.classList.remove("component-selected");
       }
     }
   }, [isActive, id, query]);
@@ -37,13 +37,13 @@ export const RenderNode = ({ render }: { render: React.ReactElement }) => {
     <div
       ref={(ref: HTMLDivElement | null) => {
         if (ref) {
-            connect(ref);
+          connect(ref);
         }
       }}
-      className={`relative group transition-all duration-200 ${isActive ? 'ring-2 ring-blue-500 ring-offset-4 shadow-2xl z-40' : 'hover:ring-1 hover:ring-blue-300 hover:ring-offset-2'}`}
+      className={`relative group transition-all duration-200 ${isActive ? "ring-2 ring-blue-500 ring-offset-4 shadow-2xl z-40" : "hover:ring-1 hover:ring-blue-300 hover:ring-offset-2"}`}
     >
       {isActive && !isRoot && (
-        <div className="absolute top-0 right-0 -translate-y-full flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-t-xl text-[10px] font-black z-[60] shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="absolute top-0 right-0 -translate-y-full flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-t-xl text-[10px] font-black z-60 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
           <Move className="w-3 h-3 text-blue-200" />
           <span className="mr-3 uppercase tracking-[0.2em]">{name}</span>
           <div className="w-px h-3 bg-white/20 mx-1" />

@@ -1,19 +1,17 @@
-'use client';
+"use client";
 
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback } from "react";
 
 interface SafeHTMLRendererProps {
   html: string;
   className?: string;
   fullPage?: boolean;
-  style?: React.CSSProperties;
 }
 
 export const SafeHTMLRenderer = ({
   html,
-  className = '',
+  className = "",
   fullPage = false,
-  style,
 }: SafeHTMLRendererProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -44,14 +42,16 @@ export const SafeHTMLRenderer = ({
 
   // Detect if AI returned a full document or just body content
   const isFullDocument =
-    html.toLowerCase().includes('<!doctype') ||
-    html.toLowerCase().trimStart().startsWith('<html');
+    html.toLowerCase().includes("<!doctype") ||
+    html.toLowerCase().trimStart().startsWith("<html");
 
   // Inject the interceptor before </body> in full docs, or wrap partial HTML
   const injectInterceptor = (rawHtml: string): string => {
-    const closeBody = rawHtml.lastIndexOf('</body>');
+    const closeBody = rawHtml.lastIndexOf("</body>");
     if (closeBody !== -1) {
-      return rawHtml.slice(0, closeBody) + NAV_INTERCEPTOR + rawHtml.slice(closeBody);
+      return (
+        rawHtml.slice(0, closeBody) + NAV_INTERCEPTOR + rawHtml.slice(closeBody)
+      );
     }
     return rawHtml + NAV_INTERCEPTOR;
   };
@@ -95,22 +95,13 @@ export const SafeHTMLRenderer = ({
   }, [fullPage]);
 
   if (fullPage) {
-    // In full-page mode we want the iframe to fill whatever container it's in.
-    // Use explicit inline style for both width AND height so it is never 0.
     return (
       <iframe
         ref={iframeRef}
         srcDoc={srcDoc}
         title="Full Page Preview"
         sandbox="allow-scripts allow-popups allow-forms allow-same-origin"
-        style={{
-          display: 'block',
-          width: '100%',
-          height: '100%',          // fills parent when parent has a real height
-          border: 'none',
-          ...style,                 // caller can override with explicit px / vh
-        }}
-        className={className}
+        className={`block w-full h-full border-0 ${className}`}
       />
     );
   }
@@ -122,14 +113,7 @@ export const SafeHTMLRenderer = ({
       title="Safe HTML Renderer"
       sandbox="allow-scripts allow-popups allow-forms allow-same-origin"
       onLoad={handleLoad}
-      style={{
-        display: 'block',
-        width: '100%',
-        minHeight: '800px',
-        border: 'none',
-        ...style,
-      }}
-      className={className}
+      className={`block w-full h-150 border-0 ${className}`}
     />
   );
 };
