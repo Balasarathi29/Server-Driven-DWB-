@@ -1939,47 +1939,259 @@ ${message}`;
     return safeConfig;
   }
 
+  private getImageDimensions(size: "1024x1024" | "1024x1536" | "1536x1024"): {
+    width: number;
+    height: number;
+  } {
+    const [w, h] = size.split("x").map((value) => parseInt(value, 10));
+    return {
+      width: Number.isFinite(w) ? w : 1024,
+      height: Number.isFinite(h) ? h : 1024,
+    };
+  }
+
+  private async generateImageViaLocalEndpoint(options: {
+    endpoint: string;
+    prompt: string;
+    size: "1024x1024" | "1024x1536" | "1536x1024";
+    institutionId: string;
+    userId: string;
+    modelLabel: string;
+  }): Promise<{ url: string; provider: "local"; model: string }> {
+    const { endpoint, prompt, size, institutionId, userId, modelLabel } =
+      options;
+    const { width, height } = this.getImageDimensions(size);
+
+    const start = Date.now();
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt,
+        width,
+        height,
+        steps: 28,
+        cfg_scale: 7,
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(
+        `Local image API failed (${response.status}): ${body.slice(0, 220)}`,
+      );
+    }
+
+    const payload = (await response.json()) as {
+      images?: string[];
+      image?: string;
+      output?: string;
+    };
+
+    const rawBase64 =
+      payload?.images?.[0] || payload?.image || payload?.output || "";
+    if (!rawBase64 || typeof rawBase64 !== "string") {
+      throw new Error("Local image API returned no image data");
+    }
+
+    const base64 = rawBase64.replace(/^data:image\/[a-zA-Z+]+;base64,/, "");
+    const dataUrl = `data:image/png;base64,${base64}`;
+    const latencyMs = Date.now() - start;
+
+    await AIUsage.create({
+      institutionId,
+      userId,
+      feature: "image-generation",
+      provider: "internal",
+      modelName: modelLabel,
+      promptChars: prompt.length,
+      responseChars: base64.length,
+      inputTokensEstimated: 0,
+      outputTokensEstimated: 0,
+      estimatedCostUsd: 0,
+      cacheHit: false,
+      latencyMs,
+      metadata: { size, source: "local-endpoint" },
+    });
+
+    return { url: dataUrl, provider: "local", model: modelLabel };
+  }
+
   async generateImageFromPrompt(options: {
     prompt: string;
     institutionId: string;
     userId: string;
     size?: "1024x1024" | "1024x1536" | "1536x1024";
-  }): Promise<{ url: string; provider: "openai" | "fallback"; model: string }> {
-    const { prompt, institutionId, userId, size = "1024x1024" } = options;
+    allowFallback?: boolean;
+  }): Promise<{
+    url: string;
+    provider: "openai" | "local" | "fallback";
+    model: string;
+  }> {
+    const {
+      prompt,
+      institutionId,
+      userId,
+      size = "1024x1024",
+      allowFallback = false,
+    } = options;
+    const fallbackEnabledByEnv =
+      String(process.env.AI_IMAGE_ALLOW_FALLBACK || "").toLowerCase() ===
+      "true";
+    const imageProvider = String(process.env.AI_IMAGE_PROVIDER || "auto")
+      .toLowerCase()
+      .trim();
+    const localEndpoint = String(process.env.LOCAL_IMAGE_API_URL || "").trim();
+    const localModelLabel =
+      String(
+        process.env.LOCAL_IMAGE_MODEL || "local-stable-diffusion",
+      ).trim() || "local-stable-diffusion";
 
-    if (this.openai) {
-      const start = Date.now();
-      const response = await this.openai.images.generate({
-        model: "gpt-image-1",
-        prompt,
-        size,
+    const shouldUseFallback = allowFallback || fallbackEnabledByEnv;
+
+    if (imageProvider === "fallback") {
+      const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(prompt.slice(0, 64))}/1200/800`;
+      await AIUsage.create({
+        institutionId,
+        userId,
+        feature: "image-generation",
+        provider: "internal",
+        modelName: "fallback-image-url",
+        promptChars: prompt.length,
+        responseChars: fallbackUrl.length,
+        inputTokensEstimated: 0,
+        outputTokensEstimated: 0,
+        estimatedCostUsd: 0,
+        cacheHit: false,
+        latencyMs: 0,
+        metadata: { fallback: true, mode: "explicit-fallback" },
       });
-      const imageBase64 = response.data?.[0]?.b64_json;
-      if (imageBase64) {
-        const dataUrl = `data:image/png;base64,${imageBase64}`;
-        const latencyMs = Date.now() - start;
-        await AIUsage.create({
-          institutionId,
-          userId,
-          feature: "image-generation",
-          provider: "openai",
-          modelName: "gpt-image-1",
-          promptChars: prompt.length,
-          responseChars: imageBase64.length,
-          inputTokensEstimated: this.estimateTokensFromChars(prompt.length),
-          outputTokensEstimated: this.estimateTokensFromChars(
-            imageBase64.length,
-          ),
-          estimatedCostUsd: 0,
-          cacheHit: false,
-          latencyMs,
-          metadata: { size },
-        });
-        return { url: dataUrl, provider: "openai", model: "gpt-image-1" };
+
+      return {
+        url: fallbackUrl,
+        provider: "fallback",
+        model: "fallback-image-url",
+      };
+    }
+
+    const tryOpenAi =
+      imageProvider === "openai" || (imageProvider === "auto" && !!this.openai);
+    const tryLocal =
+      imageProvider === "local" ||
+      (imageProvider === "auto" && !this.openai && !!localEndpoint);
+
+    if (tryLocal) {
+      if (!localEndpoint) {
+        if (!shouldUseFallback) {
+          throw new AppError(
+            "Local image mode is enabled but LOCAL_IMAGE_API_URL is not set.",
+            503,
+            "LOCAL_IMAGE_API_NOT_CONFIGURED",
+          );
+        }
+      } else {
+        try {
+          return await this.generateImageViaLocalEndpoint({
+            endpoint: localEndpoint,
+            prompt,
+            size,
+            institutionId,
+            userId,
+            modelLabel: localModelLabel,
+          });
+        } catch (error: any) {
+          if (!shouldUseFallback) {
+            throw new AppError(
+              error?.message || "Local image generation failed",
+              502,
+              "LOCAL_IMAGE_GENERATION_FAILED",
+            );
+          }
+        }
       }
     }
 
-    // Fallback deterministic placeholder when image API key is not configured.
+    if (tryOpenAi) {
+      if (!this.openai) {
+        if (!shouldUseFallback) {
+          throw new AppError(
+            "Image model is not configured. Set OPENAI_API_KEY to generate prompt-accurate images.",
+            503,
+            "IMAGE_MODEL_NOT_CONFIGURED",
+          );
+        }
+      } else {
+        try {
+          const start = Date.now();
+          const response = await this.openai.images.generate({
+            model: "gpt-image-1",
+            prompt,
+            size,
+          });
+          const imageBase64 = response.data?.[0]?.b64_json;
+          if (!imageBase64) {
+            throw new Error("Image model returned empty response");
+          }
+
+          const dataUrl = `data:image/png;base64,${imageBase64}`;
+          const latencyMs = Date.now() - start;
+          await AIUsage.create({
+            institutionId,
+            userId,
+            feature: "image-generation",
+            provider: "openai",
+            modelName: "gpt-image-1",
+            promptChars: prompt.length,
+            responseChars: imageBase64.length,
+            inputTokensEstimated: this.estimateTokensFromChars(prompt.length),
+            outputTokensEstimated: this.estimateTokensFromChars(
+              imageBase64.length,
+            ),
+            estimatedCostUsd: 0,
+            cacheHit: false,
+            latencyMs,
+            metadata: { size },
+          });
+          return { url: dataUrl, provider: "openai", model: "gpt-image-1" };
+        } catch (error: any) {
+          if (!shouldUseFallback) {
+            const rawMessage = String(error?.message || "");
+            const message = rawMessage.toLowerCase();
+
+            if (
+              message.includes("billing hard limit") ||
+              message.includes("insufficient_quota") ||
+              message.includes("quota") ||
+              message.includes("rate_limit_exceeded")
+            ) {
+              throw new AppError(
+                "OpenAI billing/quota limit reached. Add credits or increase your OpenAI project budget, then try again.",
+                402,
+                "IMAGE_BILLING_LIMIT",
+              );
+            }
+
+            throw new AppError(
+              rawMessage || "Image generation failed with configured model",
+              502,
+              "IMAGE_GENERATION_FAILED",
+            );
+          }
+        }
+      }
+    }
+
+    if (!tryOpenAi && !tryLocal && !shouldUseFallback) {
+      throw new AppError(
+        'No image provider available. Set AI_IMAGE_PROVIDER to "local" with LOCAL_IMAGE_API_URL, or "openai" with OPENAI_API_KEY.',
+        503,
+        "IMAGE_PROVIDER_NOT_AVAILABLE",
+      );
+    }
+
+    // Optional fallback placeholder (not prompt-accurate). Use only when explicitly enabled.
     const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(prompt.slice(0, 64))}/1200/800`;
     await AIUsage.create({
       institutionId,

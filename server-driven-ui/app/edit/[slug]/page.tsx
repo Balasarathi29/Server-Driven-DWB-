@@ -94,6 +94,35 @@ const createHtmlCraftConfig = (
     },
   };
 };
+
+const createBlankCraftConfig = (
+  existingConfig?: unknown,
+): Record<string, unknown> => {
+  const config = toCraftConfig(existingConfig);
+  const existingRoot =
+    (config.ROOT as Record<string, unknown> | undefined) ?? undefined;
+
+  return {
+    ...(config.meta ? { meta: config.meta } : {}),
+    ROOT: {
+      type: { resolvedName: "Container" },
+      isCanvas: true,
+      props: existingRoot?.props ?? {
+        backgroundColor: "#ffffff",
+        paddingTop: "40px",
+        paddingRight: "40px",
+        paddingBottom: "40px",
+        paddingLeft: "40px",
+        minHeight: "800px",
+      },
+      displayName: existingRoot?.displayName ?? "Container",
+      custom: existingRoot?.custom ?? {},
+      hidden: existingRoot?.hidden ?? false,
+      nodes: [],
+      linkedNodes: existingRoot?.linkedNodes ?? {},
+    },
+  };
+};
 const getDeviceWidthLabel = (device: DeviceMode): string => {
   if (device === "tablet") return "768px";
   if (device === "mobile") return "390px";
@@ -106,6 +135,14 @@ const sanitizeJsonConfig = (config: unknown): Record<string, unknown> => {
     const validResolvedNames = Object.keys(ComponentMapper);
 
     const sanitizedConfig = { ...cfg };
+    const validNodeIds = new Set(
+      Object.entries(sanitizedConfig)
+        .filter(([, nodeData]) => {
+          const node = nodeData as Record<string, unknown> | undefined;
+          return !!node && typeof node === "object";
+        })
+        .map(([nodeId]) => nodeId),
+    );
 
     Object.entries(sanitizedConfig).forEach(([nodeId, nodeData]) => {
       const node = nodeData as Record<string, unknown> | undefined;
@@ -128,7 +165,45 @@ const sanitizeJsonConfig = (config: unknown): Record<string, unknown> => {
           props: node.props || {},
         };
       }
+
+      if (Array.isArray(node.nodes)) {
+        const currentNode =
+          (sanitizedConfig[nodeId] as Record<string, unknown> | undefined) ??
+          node;
+        sanitizedConfig[nodeId] = {
+          ...currentNode,
+          nodes: node.nodes.filter((childId) =>
+            validNodeIds.has(String(childId)),
+          ),
+        };
+      }
+
+      if (node.linkedNodes && typeof node.linkedNodes === "object") {
+        const currentNode =
+          (sanitizedConfig[nodeId] as Record<string, unknown> | undefined) ??
+          node;
+        const linkedNodes = Object.fromEntries(
+          Object.entries(node.linkedNodes).filter(([, childId]) =>
+            validNodeIds.has(String(childId)),
+          ),
+        );
+        sanitizedConfig[nodeId] = {
+          ...currentNode,
+          linkedNodes,
+        };
+      }
     });
+
+    if (sanitizedConfig.ROOT && typeof sanitizedConfig.ROOT === "object") {
+      const rootNode = sanitizedConfig.ROOT as Record<string, unknown>;
+      const rootChildren = Array.isArray(rootNode.nodes)
+        ? rootNode.nodes.filter((childId) => validNodeIds.has(String(childId)))
+        : [];
+      sanitizedConfig.ROOT = {
+        ...rootNode,
+        nodes: rootChildren,
+      };
+    }
 
     return sanitizedConfig;
   } catch (error) {
@@ -715,6 +790,35 @@ const EditorWrapper = ({
     toast.success("Code applied!");
   };
 
+  const handleResetPage = async () => {
+    if (!pageData?._id) {
+      toast.error("No page ID found to reset");
+      return;
+    }
+
+    const blankJson = toPageJson(createBlankCraftConfig(pageData.jsonConfig));
+    const updatedData = {
+      ...pageData,
+      useHtml: false,
+      htmlContent: "",
+      jsonConfig: blankJson,
+    };
+
+    onUpdatePageData(updatedData);
+
+    try {
+      await pagesApi.updatePage(pageData._id, {
+        jsonConfig: blankJson,
+        htmlContent: "",
+        useHtml: false,
+      });
+      toast.success("Visual editor reset to a blank page");
+    } catch (error) {
+      console.error("Failed to reset page:", error);
+      toast.error("Failed to reset page");
+    }
+  };
+
   useEffect(() => {
     if (!pageData?._id || !canAutoSavePage(pageData)) return;
     if (!serializedQuery || serializedQuery === lastAutoSaveRef.current) return;
@@ -783,6 +887,7 @@ const EditorWrapper = ({
         <EditorToolbar
           onSave={() => onSave(query)}
           onAIGenerate={() => handleAIGenerate()}
+          onResetPage={handleResetPage}
           isSaving={saving}
           isGenerating={isGenerating}
           slug={slug}

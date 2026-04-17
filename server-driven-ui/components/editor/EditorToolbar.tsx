@@ -105,6 +105,7 @@ const ToolsDropdown = ({
 interface EditorToolbarProps {
   onSave: () => void;
   onAIGenerate?: () => void;
+  onResetPage?: () => void;
   isSaving?: boolean;
   isGenerating?: boolean;
   slug?: string;
@@ -113,6 +114,7 @@ interface EditorToolbarProps {
 export const EditorToolbar = ({
   onSave,
   onAIGenerate,
+  onResetPage,
   isSaving,
   isGenerating,
   slug,
@@ -230,7 +232,13 @@ export const EditorToolbar = ({
         : selectedNodeId
           ? [selectedNodeId]
           : [];
-    const filteredIds = idsToDelete.filter((id) => id && id !== "ROOT");
+    const filteredIds = idsToDelete.filter((id) => {
+      if (!id || id === "ROOT") {
+        return false;
+      }
+
+      return Boolean(query.node(id).get());
+    });
 
     if (filteredIds.length === 0) {
       return;
@@ -405,6 +413,24 @@ export const EditorToolbar = ({
           >
             <Sparkles className="w-4 h-4" />
             {isGenerating ? "Generating..." : "AI Build"}
+          </button>
+        )}
+
+        {onResetPage && (
+          <button
+            onClick={() => {
+              if (
+                window.confirm(
+                  "Reset the visual editor to a blank page? This will clear the current broken content.",
+                )
+              ) {
+                onResetPage();
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-sm font-semibold transition-all duration-200 hover:shadow-sm"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset Page
           </button>
         )}
 

@@ -29,7 +29,7 @@ type ChatMessage = {
 };
 
 const isImageRequest = (text: string) =>
-  /\b(image|picture|photo|poster|banner|illustration|generate an image|create an image|create image|make an image)\b/i.test(
+  /\b(image|picture|photo|poster|banner|illustration|render|photorealistic|cinematic|generate an image|create an image|create image|make an image)\b/i.test(
     text,
   );
 
@@ -463,10 +463,21 @@ export const AIChat = ({
       } catch (error: any) {
         console.error("Image generation error:", error);
         const responseData = error?.response?.data;
-        const errorMessage =
+        let errorMessage =
           responseData?.error?.message ||
           error?.message ||
           "Failed to create image";
+
+        const normalized = String(errorMessage).toLowerCase();
+        if (
+          normalized.includes("billing hard limit") ||
+          normalized.includes("quota") ||
+          responseData?.error?.code === "IMAGE_BILLING_LIMIT"
+        ) {
+          errorMessage =
+            "Image generation is blocked by OpenAI billing/quota limit. Please add credits or increase your OpenAI budget, then retry.";
+        }
+
         toast.error(errorMessage);
         setMessages((prev) => [
           ...prev,

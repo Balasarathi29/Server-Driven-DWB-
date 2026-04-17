@@ -74,7 +74,10 @@ export const RenderNode = ({ render }: { render: React.ReactElement }) => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              actions.delete(id);
+              const node = query.node(id).get();
+              if (node) {
+                actions.delete(id);
+              }
             }}
             className="hover:text-red-300 transition-colors p-1"
             title="Remove Component"
