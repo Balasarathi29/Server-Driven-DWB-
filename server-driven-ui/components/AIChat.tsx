@@ -427,18 +427,35 @@ export const AIChat = ({
         const imageUrl = imageData?.url || imageData?.imageUrl;
 
         if (imageUrl) {
+          const ImageComponent = ComponentMapper.Image;
+          if (ImageComponent) {
+            actions.add(
+              query.createNode(
+                React.createElement(ImageComponent, {
+                  src: imageUrl,
+                  alt: userMessage.slice(0, 120) || "Generated image",
+                  caption: "AI generated image",
+                  width: "100%",
+                  height: "320px",
+                  objectFit: "cover",
+                }),
+              ),
+              "ROOT",
+            );
+          }
+
           setMessages((prev) => [
             ...prev,
             {
               role: "ai",
               content:
                 imageData?.provider === "fallback"
-                  ? "I could not reach an image model, so I generated a fallback preview image."
-                  : "Image generated successfully.",
+                  ? "I could not reach an image model, so I generated a fallback preview image and inserted it into the editor."
+                  : "Image generated successfully and inserted into the editor.",
               imageUrl,
             },
           ]);
-          toast.success("Image generated");
+          toast.success("Image generated and inserted");
           return;
         }
 

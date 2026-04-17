@@ -149,7 +149,7 @@ Response format:
 }
 
 VALID COMPONENT TYPES (only use these for insert/update): 
-HeroBanner, TextBlock, Container, AboutSection, Statistics, FacultyGrid, FAQAccordion, ContactForm, FeedbackForm, DynamicSection, Button, RawHTML.
+HeroBanner, TextBlock, Container, AboutSection, Statistics, FacultyGrid, FAQAccordion, ContactForm, FeedbackForm, Image, DynamicSection, Button, RawHTML.
 CRITICAL: If the user says "full", "website", or "html page", DO NOT use "insert". USE "generate_full_html".
 
 Only respond with valid JSON, no explanations.`;
@@ -185,6 +185,7 @@ Only respond with valid JSON, no explanations.`;
           "FAQAccordion",
           "ContactForm",
           "FeedbackForm",
+          "Image",
           "DynamicSection",
           "Button",
           "RawHTML",
@@ -489,7 +490,7 @@ Response MUST be a JSON object with this exact structure:
   "jsxCode": "..."
 }
 
-You can use these existing types: HeroBanner, TextBlock, Container, AboutSection, Statistics, FacultyGrid, FAQAccordion, ContactForm, DynamicSection, Button, RawHTML.
+You can use these existing types: HeroBanner, TextBlock, Container, AboutSection, Statistics, FacultyGrid, FAQAccordion, ContactForm, FeedbackForm, Image, DynamicSection, Button, RawHTML.
 If the component requested doesn't fit the others, use "RawHTML" and put the full HTML/Tailwind code in the "html" prop.
 Only return valid JSON. Do not include markdown code blocks or explanations.`;
 
