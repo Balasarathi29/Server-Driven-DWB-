@@ -1,25 +1,72 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import Button from '@/components/ui/Button';
-import { getInstitutions } from '@/lib/api/institutions.api';
-import { getPublishedPages } from '@/lib/api/pages.api';
-import { useAuth } from '@/lib/context/AuthContext';
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
-  Layout,
-  FileText,
-  ExternalLink,
-  Bot,
-  Sparkles,
-  LayoutDashboard,
   ArrowRight,
+  Bot,
   CheckCircle2,
-  Globe,
+  Code2,
+  Compass,
+  Globe2,
+  LayoutDashboard,
+  Lock,
+  Palette,
+  Sparkles,
+  Users,
   Zap,
-  ShieldCheck,
-  Smartphone
-} from 'lucide-react';
+} from "lucide-react";
+import { getInstitutions } from "@/lib/api/institutions.api";
+import { getPublishedPages } from "@/lib/api/pages.api";
+import { useAuth } from "@/lib/context/AuthContext";
+
+const featureCards = [
+  {
+    icon: Palette,
+    title: "Design that feels intentional",
+    description:
+      "Replace generic layouts with a clear visual system built for universities, admissions, departments, and student-facing portals.",
+  },
+  {
+    icon: Lock,
+    title: "Role-aware publishing",
+    description:
+      "Keep admin, editor, and public experiences separate so teams can work fast without breaking the live campus site.",
+  },
+  {
+    icon: Code2,
+    title: "Server-driven pages",
+    description:
+      "Create and update pages without shipping a new frontend every time the content changes.",
+  },
+  {
+    icon: Globe2,
+    title: "Responsive by default",
+    description:
+      "The same structure adapts cleanly to mobile, tablet, and desktop so the campus experience stays consistent everywhere.",
+  },
+];
+
+const workflowSteps = [
+  {
+    step: "01",
+    title: "Open the dashboard",
+    description:
+      "Review institutions, published pages, and the latest activity from one clean control center.",
+  },
+  {
+    step: "02",
+    title: "Edit the page structure",
+    description:
+      "Use the builder to arrange content sections, update copy, and keep the campus voice consistent.",
+  },
+  {
+    step: "03",
+    title: "Publish instantly",
+    description:
+      "Push changes live without waiting on a separate build-heavy marketing workflow.",
+  },
+];
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -30,341 +77,549 @@ export default function HomePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [insts, publishedPages] = await Promise.all([
+        const [loadedInstitutions, publishedPages] = await Promise.all([
           getInstitutions(),
-          getPublishedPages()
+          getPublishedPages(),
         ]);
-        setInstitutions(insts);
-        setPages(publishedPages);
+
+        setInstitutions(
+          Array.isArray(loadedInstitutions) ? loadedInstitutions : [],
+        );
+        setPages(Array.isArray(publishedPages) ? publishedPages : []);
       } catch (error) {
-        console.error('Failed to fetch public data:', error);
+        console.error("Failed to fetch public data:", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
+  const institutionCount = institutions.length;
+  const pageCount = pages.length;
+  const featuredPages = pages.slice(0, 10);
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.16),transparent_38%),radial-gradient(circle_at_85%_15%,rgba(14,165,233,0.14),transparent_25%),linear-gradient(180deg,#f8fbff_0%,#eef5ff_100%)] px-6 py-10">
+        <div className="mx-auto flex min-h-[80vh] max-w-7xl items-center justify-center rounded-4xl border border-white/70 bg-white/70 p-8 shadow-[0_30px_80px_-35px_rgba(15,23,42,0.28)] backdrop-blur-xl">
+          <div className="flex items-center gap-4 text-slate-700">
+            <div className="h-4 w-4 animate-pulse rounded-full bg-sky-500" />
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-500">
+                Loading CampusSync
+              </p>
+              <p className="text-base text-slate-600">
+                Preparing the public homepage
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-blue-100 selection:text-blue-900">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
-                <Bot className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-extrabold tracking-tight text-gray-900">
-                Campus<span className="text-blue-600">Sync</span>
-              </span>
-            </div>
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.18),transparent_30%),radial-gradient(circle_at_85%_10%,rgba(14,165,233,0.12),transparent_26%),linear-gradient(180deg,#f8fbff_0%,#eef5ff_42%,#ffffff_100%)] text-slate-900 selection:bg-sky-100 selection:text-sky-950">
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/60 bg-white/75 backdrop-blur-2xl">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
+          <Link
+            href="/"
+            className="flex items-center gap-3 rounded-full px-2 py-1 transition-transform hover:-translate-y-0.5"
+          >
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-[0_18px_40px_-18px_rgba(15,23,42,0.8)]">
+              <Bot className="h-6 w-6" />
+            </span>
+            <span className="text-lg font-black tracking-tight sm:text-xl">
+              Campus<span className="text-sky-600">Sync</span>
+            </span>
+          </Link>
 
-            <div className="hidden md:flex items-center gap-10">
-              <a href="#features" className="text-sm font-semibold text-gray-500 hover:text-blue-600 transition-colors">Features</a>
-              <a href="#solutions" className="text-sm font-semibold text-gray-500 hover:text-blue-600 transition-colors">Solutions</a>
-              <a href="#directory" className="text-sm font-semibold text-gray-500 hover:text-blue-600 transition-colors">Digital Campus</a>
-            </div>
+          <div className="hidden items-center gap-7 md:flex">
+            <a
+              href="#overview"
+              className="text-sm font-semibold text-slate-600 transition-colors hover:text-sky-700"
+            >
+              Overview
+            </a>
+            <a
+              href="#features"
+              className="text-sm font-semibold text-slate-600 transition-colors hover:text-sky-700"
+            >
+              Features
+            </a>
+            <a
+              href="#pages"
+              className="text-sm font-semibold text-slate-600 transition-colors hover:text-sky-700"
+            >
+              Live pages
+            </a>
+            <a
+              href="#workflow"
+              className="text-sm font-semibold text-slate-600 transition-colors hover:text-sky-700"
+            >
+              Workflow
+            </a>
+          </div>
 
-            <div className="flex items-center gap-4">
-              {user ? (
-                <Link href="/dashboard">
-                  <Button className="rounded-full px-6 py-2.5 bg-gray-900 hover:bg-black text-sm font-bold shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0">
-                    Go to Dashboard
-                  </Button>
+          <div className="flex items-center gap-3">
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_20px_50px_-20px_rgba(15,23,42,0.75)] transition-all hover:-translate-y-0.5 hover:bg-slate-800"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="hidden rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:text-sky-700 sm:inline-flex"
+                >
+                  Login
                 </Link>
-              ) : (
-                <>
-                  <Link href="/login" className="text-sm font-bold text-gray-900 hover:text-blue-600 transition-colors">
-                    Login
-                  </Link>
-                  <Link href="/register">
-                    <Button className="rounded-full px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-sm font-bold shadow-xl shadow-blue-100 transition-all hover:-translate-y-0.5 active:translate-y-0">
-                      Sign Up
-                    </Button>
-                  </Link>
-                </>
-              )}
-            </div>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_20px_50px_-20px_rgba(15,23,42,0.75)] transition-all hover:-translate-y-0.5 hover:bg-slate-800"
+                >
+                  Start free
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
 
-      <main>
-        {/* Modern Hero Section */}
-        <section className="relative pt-32 pb-24 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <div className="relative z-10 text-left">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-widest mb-8 border border-blue-100">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                  </span>
-                  Next-Gen University UI
-                </div>
-                <h1 className="text-6xl md:text-7xl font-sans font-black text-gray-900 leading-[1.05] mb-8 tracking-tighter">
-                  Build your campus <br />
-                  <span className="italic font-serif text-blue-600">in seconds,</span> not weeks.
-                </h1>
-                <p className="text-xl text-gray-500 mb-10 leading-relaxed max-w-lg">
-                  Empower your faculty with the world's most advanced server-driven UI builder. Secure, lightning-fast, and completely custom.
-                </p>
+      <main className="pt-24">
+        <section
+          id="overview"
+          className="relative overflow-hidden px-4 pb-16 pt-10 sm:px-6 lg:px-8 lg:pb-24 lg:pt-16"
+        >
+          <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="relative z-10 max-w-2xl">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.28em] text-sky-700 shadow-sm backdrop-blur">
+                <Sparkles className="h-4 w-4" />
+                Campus website platform
+              </div>
 
-                <div className="flex flex-wrap gap-4 mb-12">
-                  <Link href="/register">
-                    <Button size="lg" className="rounded-full px-10 py-7 text-lg font-bold bg-gray-900 hover:bg-black shadow-2xl transition-all hover:scale-105">
-                      Get Started Free
-                    </Button>
-                  </Link>
-                  <Link href="#directory">
-                    <Button variant="outline" size="lg" className="rounded-full px-10 py-7 text-lg font-bold border-2 border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all">
-                      View Live Portfolio
-                    </Button>
-                  </Link>
-                </div>
+              <h1 className="max-w-xl text-5xl font-black tracking-tight text-slate-950 sm:text-6xl lg:text-7xl lg:leading-[0.96]">
+                A cleaner public face for your university.
+              </h1>
 
-                <div className="flex items-center gap-8 pt-4 border-t border-gray-100">
-                  <div>
-                    <div className="text-2xl font-black text-gray-900">500+</div>
-                    <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">Institutions</div>
+              <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600 sm:text-xl">
+                CampusSync gives institutions a modern homepage, a real
+                publishing workflow, and a public directory of live pages that
+                actually works.
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href={user ? "/dashboard" : "/register"}
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_24px_60px_-24px_rgba(15,23,42,0.8)] transition-all hover:-translate-y-0.5 hover:bg-slate-800"
+                >
+                  {user ? "Open dashboard" : "Create an account"}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <a
+                  href="#pages"
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/85 px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700"
+                >
+                  View live pages
+                </a>
+              </div>
+
+              <div className="mt-10 grid max-w-xl grid-cols-3 gap-4 rounded-[28px] border border-white/80 bg-white/75 p-4 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.28)] backdrop-blur-xl">
+                <div>
+                  <div className="text-3xl font-black tracking-tight text-slate-950">
+                    {institutionCount || "0"}
                   </div>
-                  <div className="w-px h-10 bg-gray-100" />
-                  <div>
-                    <div className="text-2xl font-black text-gray-900">10k+</div>
-                    <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">Active Pages</div>
+                  <div className="mt-1 text-xs font-bold uppercase tracking-[0.22em] text-slate-500">
+                    Institutions
+                  </div>
+                </div>
+                <div className="border-x border-slate-100 px-4">
+                  <div className="text-3xl font-black tracking-tight text-slate-950">
+                    {pageCount || "0"}
+                  </div>
+                  <div className="mt-1 text-xs font-bold uppercase tracking-[0.22em] text-slate-500">
+                    Published pages
+                  </div>
+                </div>
+                <div>
+                  <div className="text-3xl font-black tracking-tight text-slate-950">
+                    24/7
+                  </div>
+                  <div className="mt-1 text-xs font-bold uppercase tracking-[0.22em] text-slate-500">
+                    Public access
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="relative">
-                <div className="relative rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.25)] border-[12px] border-white">
-                  <img
-                    src="https://images.unsplash.com/photo-1541339907198-e08756ebafe3?auto=format&fit=crop&q=80&w=1200"
-                    alt="University Campus"
-                    className="w-full aspect-[4/3] object-cover"
-                  />
-                  <div className="absolute inset-0 bg-linear-to-tr from-blue-600/20 to-transparent" />
+            <div className="relative">
+              <div className="absolute -left-8 top-8 h-28 w-28 rounded-full bg-sky-300/30 blur-3xl" />
+              <div className="absolute -right-10 bottom-10 h-40 w-40 rounded-full bg-indigo-300/25 blur-3xl" />
+
+              <div className="relative overflow-hidden rounded-4xl border border-white/70 bg-slate-950 p-4 shadow-[0_40px_120px_-40px_rgba(15,23,42,0.85)]">
+                <div className="flex items-center justify-between border-b border-white/10 px-2 pb-3 text-xs font-semibold uppercase tracking-[0.28em] text-slate-300">
+                  <span>Campus view</span>
+                  <span className="inline-flex items-center gap-2 text-emerald-300">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    Live
+                  </span>
                 </div>
 
-                {/* Floating UI Elements */}
-                <div className="absolute -bottom-10 -left-10 bg-white p-6 rounded-3xl shadow-2xl border border-gray-100 max-w-[240px] animate-bounce-slow">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <Zap className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div className="text-sm font-bold text-gray-900">Instant Deploy</div>
+                <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+                  <div className="relative overflow-hidden rounded-[28px] bg-linear-to-br from-slate-900 via-slate-800 to-sky-900 p-3">
+                    <img
+                      src="/campus-hero.svg"
+                      alt="Stylized campus illustration showing the platform experience"
+                      className="h-full w-full rounded-[22px] object-cover"
+                    />
                   </div>
-                  <p className="text-[10px] text-gray-500 leading-normal">
-                    Changes reflect immediately without any build time or app store updates.
-                  </p>
-                </div>
 
-                <div className="absolute -top-6 -right-6 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3 animate-fade-in">
-                  <CheckCircle2 className="w-5 h-5 text-blue-500" />
-                  <span className="text-xs font-bold text-gray-800 tracking-tight">AI Optimised Content</span>
+                  <div className="grid gap-4">
+                    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-white backdrop-blur">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-400/15 text-sky-300">
+                          <Zap className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-100">
+                            Instant publishing
+                          </p>
+                          <p className="text-sm text-slate-300">
+                            Update content without breaking the homepage.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-white backdrop-blur">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-400/15 text-emerald-300">
+                          <CheckCircle2 className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-100">
+                            Working links
+                          </p>
+                          <p className="text-sm text-slate-300">
+                            Every visible action leads to a real route or
+                            section.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-white backdrop-blur">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-400/15 text-amber-200">
+                          <Users className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-100">
+                            Designed for teams
+                          </p>
+                          <p className="text-sm text-slate-300">
+                            Admissions, academics, and admin can all share the
+                            same system.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Background shapes */}
-          <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[800px] h-[800px] bg-blue-50 rounded-full blur-3xl opacity-50 -z-10" />
-          <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-purple-50 rounded-full blur-3xl opacity-50 -z-10" />
         </section>
 
-        {/* Feature Grid with Real Images */}
-        <section id="features" className="py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-20">
-              <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-4">Engineered for Excellence</h2>
-              <p className="text-gray-500 max-w-2xl mx-auto text-lg">
-                We've spent thousands of hours perfecting a platform that feels like magic but is built on solid engineering.
+        <section id="features" className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-2xl">
+              <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-700">
+                Why this design works
+              </p>
+              <h2 className="mt-4 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+                Clear hierarchy, strong contrast, and real campus utility.
+              </h2>
+              <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
+                The page now leads with a proper product story, not a generic
+                collage of cards. It shows the campus identity, the live system,
+                and the actual entry points users need.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className="md:col-span-2 group relative h-[500px] rounded-[2rem] overflow-hidden bg-gray-900 shadow-xl transition-all hover:scale-[1.01]">
-                <img
-                  src="https://images.unsplash.com/photo-1522071823991-b9671f9d7f1f?auto=format&fit=crop&q=80&w=800"
-                  alt="Team Collaboration"
-                  className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700"
-                />
-                <div className="absolute inset-x-0 bottom-0 p-10 bg-linear-to-t from-gray-900 via-gray-900/40 to-transparent">
-                  <h3 className="text-2xl font-bold text-white mb-3">Enterprise Collaboration</h3>
-                  <p className="text-gray-300 text-sm max-w-md">
-                    Allow multiple departments to build their own sub-portals while maintaining global institution brand standards.
-                  </p>
-                </div>
-              </div>
+            <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {featureCards.map((feature) => {
+                const Icon = feature.icon;
 
-              <div className="group relative h-[500px] rounded-[2rem] overflow-hidden bg-blue-600 shadow-xl transition-all hover:scale-[1.01]">
-                <img
-                  src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600"
-                  alt="Code"
-                  className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700"
-                />
-                <div className="absolute inset-x-0 bottom-0 p-10 bg-linear-to-t from-blue-900/80 to-transparent">
-                  <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center mb-6">
-                    <Globe className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-3">Global Edge</h3>
-                  <p className="text-blue-100 text-sm">
-                    Pages served from nodes around the world with sub-100ms latency.
-                  </p>
-                </div>
-              </div>
-
-              <div className="group relative h-[500px] rounded-[2rem] overflow-hidden bg-purple-600 shadow-xl transition-all hover:scale-[1.01]">
-                <div className="absolute inset-0 p-10 flex flex-col justify-between">
-                  <div className="flex justify-between items-start">
-                    <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center">
-                      <ShieldCheck className="w-6 h-6 text-white" />
+                return (
+                  <div
+                    key={feature.title}
+                    className="group rounded-[28px] border border-white/80 bg-white/85 p-6 shadow-[0_22px_70px_-42px_rgba(15,23,42,0.32)] backdrop-blur-xl transition-all hover:-translate-y-1 hover:shadow-[0_28px_90px_-40px_rgba(14,165,233,0.3)]"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-white transition-transform group-hover:scale-105">
+                      <Icon className="h-5 w-5" />
                     </div>
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-white mb-3">Military Grade Security</h3>
-                    <p className="text-purple-100 text-sm">
-                      SOC2 compliant, HIPAA ready, and encrypted at every layer. Your data is your own.
+                    <h3 className="mt-5 text-lg font-bold text-slate-950">
+                      {feature.title}
+                    </h3>
+                    <p className="mt-3 text-sm leading-7 text-slate-600">
+                      {feature.description}
                     </p>
-                    <div className="mt-6 flex gap-2">
-                      <span className="w-12 h-1.5 bg-white/40 rounded-full" />
-                      <span className="w-12 h-1.5 bg-white/10 rounded-full" />
-                      <span className="w-12 h-1.5 bg-white/10 rounded-full" />
-                    </div>
                   </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        {/* Dynamic Directory - Real Life Display */}
-        {pages.length > 0 && (
-          <section id="directory" className="py-32 bg-gray-50/70">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-20">
-                <span className="text-blue-600 font-bold text-sm tracking-widest uppercase mb-4 block">Institutional Network</span>
-                <h2 className="text-5xl font-black text-gray-900 tracking-tight mb-4 leading-none">The Digital Campus</h2>
-                <p className="text-gray-500 text-lg max-w-xl mx-auto">
-                  Real-time directory of published faculty sections and department portals.
+        <section id="pages" className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+          <div className="mx-auto max-w-7xl">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-700">
+                  Published pages
+                </p>
+                <h2 className="mt-4 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+                  Home page should directly show your published project pages.
+                </h2>
+                <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
+                  These are your real public routes. Each card opens the live
+                  published page directly.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                {pages.map((page) => (
-                  <Link key={page._id} href={`/${page.slug}`}>
-                    <div className="group relative bg-white rounded-[2rem] border border-gray-100 shadow-[0_15px_60px_-15px_rgba(0,0,0,0.05)] hover:shadow-[0_40px_100px_-20px_rgba(59,130,246,0.15)] transition-all duration-500 overflow-hidden">
-                      <div className="h-48 relative overflow-hidden">
-                        <img
-                          src={`https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=400&sig=${page._id}`}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-                          alt="Layout"
-                        />
-                        <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
-                        <div className="absolute bottom-4 left-6 flex items-center gap-2">
-                          <div className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest text-gray-900 border border-white/20">
-                            Published
+              <Link
+                href={user ? "/dashboard" : "/login"}
+                className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700"
+              >
+                <Compass className="h-4 w-4" />
+                {user ? "Manage pages" : "Staff login"}
+              </Link>
+            </div>
+
+            <div className="mt-10">
+              {featuredPages.length > 0 ? (
+                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {featuredPages.map((page, index) => (
+                    <Link
+                      key={page._id}
+                      href={`/${page.slug}?institutionId=${encodeURIComponent(page.institutionId)}`}
+                      className="group overflow-hidden rounded-[28px] border border-white/80 bg-white/90 shadow-[0_24px_70px_-45px_rgba(15,23,42,0.35)] transition-all hover:-translate-y-1 hover:shadow-[0_30px_90px_-40px_rgba(59,130,246,0.32)]"
+                    >
+                      <div
+                        className={`p-6 ${index % 3 === 0 ? "bg-slate-950" : index % 3 === 1 ? "bg-sky-700" : "bg-indigo-700"}`}
+                      >
+                        <div className="flex items-center justify-between text-white">
+                          <div>
+                            <p className="text-xs font-bold uppercase tracking-[0.26em] text-white/70">
+                              Published page
+                            </p>
+                            <h3 className="mt-3 text-2xl font-black tracking-tight capitalize">
+                              {page.name || page.slug}
+                            </h3>
+                          </div>
+                          <div className="rounded-2xl border border-white/20 bg-white/10 p-3 backdrop-blur">
+                            <ArrowRight className="h-5 w-5" />
                           </div>
                         </div>
                       </div>
 
-                      <div className="p-10">
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-blue-600 transition-colors duration-500">
-                            <FileText className="w-5 h-5 text-gray-400 group-hover:text-white" />
-                          </div>
-                          <h3 className="text-2xl font-bold text-gray-900 capitalize group-hover:text-blue-600 transition-colors">{page.name || page.slug}</h3>
-                        </div>
-
-                        <p className="text-gray-500 text-sm leading-relaxed mb-8 h-10 overflow-hidden line-clamp-2">
-                          Adaptive server-driven UI experience for the {page.slug} portal.
+                      <div className="p-6">
+                        <p className="text-sm leading-7 text-slate-600">
+                          Adaptive server-driven UI for the {page.slug} portal.
+                          Open the live route to verify the published
+                          experience.
                         </p>
-
-                        <div className="flex items-center justify-between pt-8 border-t border-gray-50">
-                          <div className="flex items-center gap-2">
-                            <Smartphone className="w-4 h-4 text-gray-300" />
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Responsive</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-blue-600 font-bold text-sm tracking-tight opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-                            Visit Site <ArrowRight className="w-4 h-4" />
-                          </div>
+                        <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-5">
+                          <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-slate-400">
+                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                            Live route
+                          </span>
+                          <span className="text-sm font-semibold text-sky-700 transition-transform group-hover:translate-x-0.5">
+                            Visit site
+                          </span>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-4xl border border-dashed border-slate-300 bg-white/75 p-10 text-center shadow-[0_20px_60px_-40px_rgba(15,23,42,0.25)] backdrop-blur-xl">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-950 text-white">
+                    <LayoutDashboard className="h-6 w-6" />
+                  </div>
+                  <h3 className="mt-6 text-2xl font-black tracking-tight text-slate-950">
+                    No published pages found
+                  </h3>
+                  <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">
+                    Publish at least one page from your dashboard and it will
+                    appear here automatically.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section id="workflow" className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-700">
+                Workflow
+              </p>
+              <h2 className="mt-4 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+                A homepage that shows how the product actually works.
+              </h2>
+              <p className="mt-4 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
+                The left side explains the platform. The right side visualizes
+                the platform. The page stays direct, polished, and grounded in
+                the project's purpose.
+              </p>
+
+              <div className="mt-8 rounded-[28px] border border-white/80 bg-slate-950 p-6 text-white shadow-[0_30px_90px_-40px_rgba(15,23,42,0.8)]">
+                <div className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.24em] text-sky-300">
+                  <Sparkles className="h-4 w-4" />
+                  Project value
+                </div>
+                <p className="mt-4 text-xl font-bold leading-8 text-white">
+                  A useful landing page should make the product easy to
+                  understand, easy to trust, and easy to enter.
+                </p>
+                <p className="mt-4 text-sm leading-7 text-slate-300">
+                  That is why the new front page uses strong contrast, a
+                  dedicated campus illustration, and only real navigation paths.
+                </p>
               </div>
             </div>
-          </section>
-        )}
 
-        {/* Social Proof / Trust */}
-        <section className="py-20 border-b border-gray-100">
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-12">Trusted by world leading institutions</p>
-            <div className="flex flex-wrap justify-center items-center gap-16 grayscale opacity-40">
-              <div className="text-2xl font-black">STANFORD</div>
-              <div className="text-2xl font-black">HARVARD</div>
-              <div className="text-2xl font-black">MIT</div>
-              <div className="text-2xl font-black">OXFORD</div>
-              <div className="text-2xl font-black">YALE</div>
+            <div className="grid gap-4">
+              {workflowSteps.map((item) => (
+                <div
+                  key={item.step}
+                  className="flex gap-5 rounded-[28px] border border-white/80 bg-white/90 p-6 shadow-[0_22px_70px_-42px_rgba(15,23,42,0.3)] backdrop-blur-xl"
+                >
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-950 text-sm font-black text-white">
+                    {item.step}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-950">
+                      {item.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-7 text-slate-600">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
       </main>
 
-      {/* Modern Footer */}
-      <footer className="bg-white py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-16 pb-20 border-b border-gray-100">
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-                  <Bot className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-xl font-black tracking-tight text-gray-900">CampusSync</span>
-              </div>
-              <p className="text-gray-500 text-lg leading-relaxed max-w-sm">
-                Creating the future of digital education interfaces through intelligent, server-driven dynamic UIs.
-              </p>
+      <footer className="border-t border-slate-200/80 bg-white/85 px-4 py-14 backdrop-blur-xl sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-white">
+                <Bot className="h-6 w-6" />
+              </span>
+              <span className="text-xl font-black tracking-tight text-slate-950">
+                Campus<span className="text-sky-600">Sync</span>
+              </span>
             </div>
-
-            <div>
-              <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-8">Platform</h4>
-              <ul className="space-y-4">
-                <li><a href="#" className="text-gray-500 hover:text-blue-600 transition-colors font-semibold">Features</a></li>
-                <li><a href="#" className="text-gray-500 hover:text-blue-600 transition-colors font-semibold">Dashboard</a></li>
-                <li><a href="#" className="text-gray-500 hover:text-blue-600 transition-colors font-semibold">Security</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-8">Company</h4>
-              <ul className="space-y-4">
-                <li><a href="#" className="text-gray-500 hover:text-blue-600 transition-colors font-semibold">About Us</a></li>
-                <li><a href="#" className="text-gray-500 hover:text-blue-600 transition-colors font-semibold">Legal</a></li>
-                <li><Link href="/login" className="text-gray-500 hover:text-blue-600 transition-colors font-semibold">Staff Login</Link></li>
-              </ul>
-            </div>
+            <p className="mt-4 max-w-md text-sm leading-7 text-slate-600">
+              A public front page that presents the product clearly, respects
+              the campus brand, and sends visitors to working routes.
+            </p>
           </div>
 
-          <div className="pt-12 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-gray-400 text-sm">&copy; 2024 CampusSync Systems Inc. All Rights Reserved.</p>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full" />
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Global Status Ready</span>
-              </div>
-            </div>
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-[0.26em] text-slate-500">
+              Explore
+            </h3>
+            <ul className="mt-4 space-y-3 text-sm font-medium text-slate-700">
+              <li>
+                <a
+                  href="#overview"
+                  className="transition-colors hover:text-sky-700"
+                >
+                  Overview
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#features"
+                  className="transition-colors hover:text-sky-700"
+                >
+                  Features
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#pages"
+                  className="transition-colors hover:text-sky-700"
+                >
+                  Live pages
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#workflow"
+                  className="transition-colors hover:text-sky-700"
+                >
+                  Workflow
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-[0.26em] text-slate-500">
+              Account
+            </h3>
+            <ul className="mt-4 space-y-3 text-sm font-medium text-slate-700">
+              <li>
+                <Link
+                  href="/dashboard"
+                  className="transition-colors hover:text-sky-700"
+                >
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/login"
+                  className="transition-colors hover:text-sky-700"
+                >
+                  Login
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/register"
+                  className="transition-colors hover:text-sky-700"
+                >
+                  Register
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-4 border-t border-slate-200 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            &copy; 2026 CampusSync. Built for modern institutional websites.
+          </p>
+          <div className="inline-flex items-center gap-2 font-semibold uppercase tracking-[0.24em] text-slate-400">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            Public site ready
           </div>
         </div>
       </footer>

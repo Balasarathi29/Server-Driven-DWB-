@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, use } from "react";
+import { useSearchParams } from "next/navigation";
 import { Editor, Frame, Element } from "@craftjs/core";
 import { ComponentMapper } from "@/components/renderer/ComponentMapper";
 import * as pagesApi from "@/lib/api/pages.api";
@@ -8,7 +9,7 @@ import * as publicPagesApi from "@/lib/api/public.api";
 import { useAuth } from "@/lib/context/AuthContext";
 import { toast } from "sonner";
 import { Container } from "@/components/builder-components/Container";
-import { Edit3 } from "lucide-react";
+import { ArrowLeft, Edit3 } from "lucide-react";
 import { Page } from "@/lib/types/page.types";
 import { SafeHTMLRenderer } from "@/components/editor/SafeHTMLRenderer";
 
@@ -21,12 +22,20 @@ interface PageProps {
 // script and sent to window.top so the full Next.js app navigates properly.
 const FullPageRenderer = ({ html }: { html: string }) => (
   <div className="fixed inset-0 w-screen h-screen bg-white overflow-hidden">
+    <a
+      href="/#pages"
+      className="fixed top-4 left-4 z-60 inline-flex items-center gap-2 rounded-xl bg-white/90 px-4 py-2 text-xs font-bold text-gray-700 shadow-md ring-1 ring-black/5 backdrop-blur hover:bg-white"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      Back to projects
+    </a>
     <SafeHTMLRenderer html={html} fullPage className="w-full h-full" />
   </div>
 );
 
 export default function DynamicPage({ params }: PageProps) {
   const { slug } = use(params);
+  const searchParams = useSearchParams();
   const { user, isLoading: authLoading } = useAuth();
   const [pageData, setPageData] = useState<any>(null);
   const [allPages, setAllPages] = useState<Page[]>([]);
@@ -39,6 +48,9 @@ export default function DynamicPage({ params }: PageProps) {
     .replace(/^\/+/, "")
     .replace(/\/+$/, "");
 
+  const scopedInstitutionId =
+    searchParams.get("institutionId")?.trim() || user?.institutionId;
+
   useEffect(() => {
     if (authLoading) return;
 
@@ -49,15 +61,11 @@ export default function DynamicPage({ params }: PageProps) {
 
     const fetchData = async () => {
       try {
-        const institutionId = user?.institutionId;
+        const institutionId = scopedInstitutionId;
         let data;
         let isPublicPage = true;
 
         try {
-          if (!institutionId) {
-            throw new Error("PROJECT_SCOPE_REQUIRED");
-          }
-
           data = await publicPagesApi.getPublishedPageBySlug(
             normalizedSlug,
             institutionId,
@@ -86,7 +94,7 @@ export default function DynamicPage({ params }: PageProps) {
         // Only fetch all pages for block-mode (HTML pages have their own navbar)
         if (!data?.useHtml) {
           const pages = isPublicPage
-            ? await pagesApi.getPublishedPages(undefined)
+            ? await publicPagesApi.getPublishedPages(institutionId)
             : await pagesApi.getAllPages();
           setAllPages(pages);
         }
@@ -100,7 +108,7 @@ export default function DynamicPage({ params }: PageProps) {
     };
 
     fetchData();
-  }, [slug, user, authLoading]);
+  }, [slug, scopedInstitutionId, user, authLoading]);
 
   if (loading || authLoading) {
     return (
@@ -192,6 +200,15 @@ export default function DynamicPage({ params }: PageProps) {
   // ── Public CraftJS block view ─────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-white">
+      <div className="sticky top-0 z-40 border-b border-gray-100 bg-white/90 px-4 py-3 backdrop-blur">
+        <a
+          href="/#pages"
+          className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to projects
+        </a>
+      </div>
       <Editor enabled={false} resolver={ComponentMapper}>
         <Frame
           data={

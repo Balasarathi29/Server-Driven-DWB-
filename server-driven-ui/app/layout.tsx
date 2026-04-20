@@ -11,8 +11,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AI Website Builder - Build Your Institution's Website",
-  description: "AI-powered website builder for educational institutions",
+  title: "CampusSync | Server-Driven University Websites",
+  description:
+    "A modern server-driven platform for university websites, campus pages, and institutional publishing.",
 };
 
 export default function RootLayout({

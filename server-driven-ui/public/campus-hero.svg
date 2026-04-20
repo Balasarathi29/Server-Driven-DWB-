@@ -1,0 +1,97 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="120" y1="80" x2="1080" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#06152F"/>
+      <stop offset="0.55" stop-color="#123B75"/>
+      <stop offset="1" stop-color="#2A7DE1"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="480" y1="200" x2="840" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#CFE8FF" stop-opacity="0.92"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="620" x2="1200" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A1630"/>
+      <stop offset="1" stop-color="#07101F"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#7DD3FC"/>
+      <stop offset="1" stop-color="#38BDF8"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="1200" height="900" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="30" stdDeviation="40" flood-color="#020817" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="900" rx="40" fill="url(#sky)"/>
+  <circle cx="980" cy="130" r="80" fill="#FDE68A" fill-opacity="0.9"/>
+  <circle cx="980" cy="130" r="122" fill="#FDE68A" fill-opacity="0.12"/>
+  <circle cx="220" cy="160" r="140" fill="#38BDF8" fill-opacity="0.14"/>
+  <circle cx="1030" cy="320" r="240" fill="#60A5FA" fill-opacity="0.12"/>
+
+  <g filter="url(#shadow)">
+    <path d="M120 730C260 640 350 620 470 640C600 664 722 748 892 748C1010 748 1095 714 1140 692V900H120V730Z" fill="url(#ground)"/>
+    <path d="M160 728C286 650 386 630 494 646C612 664 728 736 876 736C988 736 1069 708 1120 684V770C1058 800 978 828 876 828C706 828 604 746 484 724C370 702 286 724 160 802V728Z" fill="#0F2448"/>
+
+    <g opacity="0.95">
+      <rect x="188" y="364" width="186" height="316" rx="22" fill="#DBEAFE"/>
+      <rect x="218" y="330" width="126" height="46" rx="14" fill="#93C5FD"/>
+      <rect x="232" y="392" width="40" height="96" rx="8" fill="#8AB4F8"/>
+      <rect x="292" y="392" width="40" height="96" rx="8" fill="#8AB4F8"/>
+      <rect x="232" y="510" width="40" height="96" rx="8" fill="#8AB4F8"/>
+      <rect x="292" y="510" width="40" height="96" rx="8" fill="#8AB4F8"/>
+      <rect x="212" y="476" width="136" height="14" rx="7" fill="#60A5FA" fill-opacity="0.55"/>
+      <rect x="212" y="620" width="136" height="18" rx="9" fill="#1D4ED8" fill-opacity="0.55"/>
+    </g>
+
+    <g opacity="0.95">
+      <rect x="390" y="286" width="250" height="394" rx="28" fill="#EFF6FF"/>
+      <rect x="430" y="248" width="170" height="56" rx="18" fill="#A5F3FC"/>
+      <rect x="432" y="346" width="66" height="108" rx="10" fill="#7DD3FC"/>
+      <rect x="514" y="346" width="66" height="108" rx="10" fill="#7DD3FC"/>
+      <rect x="432" y="480" width="66" height="108" rx="10" fill="#7DD3FC"/>
+      <rect x="514" y="480" width="66" height="108" rx="10" fill="#7DD3FC"/>
+      <path d="M396 286L515 190L640 286H396Z" fill="#BFDBFE"/>
+      <rect x="470" y="624" width="90" height="56" rx="16" fill="#1D4ED8"/>
+    </g>
+
+    <g opacity="0.95">
+      <rect x="692" y="322" width="132" height="338" rx="20" fill="#E0F2FE"/>
+      <rect x="712" y="298" width="92" height="38" rx="12" fill="#38BDF8"/>
+      <rect x="726" y="370" width="18" height="76" rx="6" fill="#93C5FD"/>
+      <rect x="756" y="370" width="18" height="76" rx="6" fill="#93C5FD"/>
+      <rect x="786" y="370" width="18" height="76" rx="6" fill="#93C5FD"/>
+      <rect x="726" y="470" width="18" height="76" rx="6" fill="#93C5FD"/>
+      <rect x="756" y="470" width="18" height="76" rx="6" fill="#93C5FD"/>
+      <rect x="786" y="470" width="18" height="76" rx="6" fill="#93C5FD"/>
+      <rect x="726" y="570" width="18" height="76" rx="6" fill="#93C5FD"/>
+      <rect x="756" y="570" width="18" height="76" rx="6" fill="#93C5FD"/>
+      <rect x="786" y="570" width="18" height="76" rx="6" fill="#93C5FD"/>
+    </g>
+
+    <g opacity="0.95">
+      <rect x="852" y="394" width="164" height="266" rx="22" fill="#F8FAFC"/>
+      <rect x="878" y="362" width="112" height="44" rx="14" fill="#FDE68A"/>
+      <rect x="878" y="454" width="112" height="16" rx="8" fill="#CBD5E1"/>
+      <rect x="878" y="490" width="112" height="16" rx="8" fill="#CBD5E1"/>
+      <rect x="878" y="526" width="92" height="16" rx="8" fill="#CBD5E1"/>
+      <rect x="878" y="578" width="112" height="48" rx="16" fill="#0F172A"/>
+    </g>
+
+    <path d="M125 730C188 690 248 676 304 684C374 694 442 742 520 756C642 776 720 714 818 706C916 698 988 730 1080 694C1110 683 1128 673 1140 666V900H125V730Z" fill="#020617" fill-opacity="0.42"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="128" y="120" width="288" height="138" rx="30" fill="white" fill-opacity="0.9"/>
+    <text x="164" y="178" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700">CampusSync</text>
+    <text x="164" y="212" fill="#334155" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500">Server-driven pages for modern institutions.</text>
+    <rect x="164" y="236" width="108" height="16" rx="8" fill="url(#accent)"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="846" y="120" width="214" height="132" rx="28" fill="white" fill-opacity="0.9"/>
+    <text x="878" y="172" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">Live publish</text>
+    <text x="878" y="205" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500">No rebuilds, no delays</text>
+    <circle cx="910" cy="236" r="10" fill="#22C55E"/>
+    <text x="930" y="242" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700">Ready now</text>
+  </g>
+</svg>
