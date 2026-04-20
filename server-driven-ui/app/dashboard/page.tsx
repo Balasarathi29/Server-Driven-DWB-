@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/context/AuthContext";
 import * as pagesApi from "@/lib/api/pages.api";
@@ -562,10 +562,14 @@ const NewPageModal = ({
   isOpen,
   onClose,
   onCreate,
+  initialName,
+  initialSlug,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (name: string, slug: string, mode: "canvas" | "ai") => void;
+  initialName?: string;
+  initialSlug?: string;
 }) => {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -581,6 +585,16 @@ const NewPageModal = ({
       );
     }
   }, [name]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (initialName) {
+      setName(initialName);
+    }
+    if (initialSlug) {
+      setSlug(initialSlug);
+    }
+  }, [isOpen, initialName, initialSlug]);
 
   if (!isOpen) return null;
 
@@ -858,6 +872,27 @@ export default function DashboardPage() {
   const [runningBenchmark, setRunningBenchmark] = useState(false);
   const actionsMenuRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [prefillName, setPrefillName] = useState("");
+  const [prefillSlug, setPrefillSlug] = useState("");
+  const [hasAppliedQueryPrefill, setHasAppliedQueryPrefill] = useState(false);
+
+  useEffect(() => {
+    const createMode = searchParams.get("create");
+    if (createMode !== "1" || hasAppliedQueryPrefill) return;
+
+    const rawSlug = (searchParams.get("slug") || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+    const rawName = (searchParams.get("name") || "").trim();
+
+    setPrefillSlug(rawSlug);
+    setPrefillName(rawName);
+    setShowNewPageModal(true);
+    setHasAppliedQueryPrefill(true);
+  }, [searchParams, hasAppliedQueryPrefill]);
 
   useEffect(() => {
     if (!isLoading && !user) router.push("/login");
@@ -1401,8 +1436,14 @@ export default function DashboardPage() {
 
       <NewPageModal
         isOpen={showNewPageModal}
-        onClose={() => setShowNewPageModal(false)}
+        onClose={() => {
+          setShowNewPageModal(false);
+          setPrefillName("");
+          setPrefillSlug("");
+        }}
         onCreate={handleCreatePage}
+        initialName={prefillName}
+        initialSlug={prefillSlug}
       />
 
       <RenamePageModal

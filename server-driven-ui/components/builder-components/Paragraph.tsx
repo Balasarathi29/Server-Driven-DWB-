@@ -13,6 +13,11 @@ interface ParagraphProps {
   align?: "left" | "center" | "right" | "justify";
   fontWeight?: "normal" | "bold" | "semibold";
   lineHeight?: string;
+  fontFamily?: string;
+  backgroundColor?: string;
+  borderRadius?: string;
+  padding?: string;
+  margin?: string;
   positionMode?: "flow" | "absolute";
   x?: string;
   y?: string;
@@ -27,6 +32,11 @@ export const Paragraph = ({
   align = "left",
   fontWeight = "normal",
   lineHeight = "1.6",
+  fontFamily = "inherit",
+  backgroundColor = "transparent",
+  borderRadius = "0px",
+  padding = "0px",
+  margin = "0px",
   positionMode = "flow",
   x = "0px",
   y = "0px",
@@ -53,9 +63,13 @@ export const Paragraph = ({
           font-size: ${fontSize};
           width: ${width};
           font-weight: ${fontWeightMap[fontWeight]};
+          font-family: ${fontFamily};
           text-align: ${align};
           line-height: ${lineHeight};
-          margin: 0;
+          background-color: ${backgroundColor};
+          border-radius: ${borderRadius};
+          padding: ${padding};
+          margin: ${margin};
           position: ${positionMode === "absolute" ? "absolute" : "relative"};
           left: ${positionMode === "absolute" ? x : "auto"};
           top: ${positionMode === "absolute" ? y : "auto"};
@@ -166,6 +180,30 @@ export const ParagraphSettings = () => {
       </div>
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+          Line Height
+        </label>
+        <input
+          value={props.lineHeight ?? "1.6"}
+          onChange={(e) => setProp((p: any) => (p.lineHeight = e.target.value))}
+          className="w-full px-3 py-2 border rounded text-sm"
+          title="Line height"
+          placeholder="1.6"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+          Font Family
+        </label>
+        <input
+          value={props.fontFamily ?? "inherit"}
+          onChange={(e) => setProp((p: any) => (p.fontFamily = e.target.value))}
+          className="w-full px-3 py-2 border rounded text-sm"
+          title="Paragraph font family"
+          placeholder="inherit, Inter, serif"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
           Position Mode
         </label>
         <select
@@ -179,6 +217,66 @@ export const ParagraphSettings = () => {
           <option value="flow">Flow</option>
           <option value="absolute">Absolute</option>
         </select>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Background
+          </label>
+          <input
+            type="color"
+            value={
+              props.backgroundColor === "transparent"
+                ? "#ffffff"
+                : (props.backgroundColor ?? "#ffffff")
+            }
+            onChange={(e) =>
+              setProp((p: any) => (p.backgroundColor = e.target.value))
+            }
+            className="w-full h-10 border rounded cursor-pointer"
+            title="Paragraph background color"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Radius
+          </label>
+          <input
+            value={props.borderRadius ?? "0px"}
+            onChange={(e) =>
+              setProp((p: any) => (p.borderRadius = e.target.value))
+            }
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Paragraph border radius"
+            placeholder="0px"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Padding
+          </label>
+          <input
+            value={props.padding ?? "0px"}
+            onChange={(e) => setProp((p: any) => (p.padding = e.target.value))}
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Paragraph padding"
+            placeholder="0px"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Margin
+          </label>
+          <input
+            value={props.margin ?? "0px"}
+            onChange={(e) => setProp((p: any) => (p.margin = e.target.value))}
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Paragraph margin"
+            placeholder="0px"
+          />
+        </div>
       </div>
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1.5">
@@ -235,6 +333,11 @@ Paragraph.craft = {
     align: "left",
     fontWeight: "normal",
     lineHeight: "1.6",
+    fontFamily: "inherit",
+    backgroundColor: "transparent",
+    borderRadius: "0px",
+    padding: "0px",
+    margin: "0px",
     positionMode: "flow",
     x: "0px",
     y: "0px",

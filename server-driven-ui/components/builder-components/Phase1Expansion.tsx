@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { useNode } from "@craftjs/core";
+import { useEditor, useNode } from "@craftjs/core";
+import { useRouter } from "next/navigation";
 
 type BaseProps = {
   title?: string;
@@ -1386,10 +1387,15 @@ export const Navbar = ({
   iconPosition = "left",
   fontFamily = "inherit",
   textStyle = "normal",
-  linkAction = "disabled",
+  linkAction = "navigate",
   sticky = false,
   collapseAt = 768,
 }: NavbarProps) => {
+  const router = useRouter();
+  const { enabled: isEditorEnabled } = useEditor((state) => ({
+    enabled: state.options.enabled,
+  }));
+
   const {
     connectors: { connect, drag },
   } = useNode();
@@ -1397,6 +1403,9 @@ export const Navbar = ({
   const [isCompact, setIsCompact] = React.useState(false);
   const navRef = React.useRef<HTMLElement | null>(null);
   const links = parseNavbarLinks(navLinks);
+
+  const isInternalHref = (href: string) =>
+    href.startsWith("/") && !href.startsWith("//");
 
   React.useEffect(() => {
     const el = navRef.current;
@@ -1472,14 +1481,29 @@ export const Navbar = ({
           <div className="flex items-center gap-5">
             {links.map((link, idx) => (
               <a
-                key={`${link.label}-${idx}`}
+                key={`desktop-link-${idx}`}
                 href={link.href}
                 target={link.target}
                 rel={
                   link.target === "_blank" ? "noopener noreferrer" : undefined
                 }
                 onClick={(e) => {
-                  if (linkAction !== "navigate") e.preventDefault();
+                  if (isEditorEnabled) {
+                    e.preventDefault();
+                    return;
+                  }
+
+                  if (
+                    link.target === "_self" &&
+                    isInternalHref(link.href) &&
+                    !e.metaKey &&
+                    !e.ctrlKey &&
+                    !e.shiftKey &&
+                    !e.altKey
+                  ) {
+                    e.preventDefault();
+                    router.push(link.href);
+                  }
                 }}
                 className="text-sm font-medium opacity-90 hover:opacity-100 hover:underline"
                 style={{ color: textColor }}
@@ -1497,12 +1521,28 @@ export const Navbar = ({
         <div className="rounded-lg border border-white/20 bg-black/15 backdrop-blur-sm p-2 flex flex-col gap-1">
           {links.map((link, idx) => (
             <a
-              key={`mobile-${link.label}-${idx}`}
+              key={`mobile-link-${idx}`}
               href={link.href}
               target={link.target}
               rel={link.target === "_blank" ? "noopener noreferrer" : undefined}
               onClick={(e) => {
-                if (linkAction !== "navigate") e.preventDefault();
+                if (isEditorEnabled) {
+                  e.preventDefault();
+                  setMobileOpen(false);
+                  return;
+                }
+
+                if (
+                  link.target === "_self" &&
+                  isInternalHref(link.href) &&
+                  !e.metaKey &&
+                  !e.ctrlKey &&
+                  !e.shiftKey &&
+                  !e.altKey
+                ) {
+                  e.preventDefault();
+                  router.push(link.href);
+                }
                 setMobileOpen(false);
               }}
               className="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10"
@@ -1597,7 +1637,7 @@ const NavbarSettings = () => {
         <div className="space-y-2">
           {links.map((link, idx) => (
             <div
-              key={`${link.label}-${idx}`}
+              key={`settings-link-${idx}`}
               className="border rounded p-2 space-y-2 bg-slate-50"
             >
               <div className="grid grid-cols-2 gap-2">
@@ -1736,7 +1776,7 @@ const NavbarSettings = () => {
             Link Action
           </label>
           <select
-            value={props.linkAction ?? "disabled"}
+            value={props.linkAction ?? "navigate"}
             onChange={(e) =>
               setProp(
                 (p: NavbarProps) =>
@@ -1863,7 +1903,7 @@ const NavbarSettings = () => {
     iconPosition: "left",
     fontFamily: "inherit",
     textStyle: "normal",
-    linkAction: "disabled",
+    linkAction: "navigate",
     sticky: false,
     collapseAt: 768,
   },

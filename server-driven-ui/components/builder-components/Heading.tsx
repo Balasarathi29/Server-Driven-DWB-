@@ -12,6 +12,13 @@ interface HeadingProps {
   align?: "left" | "center" | "right";
   fontSize?: string;
   fontWeight?: string;
+  lineHeight?: string;
+  fontFamily?: string;
+  width?: string;
+  backgroundColor?: string;
+  borderRadius?: string;
+  padding?: string;
+  margin?: string;
   positionMode?: "flow" | "absolute";
   x?: string;
   y?: string;
@@ -43,6 +50,13 @@ export const Heading = ({
   align = "left",
   fontSize,
   fontWeight,
+  lineHeight = "1.2",
+  fontFamily = "inherit",
+  width = "100%",
+  backgroundColor = "transparent",
+  borderRadius = "0px",
+  padding = "0px",
+  margin = "0px",
   positionMode = "flow",
   x = "0px",
   y = "0px",
@@ -64,9 +78,14 @@ export const Heading = ({
           color: ${color};
           font-size: ${size};
           font-weight: ${weight};
+          font-family: ${fontFamily};
           text-align: ${align};
-          line-height: 1.2;
-          margin: 0;
+          line-height: ${lineHeight};
+          width: ${width};
+          background-color: ${backgroundColor};
+          border-radius: ${borderRadius};
+          padding: ${padding};
+          margin: ${margin};
           position: ${positionMode === "absolute" ? "absolute" : "relative"};
           left: ${positionMode === "absolute" ? x : "auto"};
           top: ${positionMode === "absolute" ? y : "auto"};
@@ -204,6 +223,72 @@ export const HeadingSettings = () => {
       </div>
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+          Font Size
+        </label>
+        <input
+          value={props.fontSize ?? levelSizes[props.level ?? "h2"]}
+          onChange={(e) => setProp((p: any) => (p.fontSize = e.target.value))}
+          className="w-full px-3 py-2 border rounded text-sm"
+          title="Heading font size"
+          placeholder="48px"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+          Font Weight
+        </label>
+        <select
+          value={props.fontWeight ?? levelWeights[props.level ?? "h2"]}
+          onChange={(e) => setProp((p: any) => (p.fontWeight = e.target.value))}
+          className="w-full px-3 py-2 border rounded text-sm"
+          title="Heading font weight"
+        >
+          <option value="400">400</option>
+          <option value="500">500</option>
+          <option value="600">600</option>
+          <option value="700">700</option>
+          <option value="800">800</option>
+          <option value="900">900</option>
+        </select>
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+          Font Family
+        </label>
+        <input
+          value={props.fontFamily ?? "inherit"}
+          onChange={(e) => setProp((p: any) => (p.fontFamily = e.target.value))}
+          className="w-full px-3 py-2 border rounded text-sm"
+          title="Heading font family"
+          placeholder="inherit, Inter, serif"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+          Line Height
+        </label>
+        <input
+          value={props.lineHeight ?? "1.2"}
+          onChange={(e) => setProp((p: any) => (p.lineHeight = e.target.value))}
+          className="w-full px-3 py-2 border rounded text-sm"
+          title="Heading line height"
+          placeholder="1.2"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+          Width
+        </label>
+        <input
+          value={props.width ?? "100%"}
+          onChange={(e) => setProp((p: any) => (p.width = e.target.value))}
+          className="w-full px-3 py-2 border rounded text-sm"
+          title="Heading width"
+          placeholder="100%"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
           Color
         </label>
         <input
@@ -213,6 +298,66 @@ export const HeadingSettings = () => {
           className="w-full h-10 border rounded cursor-pointer"
           title="Text color"
         />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Background
+          </label>
+          <input
+            type="color"
+            value={
+              props.backgroundColor === "transparent"
+                ? "#ffffff"
+                : (props.backgroundColor ?? "#ffffff")
+            }
+            onChange={(e) =>
+              setProp((p: any) => (p.backgroundColor = e.target.value))
+            }
+            className="w-full h-10 border rounded cursor-pointer"
+            title="Heading background color"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Radius
+          </label>
+          <input
+            value={props.borderRadius ?? "0px"}
+            onChange={(e) =>
+              setProp((p: any) => (p.borderRadius = e.target.value))
+            }
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Heading border radius"
+            placeholder="0px"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Padding
+          </label>
+          <input
+            value={props.padding ?? "0px"}
+            onChange={(e) => setProp((p: any) => (p.padding = e.target.value))}
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Heading padding"
+            placeholder="0px"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Margin
+          </label>
+          <input
+            value={props.margin ?? "0px"}
+            onChange={(e) => setProp((p: any) => (p.margin = e.target.value))}
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Heading margin"
+            placeholder="0px"
+          />
+        </div>
       </div>
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1.5">
@@ -282,6 +427,13 @@ Heading.craft = {
     level: "h2",
     color: "#000000",
     align: "left",
+    lineHeight: "1.2",
+    fontFamily: "inherit",
+    width: "100%",
+    backgroundColor: "transparent",
+    borderRadius: "0px",
+    padding: "0px",
+    margin: "0px",
     positionMode: "flow",
     x: "0px",
     y: "0px",

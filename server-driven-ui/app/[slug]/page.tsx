@@ -48,6 +48,13 @@ export default function DynamicPage({ params }: PageProps) {
     .replace(/^\/+/, "")
     .replace(/\/+$/, "");
 
+  const suggestedName = normalizedSlug
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+  const createPageHref = `/dashboard?create=1&slug=${encodeURIComponent(normalizedSlug)}&name=${encodeURIComponent(suggestedName || normalizedSlug || "New Page")}`;
+
   const scopedInstitutionId =
     searchParams.get("institutionId")?.trim() || user?.institutionId;
 
@@ -99,9 +106,22 @@ export default function DynamicPage({ params }: PageProps) {
           setAllPages(pages);
         }
       } catch (error) {
-        console.error("Failed to fetch page:", error);
+        const status = (error as any)?.response?.status;
+        const message =
+          (error as any)?.response?.data?.error?.message ||
+          (error as any)?.response?.data?.message ||
+          (error as any)?.message ||
+          "";
+        const isExpectedMissing =
+          status === 404 ||
+          status === 400 ||
+          message.includes("PROJECT_SCOPE_REQUIRED");
+
+        if (!isExpectedMissing) {
+          console.error("Failed to fetch page:", error);
+          toast.error("Unable to load page right now");
+        }
         setIsProjectMissingPage(true);
-        toast.error("Page not found in this project");
       } finally {
         setLoading(false);
       }
@@ -152,10 +172,10 @@ export default function DynamicPage({ params }: PageProps) {
             </a>
             {canCreate && (
               <a
-                href="/dashboard"
+                href={createPageHref}
                 className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold inline-flex items-center"
               >
-                Create This Page
+                Create New Design
               </a>
             )}
           </div>

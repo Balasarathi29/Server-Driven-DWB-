@@ -44,7 +44,10 @@ export const Video = ({
   const {
     id,
     connectors: { connect, drag },
-  } = useNode((node) => ({ id: node.id }));
+    isSelected,
+  } = useNode((node) => ({ id: node.id, isSelected: node.events.selected }));
+
+  const iframeInteractive = !enabled || Boolean(isSelected);
 
   const videoClass = `sdui-video-${id.replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
@@ -98,7 +101,7 @@ export const Video = ({
           width: 100%;
           height: 100%;
           border: 0;
-          pointer-events: ${enabled ? "none" : "auto"};
+          pointer-events: ${iframeInteractive ? "auto" : "none"};
         }
       `}</style>
 
@@ -115,6 +118,11 @@ export const Video = ({
             Add a video URL in settings to display the video
           </div>
         )}
+        {enabled && hasVideo && !iframeInteractive ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/15 text-white text-xs font-semibold pointer-events-none select-none">
+            Select component, then tap play
+          </div>
+        ) : null}
       </div>
     </div>
   );

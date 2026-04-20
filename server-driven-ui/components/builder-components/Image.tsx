@@ -12,6 +12,9 @@ interface ImageProps {
   objectFit?: "cover" | "contain" | "fill";
   borderRadius?: string;
   caption?: string;
+  margin?: string;
+  padding?: string;
+  backgroundColor?: string;
   positionMode?: "flow" | "absolute";
   x?: string;
   y?: string;
@@ -26,6 +29,9 @@ export const Image = ({
   objectFit = "cover",
   borderRadius = "16px",
   caption = "",
+  margin = "0px",
+  padding = "0px",
+  backgroundColor = "transparent",
   positionMode = "flow",
   x = "0px",
   y = "0px",
@@ -49,6 +55,9 @@ export const Image = ({
           display: block;
         }
         .${imageClass}-wrapper {
+          margin: ${margin};
+          padding: ${padding};
+          background-color: ${backgroundColor};
           position: ${positionMode === "absolute" ? "absolute" : "relative"};
           left: ${positionMode === "absolute" ? x : "auto"};
           top: ${positionMode === "absolute" ? y : "auto"};
@@ -116,6 +125,109 @@ export const ImageSettings = () => {
           className="w-full px-3 py-2 border rounded text-sm"
           title="Image caption"
           placeholder="Optional caption"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Width
+          </label>
+          <input
+            value={props.width ?? "100%"}
+            onChange={(e) => setProp((p: any) => (p.width = e.target.value))}
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Image width"
+            placeholder="100%"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Height
+          </label>
+          <input
+            value={props.height ?? "320px"}
+            onChange={(e) => setProp((p: any) => (p.height = e.target.value))}
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Image height"
+            placeholder="320px"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Object Fit
+          </label>
+          <select
+            value={props.objectFit ?? "cover"}
+            onChange={(e) =>
+              setProp((p: any) => (p.objectFit = e.target.value))
+            }
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Image fit mode"
+          >
+            <option value="cover">Cover</option>
+            <option value="contain">Contain</option>
+            <option value="fill">Fill</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Border Radius
+          </label>
+          <input
+            value={props.borderRadius ?? "16px"}
+            onChange={(e) =>
+              setProp((p: any) => (p.borderRadius = e.target.value))
+            }
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Image border radius"
+            placeholder="16px"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Padding
+          </label>
+          <input
+            value={props.padding ?? "0px"}
+            onChange={(e) => setProp((p: any) => (p.padding = e.target.value))}
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Image wrapper padding"
+            placeholder="0px"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Margin
+          </label>
+          <input
+            value={props.margin ?? "0px"}
+            onChange={(e) => setProp((p: any) => (p.margin = e.target.value))}
+            className="w-full px-3 py-2 border rounded text-sm"
+            title="Image wrapper margin"
+            placeholder="0px"
+          />
+        </div>
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+          Wrapper Background
+        </label>
+        <input
+          type="color"
+          value={
+            props.backgroundColor === "transparent"
+              ? "#ffffff"
+              : (props.backgroundColor ?? "#ffffff")
+          }
+          onChange={(e) =>
+            setProp((p: any) => (p.backgroundColor = e.target.value))
+          }
+          className="w-full h-10 border rounded cursor-pointer"
+          title="Image wrapper background"
         />
       </div>
       <div>
@@ -189,6 +301,9 @@ Image.craft = {
     objectFit: "cover",
     borderRadius: "16px",
     caption: "",
+    margin: "0px",
+    padding: "0px",
+    backgroundColor: "transparent",
     positionMode: "flow",
     x: "0px",
     y: "0px",
