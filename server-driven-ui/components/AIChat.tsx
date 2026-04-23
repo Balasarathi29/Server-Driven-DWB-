@@ -49,9 +49,25 @@ const shouldForceEmptyTextComponent = (message: string, type: unknown) => {
     return false;
   }
 
-  return /\b(empty|blank|without|no\s+text|no\s+content|do\s*not\s+write|don't\s+write|only\s+component|component\s+only)\b/i.test(
+  const explicitBlankIntent = /\b(empty|blank|without|no\s+text|no\s+content|do\s*not\s+write|don't\s+write|only\s+component|component\s+only|only\s+add\s+text\s+component|text\s+component\s+only)\b/i.test(
     normalizedMessage,
   );
+
+  if (explicitBlankIntent) {
+    return true;
+  }
+
+  const explicitContentIntent =
+    /\b(write|generate|create|compose|draft)\b/i.test(normalizedMessage) &&
+    /\b(paragraph|article|copy|content|bio|description)\b/i.test(
+      normalizedMessage,
+    );
+
+  if (explicitContentIntent) {
+    return false;
+  }
+
+  return true;
 };
 
 const buildEmptyTextProps = (input: Record<string, any> = {}) => ({

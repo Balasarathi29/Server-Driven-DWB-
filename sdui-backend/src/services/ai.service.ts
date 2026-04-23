@@ -104,6 +104,89 @@ export class AIService {
     }
   }
 
+  private isTextLikeComponentType(type: unknown): boolean {
+    const normalized = String(type || "").toLowerCase();
+    return (
+      normalized.includes("text") ||
+      normalized.includes("paragraph") ||
+      normalized === "heading"
+    );
+  }
+
+  private hasMeaningfulTextProps(props: Record<string, unknown>): boolean {
+    const candidates = [
+      props.content,
+      props.text,
+      props.description,
+      props.body,
+      props.title,
+      props.subtitle,
+      props.children,
+    ];
+
+    return candidates.some(
+      (value) =>
+        typeof value === "string" &&
+        value.trim().length >= 20 &&
+        !/enter your text here/i.test(value),
+    );
+  }
+
+  private shouldGenerateTextComponentContent(command: string): boolean {
+    const normalized = command.toLowerCase();
+
+    if (
+      /\b(empty|blank|without\s+text|no\s+text|no\s+content|do\s*not\s+write|don't\s+write|only\s+add\s+text\s+component|only\s+text\s+component|text\s+component\s+only|component\s+only)\b/i.test(
+        normalized,
+      )
+    ) {
+      return false;
+    }
+
+    return (
+      /\b(write|generate|create|compose|draft)\b/i.test(normalized) &&
+      /\b(paragraph|article|copy|content|bio|description|summary|text)\b/i.test(
+        normalized,
+      )
+    );
+  }
+
+  private extractTopicFromCommand(command: string): string {
+    const lowered = command.toLowerCase();
+    const aboutMatch = lowered.match(
+      /(?:about|on|regarding|for)\s+([a-z0-9\s\-+,.'&/]{3,120})/i,
+    );
+
+    if (aboutMatch?.[1]) {
+      return aboutMatch[1]
+        .replace(/\b(at|in|to|of|the\s+page|bottom|top)\b/gi, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    return "the requested topic";
+  }
+
+  private async generateTextForComponent(
+    command: string,
+    requestedModel?: string,
+  ): Promise<string> {
+    const topic = this.extractTopicFromCommand(command);
+    const { model, provider } = this.resolveModel(requestedModel);
+
+    const prompt = `Write one clear paragraph (80-120 words) for a website text section about ${topic}.
+Requirements:
+- Output plain text only (no JSON, no markdown)
+- Keep it engaging, specific, and readable
+- Do not include headings or bullet points`;
+
+    const text = await this.callModel(provider, model, prompt, false);
+    return text
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   private normalizeTemplateType(
     templateType: unknown,
     nameHint: string = "",
@@ -291,6 +374,37 @@ Only respond with valid JSON, no explanations.`;
           /\b(at\s+end|at\s+bottom|to\s+the\s+end|last)\b/i.test(commandText)
         ) {
           jsonOperation.component.position = "append";
+        }
+
+        if (this.isTextLikeComponentType(jsonOperation.component.type)) {
+          const componentProps = (jsonOperation.component.props || {}) as Record<
+            string,
+            unknown
+          >;
+
+          if (
+            this.shouldGenerateTextComponentContent(command) &&
+            !this.hasMeaningfulTextProps(componentProps)
+          ) {
+            try {
+              const generatedText = await this.generateTextForComponent(
+                command,
+                requestedModel,
+              );
+
+              jsonOperation.component.props = {
+                ...componentProps,
+                content: generatedText,
+                text: generatedText,
+                description: generatedText,
+              };
+            } catch (generationError) {
+              console.warn(
+                "Failed to auto-generate text component content:",
+                generationError,
+              );
+            }
+          }
         }
       }
 
@@ -599,6 +713,30 @@ Only return valid JSON. Do not include markdown code blocks or explanations.`;
         true,
       );
       const componentData = JSON.parse(responseText);
+
+      if (
+        this.isTextLikeComponentType(componentData?.type) &&
+        this.shouldGenerateTextComponentContent(prompt)
+      ) {
+        const componentProps = (componentData.props || {}) as Record<
+          string,
+          unknown
+        >;
+
+        if (!this.hasMeaningfulTextProps(componentProps)) {
+          const generatedText = await this.generateTextForComponent(
+            prompt,
+            requestedModel,
+          );
+
+          componentData.props = {
+            ...componentProps,
+            content: generatedText,
+            text: generatedText,
+            description: generatedText,
+          };
+        }
+      }
 
       return {
         success: true,
