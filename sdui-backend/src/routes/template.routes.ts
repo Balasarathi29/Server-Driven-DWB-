@@ -1,194 +1,180 @@
-import { Router } from 'express';
-import { body, param, query } from 'express-validator';
-import templateController from '../controllers/template.controller';
-import { validate } from '../middleware/validate.middleware';
-import { authenticate } from '../middleware/auth.middleware';
-import { authorize } from '../middleware/rbac.middleware';
+import { Router } from "express";
+import { body, param, query } from "express-validator";
+import templateController from "../controllers/template.controller";
+import { validate } from "../middleware/validate.middleware";
+import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
 
 // Get all templates (public)
 router.get(
-  '/',
-  validate([
-    query('category').optional().trim(),
-  ]),
-  templateController.getAllTemplates
+  "/",
+  validate([query("category").optional().trim()]),
+  templateController.getAllTemplates,
 );
 
 // Search templates
 router.get(
-  '/search',
-  validate([
-    query('q').notEmpty().withMessage('Search query is required'),
-  ]),
-  templateController.searchTemplates
+  "/search",
+  validate([query("q").notEmpty().withMessage("Search query is required")]),
+  templateController.searchTemplates,
 );
 
 // Get trending templates
 router.get(
-  '/trending',
-  validate([
-    query('limit').optional().isInt({ min: 1, max: 100 }),
-  ]),
-  templateController.getTrendingTemplates
+  "/trending",
+  validate([query("limit").optional().isInt({ min: 1, max: 100 })]),
+  templateController.getTrendingTemplates,
 );
 
 // Get top-rated templates
 router.get(
-  '/top-rated',
-  validate([
-    query('limit').optional().isInt({ min: 1, max: 100 }),
-  ]),
-  templateController.getTopRatedTemplates
+  "/top-rated",
+  validate([query("limit").optional().isInt({ min: 1, max: 100 })]),
+  templateController.getTopRatedTemplates,
 );
 
 // Get user's custom templates
-router.get(
-  '/my-templates',
-  authenticate,
-  templateController.getUserTemplates
-);
+router.get("/my-templates", authenticate, templateController.getUserTemplates);
 
 // Get template by ID (public)
 router.get(
-  '/:id',
-  validate([
-    param('id').isMongoId().withMessage('Invalid template ID'),
-  ]),
-  templateController.getTemplate
+  "/:id",
+  validate([param("id").isMongoId().withMessage("Invalid template ID")]),
+  templateController.getTemplate,
 );
 
 // Get template ratings
 router.get(
-  '/:id/ratings',
-  validate([
-    param('id').isMongoId().withMessage('Invalid template ID'),
-  ]),
-  templateController.getTemplateRatings
+  "/:id/ratings",
+  validate([param("id").isMongoId().withMessage("Invalid template ID")]),
+  templateController.getTemplateRatings,
 );
 
 // Get template shares
 router.get(
-  '/:id/shares',
+  "/:id/shares",
   authenticate,
-  validate([
-    param('id').isMongoId().withMessage('Invalid template ID'),
-  ]),
-  templateController.getTemplateShares
+  validate([param("id").isMongoId().withMessage("Invalid template ID")]),
+  templateController.getTemplateShares,
 );
 
 // Get template analytics
 router.get(
-  '/:id/analytics',
+  "/:id/analytics",
   authenticate,
   validate([
-    param('id').isMongoId().withMessage('Invalid template ID'),
-    query('days').optional().isInt({ min: 1, max: 365 }),
+    param("id").isMongoId().withMessage("Invalid template ID"),
+    query("days").optional().isInt({ min: 1, max: 365 }),
   ]),
-  templateController.getTemplateAnalytics
+  templateController.getTemplateAnalytics,
 );
 
 // Get shared template by share code
 router.get(
-  '/share/:shareCode',
+  "/share/:shareCode",
   validate([
-    param('shareCode').notEmpty().withMessage('Share code is required'),
+    param("shareCode").notEmpty().withMessage("Share code is required"),
   ]),
-  templateController.getSharedTemplate
+  templateController.getSharedTemplate,
 );
 
 // Create template (authenticated)
 router.post(
-  '/',
+  "/",
   authenticate,
   validate([
-    body('name').trim().notEmpty().withMessage('Name is required'),
-    body('description').optional().trim(),
-    body('category')
-      .isIn(['homepage', 'about', 'courses', 'departments', 'contact', 'blog', 'events', 'custom'])
-      .withMessage('Invalid category'),
-    body('thumbnail').optional().trim(),
-    body('jsonConfig').isObject().withMessage('JSON config is required'),
-    body('isPublic').optional().isBoolean(),
-    body('tags').optional().isArray(),
+    body("name").trim().notEmpty().withMessage("Name is required"),
+    body("description").optional().trim(),
+    body("category")
+      .isIn([
+        "homepage",
+        "about",
+        "courses",
+        "departments",
+        "contact",
+        "blog",
+        "events",
+        "custom",
+      ])
+      .withMessage("Invalid category"),
+    body("thumbnail").optional().trim(),
+    body("jsonConfig").isObject().withMessage("JSON config is required"),
+    body("isPublic").optional().isBoolean(),
+    body("tags").optional().isArray(),
   ]),
-  templateController.createTemplate
+  templateController.createTemplate,
 );
 
 // Update template (authenticated)
 router.put(
-  '/:id',
+  "/:id",
   authenticate,
   validate([
-    param('id').isMongoId().withMessage('Invalid template ID'),
-    body('name').optional().trim(),
-    body('description').optional().trim(),
-    body('thumbnail').optional().trim(),
-    body('jsonConfig').optional().isObject(),
-    body('isPublic').optional().isBoolean(),
-    body('tags').optional().isArray(),
+    param("id").isMongoId().withMessage("Invalid template ID"),
+    body("name").optional().trim(),
+    body("description").optional().trim(),
+    body("thumbnail").optional().trim(),
+    body("jsonConfig").optional().isObject(),
+    body("isPublic").optional().isBoolean(),
+    body("tags").optional().isArray(),
   ]),
-  templateController.updateTemplate
+  templateController.updateTemplate,
 );
 
 // Delete template (authenticated)
 router.delete(
-  '/:id',
+  "/:id",
   authenticate,
-  validate([
-    param('id').isMongoId().withMessage('Invalid template ID'),
-  ]),
-  templateController.deleteTemplate
+  validate([param("id").isMongoId().withMessage("Invalid template ID")]),
+  templateController.deleteTemplate,
 );
 
 // Duplicate template
 router.post(
-  '/:id/duplicate',
+  "/:id/duplicate",
   authenticate,
   validate([
-    param('id').isMongoId().withMessage('Invalid template ID'),
-    body('name').optional().trim(),
+    param("id").isMongoId().withMessage("Invalid template ID"),
+    body("name").optional().trim(),
   ]),
-  templateController.duplicateTemplate
+  templateController.duplicateTemplate,
 );
 
 // Apply template
 router.post(
-  '/:id/apply',
-  validate([
-    param('id').isMongoId().withMessage('Invalid template ID'),
-  ]),
-  templateController.applyTemplate
+  "/:id/apply",
+  validate([param("id").isMongoId().withMessage("Invalid template ID")]),
+  templateController.applyTemplate,
 );
 
 // Rate template
 router.post(
-  '/:id/rate',
+  "/:id/rate",
   authenticate,
   validate([
-    param('id').isMongoId().withMessage('Invalid template ID'),
-    body('rating')
+    param("id").isMongoId().withMessage("Invalid template ID"),
+    body("rating")
       .isInt({ min: 1, max: 5 })
-      .withMessage('Rating must be between 1 and 5'),
-    body('review').optional().trim().isLength({ max: 500 }),
+      .withMessage("Rating must be between 1 and 5"),
+    body("review").optional().trim().isLength({ max: 500 }),
   ]),
-  templateController.rateTemplate
+  templateController.rateTemplate,
 );
 
 // Share template
 router.post(
-  '/:id/share',
+  "/:id/share",
   authenticate,
   validate([
-    param('id').isMongoId().withMessage('Invalid template ID'),
-    body('sharedWith').isArray().withMessage('sharedWith must be an array'),
-    body('accessLevel')
-      .isIn(['view', 'use', 'edit'])
-      .withMessage('Invalid access level'),
-    body('expiresAt').optional().isISO8601(),
+    param("id").isMongoId().withMessage("Invalid template ID"),
+    body("sharedWith").isArray().withMessage("sharedWith must be an array"),
+    body("accessLevel")
+      .isIn(["view", "use", "edit"])
+      .withMessage("Invalid access level"),
+    body("expiresAt").optional().isISO8601(),
   ]),
-  templateController.shareTemplate
+  templateController.shareTemplate,
 );
 
 export default router;

@@ -1,17 +1,14 @@
-import { Request, Response } from 'express';
-import templateService from '../services/template.service';
-import { sendSuccess, sendError } from '../utils/response.util';
-import { asyncHandler } from '../middleware/error.middleware';
+import { Request, Response } from "express";
+import templateService from "../services/template.service";
+import { sendSuccess, sendError } from "../utils/response.util";
+import { asyncHandler } from "../middleware/error.middleware";
 
 export class TemplateController {
   // Get all templates
   getAllTemplates = asyncHandler(async (req: Request, res: Response) => {
     const { category } = req.query;
 
-    const templates = await templateService.getAllTemplates(
-      category as string,
-      req.user?.userId
-    );
+    const templates = await templateService.getAllTemplates(category as string);
 
     return sendSuccess(res, templates);
   });
@@ -21,7 +18,7 @@ export class TemplateController {
     const { id } = req.params;
 
     const template = await templateService.getTemplateById(id);
-    
+
     // Record view
     if (req.user) {
       await templateService.recordView(id);
@@ -33,7 +30,7 @@ export class TemplateController {
   // Get user's custom templates
   getUserTemplates = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
-      return sendError(res, 'Unauthorized', 401);
+      return sendError(res, "Unauthorized", 401);
     }
 
     const templates = await templateService.getUserTemplates(req.user.userId);
@@ -44,10 +41,19 @@ export class TemplateController {
   // Create template
   createTemplate = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
-      return sendError(res, 'Unauthorized', 401);
+      return sendError(res, "Unauthorized", 401);
     }
 
-    const { name, description, category, thumbnail, jsonConfig, isPublic, tags, isCustom } = req.body;
+    const {
+      name,
+      description,
+      category,
+      thumbnail,
+      jsonConfig,
+      isPublic,
+      tags,
+      isCustom,
+    } = req.body;
 
     const template = await templateService.createTemplate({
       name,
@@ -61,22 +67,23 @@ export class TemplateController {
       isCustom: isCustom || true,
     });
 
-    return sendSuccess(res, template, 'Template created successfully', 201);
+    return sendSuccess(res, template, "Template created successfully", 201);
   });
 
   // Update template
   updateTemplate = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
-      return sendError(res, 'Unauthorized', 401);
+      return sendError(res, "Unauthorized", 401);
     }
 
     const { id } = req.params;
-    const { name, description, thumbnail, jsonConfig, isPublic, tags } = req.body;
+    const { name, description, thumbnail, jsonConfig, isPublic, tags } =
+      req.body;
 
     // Verify ownership
     const template = await templateService.getTemplateById(id);
     if (template.createdBy?.toString() !== req.user.userId) {
-      return sendError(res, 'Forbidden', 403);
+      return sendError(res, "Forbidden", 403);
     }
 
     const updated = await templateService.updateTemplate(id, {
@@ -88,13 +95,13 @@ export class TemplateController {
       tags,
     });
 
-    return sendSuccess(res, updated, 'Template updated successfully');
+    return sendSuccess(res, updated, "Template updated successfully");
   });
 
   // Delete template
   deleteTemplate = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
-      return sendError(res, 'Unauthorized', 401);
+      return sendError(res, "Unauthorized", 401);
     }
 
     const { id } = req.params;
@@ -102,18 +109,18 @@ export class TemplateController {
     // Verify ownership
     const template = await templateService.getTemplateById(id);
     if (template.createdBy?.toString() !== req.user.userId) {
-      return sendError(res, 'Forbidden', 403);
+      return sendError(res, "Forbidden", 403);
     }
 
     await templateService.deleteTemplate(id);
 
-    return sendSuccess(res, null, 'Template deleted successfully');
+    return sendSuccess(res, null, "Template deleted successfully");
   });
 
   // Duplicate template
   duplicateTemplate = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
-      return sendError(res, 'Unauthorized', 401);
+      return sendError(res, "Unauthorized", 401);
     }
 
     const { id } = req.params;
@@ -122,10 +129,15 @@ export class TemplateController {
     const duplicated = await templateService.duplicateTemplate(
       id,
       req.user.userId,
-      name
+      name,
     );
 
-    return sendSuccess(res, duplicated, 'Template duplicated successfully', 201);
+    return sendSuccess(
+      res,
+      duplicated,
+      "Template duplicated successfully",
+      201,
+    );
   });
 
   // Apply template
@@ -134,16 +146,16 @@ export class TemplateController {
 
     const jsonConfig = await templateService.applyTemplate(
       id,
-      req.user?.userId
+      req.user?.userId,
     );
 
-    return sendSuccess(res, jsonConfig, 'Template applied successfully');
+    return sendSuccess(res, jsonConfig, "Template applied successfully");
   });
 
   // Rate template
   rateTemplate = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
-      return sendError(res, 'Unauthorized', 401);
+      return sendError(res, "Unauthorized", 401);
     }
 
     const { id } = req.params;
@@ -156,7 +168,7 @@ export class TemplateController {
       review,
     });
 
-    return sendSuccess(res, templateRating, 'Rating added successfully');
+    return sendSuccess(res, templateRating, "Rating added successfully");
   });
 
   // Get template ratings
@@ -171,7 +183,7 @@ export class TemplateController {
   // Share template
   shareTemplate = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
-      return sendError(res, 'Unauthorized', 401);
+      return sendError(res, "Unauthorized", 401);
     }
 
     const { id } = req.params;
@@ -185,7 +197,7 @@ export class TemplateController {
       expiresAt,
     });
 
-    return sendSuccess(res, share, 'Template shared successfully', 201);
+    return sendSuccess(res, share, "Template shared successfully", 201);
   });
 
   // Get template shares
@@ -213,7 +225,7 @@ export class TemplateController {
 
     const analytics = await templateService.getTemplateAnalytics(
       id,
-      parseInt(days as string) || 30
+      parseInt(days as string) || 30,
     );
 
     return sendSuccess(res, analytics);
@@ -224,7 +236,7 @@ export class TemplateController {
     const { limit } = req.query;
 
     const templates = await templateService.getTrendingTemplates(
-      parseInt(limit as string) || 10
+      parseInt(limit as string) || 10,
     );
 
     return sendSuccess(res, templates);
@@ -235,7 +247,7 @@ export class TemplateController {
     const { limit } = req.query;
 
     const templates = await templateService.getTopRatedTemplates(
-      parseInt(limit as string) || 10
+      parseInt(limit as string) || 10,
     );
 
     return sendSuccess(res, templates);
@@ -246,7 +258,7 @@ export class TemplateController {
     const { q } = req.query;
 
     if (!q) {
-      return sendError(res, 'Search query required', 400);
+      return sendError(res, "Search query required", 400);
     }
 
     const templates = await templateService.searchTemplates(q as string);

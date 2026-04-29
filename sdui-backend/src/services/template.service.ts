@@ -1,14 +1,20 @@
-import { Template, ITemplate } from '../models/Template.model';
-import { TemplateRating, ITemplateRating } from '../models/TemplateRating.model';
-import { TemplateShare, ITemplateShare } from '../models/TemplateShare.model';
-import { TemplateAnalytics, ITemplateAnalytics } from '../models/TemplateAnalytics.model';
-import { AppError } from '../middleware/error.middleware';
-import { PageJSON } from '../types/page.types';
-import crypto from 'crypto';
+import { Template, ITemplate } from "../models/Template.model";
+import {
+  TemplateRating,
+  ITemplateRating,
+} from "../models/TemplateRating.model";
+import { TemplateShare, ITemplateShare } from "../models/TemplateShare.model";
+import {
+  TemplateAnalytics,
+  ITemplateAnalytics,
+} from "../models/TemplateAnalytics.model";
+import { AppError } from "../middleware/error.middleware";
+import { PageJSON } from "../types/page.types";
+import crypto from "crypto";
 
 export class TemplateService {
   // Get all templates
-  async getAllTemplates(category?: string, userId?: string): Promise<ITemplate[]> {
+  async getAllTemplates(category?: string): Promise<ITemplate[]> {
     const filter: any = { isPublic: true };
 
     if (category) {
@@ -23,7 +29,7 @@ export class TemplateService {
     const template = await Template.findById(templateId);
 
     if (!template) {
-      throw new AppError('Template not found', 404, 'TEMPLATE_NOT_FOUND');
+      throw new AppError("Template not found", 404, "TEMPLATE_NOT_FOUND");
     }
 
     return template;
@@ -71,16 +77,16 @@ export class TemplateService {
       jsonConfig?: PageJSON;
       isPublic?: boolean;
       tags?: string[];
-    }
+    },
   ): Promise<ITemplate> {
     const template = await Template.findByIdAndUpdate(
       templateId,
       { $set: data },
-      { new: true }
+      { new: true },
     );
 
     if (!template) {
-      throw new AppError('Template not found', 404, 'TEMPLATE_NOT_FOUND');
+      throw new AppError("Template not found", 404, "TEMPLATE_NOT_FOUND");
     }
 
     return template;
@@ -91,7 +97,7 @@ export class TemplateService {
     const template = await Template.findByIdAndDelete(templateId);
 
     if (!template) {
-      throw new AppError('Template not found', 404, 'TEMPLATE_NOT_FOUND');
+      throw new AppError("Template not found", 404, "TEMPLATE_NOT_FOUND");
     }
 
     // Clean up related data
@@ -104,7 +110,7 @@ export class TemplateService {
   async duplicateTemplate(
     templateId: string,
     userId: string,
-    newName: string
+    newName: string,
   ): Promise<ITemplate> {
     const template = await this.getTemplateById(templateId);
 
@@ -121,7 +127,7 @@ export class TemplateService {
     });
 
     // Increment duplicate count in analytics
-    await this.trackTemplateAction(templateId, 'duplicate');
+    await this.trackTemplateAction(templateId, "duplicate");
 
     return duplicated;
   }
@@ -132,9 +138,9 @@ export class TemplateService {
 
     // Track view and use
     if (userId) {
-      await this.trackTemplateAction(templateId, 'use');
+      await this.trackTemplateAction(templateId, "use");
     } else {
-      await this.trackTemplateAction(templateId, 'view');
+      await this.trackTemplateAction(templateId, "view");
     }
 
     return template.jsonConfig;
@@ -142,11 +148,8 @@ export class TemplateService {
 
   // Record template view
   async recordView(templateId: string): Promise<void> {
-    await Template.findByIdAndUpdate(
-      templateId,
-      { $inc: { viewCount: 1 } }
-    );
-    await this.trackTemplateAction(templateId, 'view');
+    await Template.findByIdAndUpdate(templateId, { $inc: { viewCount: 1 } });
+    await this.trackTemplateAction(templateId, "view");
   }
 
   // Add/Update rating and review
@@ -157,7 +160,11 @@ export class TemplateService {
     review?: string;
   }): Promise<ITemplateRating> {
     if (data.rating < 1 || data.rating > 5) {
-      throw new AppError('Rating must be between 1 and 5', 400, 'INVALID_RATING');
+      throw new AppError(
+        "Rating must be between 1 and 5",
+        400,
+        "INVALID_RATING",
+      );
     }
 
     let templateRating = await TemplateRating.findOne({
@@ -178,7 +185,7 @@ export class TemplateService {
         templateId: data.templateId,
         userId: data.userId,
         rating: data.rating,
-        review: data.review || '',
+        review: data.review || "",
       });
     }
 
@@ -191,14 +198,14 @@ export class TemplateService {
   // Get template ratings
   async getTemplateRatings(templateId: string): Promise<ITemplateRating[]> {
     return TemplateRating.find({ templateId })
-      .populate('userId', 'name email')
+      .populate("userId", "name email")
       .sort({ createdAt: -1 });
   }
 
   // Get user's rating for template
   async getUserRating(
     templateId: string,
-    userId: string
+    userId: string,
   ): Promise<ITemplateRating | null> {
     return TemplateRating.findOne({ templateId, userId });
   }
@@ -208,23 +215,20 @@ export class TemplateService {
     const ratings = await TemplateRating.find({ templateId });
 
     if (ratings.length === 0) {
-      await Template.findByIdAndUpdate(
-        templateId,
-        { ratingScore: 0, ratingCount: 0 }
-      );
+      await Template.findByIdAndUpdate(templateId, {
+        ratingScore: 0,
+        ratingCount: 0,
+      });
       return;
     }
 
     const avgRating =
       ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
 
-    await Template.findByIdAndUpdate(
-      templateId,
-      {
-        ratingScore: parseFloat(avgRating.toFixed(2)),
-        ratingCount: ratings.length,
-      }
-    );
+    await Template.findByIdAndUpdate(templateId, {
+      ratingScore: parseFloat(avgRating.toFixed(2)),
+      ratingCount: ratings.length,
+    });
   }
 
   // Share template
@@ -232,10 +236,10 @@ export class TemplateService {
     templateId: string;
     ownerId: string;
     sharedWith: string[];
-    accessLevel: 'view' | 'use' | 'edit';
+    accessLevel: "view" | "use" | "edit";
     expiresAt?: Date;
   }): Promise<ITemplateShare> {
-    const uniqueShareCode = crypto.randomBytes(16).toString('hex');
+    const uniqueShareCode = crypto.randomBytes(16).toString("hex");
 
     const share = await TemplateShare.create({
       templateId: data.templateId,
@@ -247,12 +251,15 @@ export class TemplateService {
     });
 
     // Increment share count
-    await Template.findByIdAndUpdate(
-      data.templateId,
-      { $inc: { shareCount: data.sharedWith.length } }
-    );
+    await Template.findByIdAndUpdate(data.templateId, {
+      $inc: { shareCount: data.sharedWith.length },
+    });
 
-    await this.trackTemplateAction(data.templateId, 'share', data.sharedWith.length);
+    await this.trackTemplateAction(
+      data.templateId,
+      "share",
+      data.sharedWith.length,
+    );
 
     return share;
   }
@@ -260,8 +267,8 @@ export class TemplateService {
   // Get template shares
   async getTemplateShares(templateId: string): Promise<ITemplateShare[]> {
     return TemplateShare.find({ templateId })
-      .populate('sharedWith', 'name email')
-      .populate('ownerId', 'name email');
+      .populate("sharedWith", "name email")
+      .populate("ownerId", "name email");
   }
 
   // Get shares for a user
@@ -276,12 +283,12 @@ export class TemplateService {
     const share = await TemplateShare.findOne({ uniqueShareCode: shareCode });
 
     if (!share) {
-      throw new AppError('Share not found', 404, 'SHARE_NOT_FOUND');
+      throw new AppError("Share not found", 404, "SHARE_NOT_FOUND");
     }
 
     // Check expiration
     if (share.expiresAt && share.expiresAt < new Date()) {
-      throw new AppError('Share link expired', 410, 'SHARE_EXPIRED');
+      throw new AppError("Share link expired", 410, "SHARE_EXPIRED");
     }
 
     return this.getTemplateById(share.templateId.toString());
@@ -290,41 +297,41 @@ export class TemplateService {
   // Track template actions for analytics
   private async trackTemplateAction(
     templateId: string,
-    action: 'view' | 'use' | 'share' | 'duplicate',
-    count: number = 1
+    action: "view" | "use" | "share" | "duplicate",
+    count: number = 1,
   ): Promise<void> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const updateData: any = {};
-    updateData['$inc'] = {};
+    updateData["$inc"] = {};
 
     switch (action) {
-      case 'view':
-        updateData['$inc'].views = count;
+      case "view":
+        updateData["$inc"].views = count;
         break;
-      case 'use':
-        updateData['$inc'].uses = count;
+      case "use":
+        updateData["$inc"].uses = count;
         break;
-      case 'share':
-        updateData['$inc'].shares = count;
+      case "share":
+        updateData["$inc"].shares = count;
         break;
-      case 'duplicate':
-        updateData['$inc'].duplicateCount = count;
+      case "duplicate":
+        updateData["$inc"].duplicateCount = count;
         break;
     }
 
     await TemplateAnalytics.findOneAndUpdate(
       { templateId, date: today },
       updateData,
-      { upsert: true }
+      { upsert: true },
     );
   }
 
   // Get template analytics
   async getTemplateAnalytics(
     templateId: string,
-    days: number = 30
+    days: number = 30,
   ): Promise<ITemplateAnalytics[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -357,9 +364,9 @@ export class TemplateService {
         { isPublic: true },
         {
           $or: [
-            { name: { $regex: query, $options: 'i' } },
-            { description: { $regex: query, $options: 'i' } },
-            { tags: { $in: [new RegExp(query, 'i')] } },
+            { name: { $regex: query, $options: "i" } },
+            { description: { $regex: query, $options: "i" } },
+            { tags: { $in: [new RegExp(query, "i")] } },
           ],
         },
       ],

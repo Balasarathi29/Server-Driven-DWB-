@@ -1,5 +1,7 @@
 # Production Deployment Guide
 
+For complete architecture, workflows, components, tools, and beginner-friendly end-to-end explanation, read PROJECT_DOCUMENTATION.md at the repository root.
+
 ## 1) Prerequisites
 
 - Docker Engine + Docker Compose
