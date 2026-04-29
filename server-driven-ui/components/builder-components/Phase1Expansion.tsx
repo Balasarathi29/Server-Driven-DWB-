@@ -1782,7 +1782,7 @@ export const Testimonial = ({
   authorNameSize = "15px",
   authorTitleSize = "13px",
   fontFamily = "inherit",
-  fontWeight = "500",
+  fontWeight = "medium",
   lineHeight = "1.6",
   // Hover & Animation
   hoverEffect = "lift",
@@ -1791,7 +1791,7 @@ export const Testimonial = ({
   // Responsive
   maxWidth: maxWidthProp = "500px",
 }: TestimonialProps) => {
-  const { connectors: { connect, drag }, isHovered } = useNode();
+  const { connectors: { connect, drag } } = useNode();
   const [isHovering, setIsHovering] = React.useState(false);
 
   const shadowMap = {
@@ -2584,7 +2584,6 @@ const TestimonialSettings = () => {
     width: "100%",
     height: "auto",
     minWidth: "auto",
-    maxWidth: "100%",
     minHeight: "auto",
     maxHeight: "auto",
     margin: "0",
@@ -2625,7 +2624,7 @@ const TestimonialSettings = () => {
     authorNameSize: "15px",
     authorTitleSize: "13px",
     fontFamily: "inherit",
-    fontWeight: "500",
+    fontWeight: "medium",
     lineHeight: "1.6",
     // Hover & Animation
     hoverEffect: "lift",
@@ -3322,7 +3321,7 @@ const BadgeSettings = () => {
                 <input
                   value={props.iconEmoji ?? "★"}
                   onChange={(e) => setProp((p: BaseProps) => (p.iconEmoji = e.target.value))}
-                  className="w-full px-3 py-2 border rounded text-sm text-center text-lg"
+                  className="w-full px-3 py-2 border rounded text-center text-lg"
                   placeholder="★"
                   maxLength={3}
                 />
@@ -7662,11 +7661,11 @@ export const AnnouncementBanner = ({
           >
             {tone.toUpperCase()}
           </span>
-          <p className="text-xs uppercase tracking-[0.1em] text-slate-500 m-0">
+          <p className="text-xs uppercase tracking-widest text-slate-500 m-0">
             {subtitle}
           </p>
         </div>
-        <p className="text-sm font-medium m-0 break-words">
+        <p className="text-sm font-medium m-0 break-word">
           {announcementText}
         </p>
         <div className="mt-2 flex items-center gap-3">
