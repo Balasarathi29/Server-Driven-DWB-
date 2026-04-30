@@ -54,6 +54,11 @@ import {
   Timeline,
   Tooltip,
   Video,
+  Rectangle,
+  Circle,
+  Triangle,
+  Ellipse,
+  Line,
 } from "../builder-components";
 
 type GenericComponentProps = Record<string, unknown>;
@@ -117,4 +122,9 @@ export const ComponentMapper: Record<
   Testimonial,
   Timeline,
   Tooltip,
+  Rectangle,
+  Circle,
+  Triangle,
+  Ellipse,
+  Line,
 };

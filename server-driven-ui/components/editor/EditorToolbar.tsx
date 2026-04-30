@@ -17,6 +17,7 @@ import {
   ClipboardPaste,
   CheckSquare2,
   MoreVertical,
+  Grid,
 } from "lucide-react";
 import Button from "../ui/Button";
 import { APIHealthIndicator } from "./APIHealthIndicator";
@@ -109,6 +110,8 @@ interface EditorToolbarProps {
   isSaving?: boolean;
   isGenerating?: boolean;
   slug?: string;
+  showGrid?: boolean;
+  onToggleGrid?: () => void;
 }
 
 export const EditorToolbar = ({
@@ -118,6 +121,8 @@ export const EditorToolbar = ({
   isSaving,
   isGenerating,
   slug,
+  showGrid,
+  onToggleGrid,
 }: EditorToolbarProps) => {
   const { actions, enabled, selectedNodeId, query } = useEditor((state) => {
     const [selectedNodeId] = state.events.selected;
@@ -378,6 +383,17 @@ export const EditorToolbar = ({
       <div className="flex items-center gap-3">
         {/* Health Indicator */}
         <APIHealthIndicator />
+
+        {/* Grid Toggle */}
+        <button
+          onClick={() => onToggleGrid && onToggleGrid()}
+          className={`p-2.5 rounded-lg bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 flex items-center justify-center ${
+            showGrid ? "ring-2 ring-blue-500" : ""
+          }`}
+          title="Toggle grid overlay"
+        >
+          <Grid className="w-4 h-4" />
+        </button>
 
         {/* Live View */}
         {slug && (

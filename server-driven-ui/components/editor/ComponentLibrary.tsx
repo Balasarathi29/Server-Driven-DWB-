@@ -15,6 +15,7 @@ import {
   MousePointer2,
   Search,
   Layers,
+  Circle as CircleIcon,
   Video as VideoIcon,
 } from "lucide-react";
 import { HeroBanner } from "../builder-components/HeroBanner";
@@ -36,6 +37,11 @@ import { Heading } from "../builder-components/Heading";
 import { Card } from "../builder-components/Card";
 import { Spacer } from "../builder-components/Spacer";
 import { Paragraph } from "../builder-components/Paragraph";
+import { Rectangle } from "../builder-components/Rectangle";
+import { Circle as CircleShape } from "../builder-components/Circle";
+import { Triangle } from "../builder-components/Triangle";
+import { Ellipse } from "../builder-components/Ellipse";
+import { Line } from "../builder-components/Line";
 import {
   AdmissionForm,
   AlertBanner,
@@ -340,6 +346,45 @@ export const ComponentLibrary = () => {
       icon: <Layout className="w-5 h-5 text-blue-600" />,
       component: <GridSection />,
       description: "Fast card-grid section for highlights and links.",
+    },
+    {
+      category: "Shapes",
+      name: "Rectangle",
+      icon: <Box className="w-5 h-5 text-slate-600" />,
+      component: <Rectangle />,
+      description:
+        "Basic rectangle with adjustable size, fill, border and rotation.",
+    },
+    {
+      category: "Shapes",
+      name: "Circle",
+      icon: <CircleIcon className="w-5 h-5 text-slate-600" />,
+      component: <CircleShape />,
+      description:
+        "Perfect circle shape with diameter, color and border controls.",
+    },
+    {
+      category: "Shapes",
+      name: "Triangle",
+      icon: <Layout className="w-5 h-5 text-slate-600" />,
+      component: <Triangle />,
+      description:
+        "Triangle shape (CSS clip-path) with color and rotation options.",
+    },
+    {
+      category: "Shapes",
+      name: "Ellipse",
+      icon: <CircleIcon className="w-5 h-5 text-slate-600" />,
+      component: <Ellipse />,
+      description:
+        "Ellipse shape with independent width/height and color controls.",
+    },
+    {
+      category: "Shapes",
+      name: "Line",
+      icon: <Layout className="w-5 h-5 text-slate-600" />,
+      component: <Line />,
+      description: "Simple line with length, thickness and rotation.",
     },
     {
       category: "Institution",

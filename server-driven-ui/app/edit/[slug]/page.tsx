@@ -26,6 +26,7 @@ import { ComponentLibrary } from "@/components/editor/ComponentLibrary";
 import { PropertyPanel } from "@/components/editor/PropertyPanel";
 import { EditorSelectionProvider } from "@/components/editor/EditorSelectionContext";
 import { ComponentMapper } from "@/components/renderer/ComponentMapper";
+import GridOverlay from "@/components/editor/GridOverlay";
 import * as pagesApi from "@/lib/api/pages.api";
 import { useAuth } from "@/lib/context/AuthContext";
 import { toast } from "sonner";
@@ -716,6 +717,7 @@ const EditorWrapper = ({
     open: boolean;
     isEdit: boolean;
   }>({ open: false, isEdit: false });
+  const [showGrid, setShowGrid] = useState(false);
 
   useEffect(() => {
     try {
@@ -989,6 +991,8 @@ const EditorWrapper = ({
           isSaving={saving}
           isGenerating={isGenerating}
           slug={slug}
+          showGrid={showGrid}
+          onToggleGrid={() => setShowGrid((s) => !s)}
         />
       )}
 
@@ -1091,6 +1095,7 @@ const EditorWrapper = ({
             <div
               className={`bg-white shadow-xl min-h-200 ${editorCanvasClass} mx-auto rounded-lg overflow-hidden relative transition-all duration-300`}
             >
+              {showGrid && <GridOverlay />}
               <Frame
                 data={
                   toCraftConfig(pageData?.jsonConfig)?.ROOT
