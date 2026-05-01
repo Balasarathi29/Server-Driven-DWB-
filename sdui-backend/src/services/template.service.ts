@@ -14,8 +14,13 @@ import crypto from "crypto";
 
 export class TemplateService {
   // Get all templates
-  async getAllTemplates(category?: string): Promise<ITemplate[]> {
-    const filter: any = { isPublic: true };
+  async getAllTemplates(
+    category?: string,
+    userId?: string,
+  ): Promise<ITemplate[]> {
+    const filter: any = userId
+      ? { $or: [{ isPublic: true }, { createdBy: userId }] }
+      : { isPublic: true };
 
     if (category) {
       filter.category = category;

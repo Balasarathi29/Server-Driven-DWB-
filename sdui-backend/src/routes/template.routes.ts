@@ -2,13 +2,17 @@ import { Router } from "express";
 import { body, param, query } from "express-validator";
 import templateController from "../controllers/template.controller";
 import { validate } from "../middleware/validate.middleware";
-import { authenticate } from "../middleware/auth.middleware";
+import {
+  authenticate,
+  optionalAuthenticate,
+} from "../middleware/auth.middleware";
 
 const router = Router();
 
 // Get all templates (public)
 router.get(
   "/",
+  optionalAuthenticate,
   validate([query("category").optional().trim()]),
   templateController.getAllTemplates,
 );

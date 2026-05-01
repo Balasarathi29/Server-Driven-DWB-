@@ -8,7 +8,10 @@ export class TemplateController {
   getAllTemplates = asyncHandler(async (req: Request, res: Response) => {
     const { category } = req.query;
 
-    const templates = await templateService.getAllTemplates(category as string);
+    const templates = await templateService.getAllTemplates(
+      category as string,
+      req.user?.userId,
+    );
 
     return sendSuccess(res, templates);
   });

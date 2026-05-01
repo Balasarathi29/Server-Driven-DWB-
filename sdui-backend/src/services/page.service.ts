@@ -583,14 +583,21 @@ export class PageService {
       throw new AppError("Page not found", 404, "PAGE_NOT_FOUND");
     }
 
+    // Try to derive a sensible thumbnail from the page JSON metadata (ogImage or thumbnail)
+    const derivedThumbnail =
+      (page.jsonConfig as any)?.meta?.ogImage ||
+      (page.jsonConfig as any)?.meta?.thumbnail ||
+      "";
+
     const template = await Template.create({
       name: data.name,
       description: data.description || `Saved from page ${page.name}`,
       category: data.category || "custom",
-      thumbnail: "",
+      thumbnail: derivedThumbnail,
       jsonConfig: page.jsonConfig,
-      isPublic: !!data.isPublic,
+      isPublic: data.isPublic !== false, // Default to true for saved templates
       createdBy: data.userId,
+      isCustom: true,
     });
 
     return template;

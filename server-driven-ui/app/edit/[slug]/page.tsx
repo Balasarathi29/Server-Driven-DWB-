@@ -1188,6 +1188,65 @@ export default function EditPage({ params }: PageProps) {
 
         let data: EditorPageData;
 
+        // If the user is opening the editor to create a new page from a template
+        if (requestedSlug === "new") {
+          try {
+            // Try to read template JSON config from sessionStorage first
+            const sessionConfig = sessionStorage.getItem("templateConfig");
+            let jsonConfig: unknown | null = null;
+
+            if (sessionConfig) {
+              try {
+                jsonConfig = JSON.parse(sessionConfig);
+              } catch {
+                jsonConfig = null;
+              }
+            }
+
+            // If not in session, attempt to fetch via templateId query param
+            if (!jsonConfig) {
+              const sp = new URLSearchParams(window.location.search);
+              const templateId = sp.get("templateId");
+              if (templateId) {
+                const tpl = await import("@/lib/api/templates.api").then((m) =>
+                  m.applyTemplate(templateId),
+                );
+                jsonConfig = tpl;
+              }
+            }
+
+            if (!jsonConfig) {
+              throw new Error(
+                "No template configuration found to create a new page",
+              );
+            }
+
+            // Create a new page first, then update it with the template JSON
+            const uniqueSlug = `template-${Date.now()}`;
+            const created = await pagesApi.createPage({
+              name: "New Page",
+              slug: uniqueSlug,
+            });
+
+            await pagesApi.updatePage(created._id, {
+              jsonConfig: jsonConfig as any,
+              htmlContent: "",
+              useHtml: false,
+            });
+
+            // Load the created page for editor
+            data = await pagesApi.getPage(created._id);
+            setPageData(data);
+            setLoading(false);
+            return;
+          } catch (err) {
+            console.error("Failed to create page from template:", err);
+            toast.error("Failed to create page from template");
+            setLoading(false);
+            return;
+          }
+        }
+
         try {
           data = await pagesApi.getPageBySlug(
             requestedSlug,

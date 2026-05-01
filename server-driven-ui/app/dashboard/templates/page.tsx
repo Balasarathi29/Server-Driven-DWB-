@@ -19,11 +19,17 @@ import {
   BarChart3,
   TrendingUp,
   Clock,
+  Edit,
+  Trash2,
+  Lock,
+  Globe,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/context/AuthContext";
 import {
   getAllTemplates,
+  getUserTemplates,
   applyTemplate,
   duplicateTemplate,
   Template,
@@ -36,6 +42,8 @@ import { TemplateRatingModal } from "@/components/TemplateRatingModal";
 import { TemplateSharingModal } from "@/components/TemplateSharingModal";
 import { TemplateAnalyticsModal } from "@/components/TemplateAnalyticsModal";
 import { CreateCustomTemplateModal } from "@/components/CreateCustomTemplateModal";
+import { EditTemplateModal } from "@/components/EditTemplateModal";
+import { DeleteTemplateModal } from "@/components/DeleteTemplateModal";
 
 type CategoryFilter =
   | "all"
@@ -47,6 +55,7 @@ type CategoryFilter =
   | "blog"
   | "events"
   | "custom";
+
 type TabFilter = "all" | "trending" | "top-rated" | "my-templates";
 
 const CATEGORIES: {
@@ -107,6 +116,8 @@ export default function TemplatesPage() {
   const [isSharingOpen, setIsSharingOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
     null,
   );
@@ -125,11 +136,10 @@ export default function TemplatesPage() {
         } else if (tab === "top-rated") {
           data = await getTopRatedTemplates(12);
         } else if (tab === "my-templates") {
-          // This would need a separate endpoint or filter
-          data = await getAllTemplates(
-            selectedCategory === "all" ? undefined : selectedCategory,
-          );
-          data = data.filter((t) => t.createdBy === user?.id || t.isCustom);
+          data = await getUserTemplates();
+          if (selectedCategory !== "all") {
+            data = data.filter((t) => t.category === selectedCategory);
+          }
         } else {
           data = await getAllTemplates(
             selectedCategory === "all" ? undefined : selectedCategory,
@@ -146,7 +156,7 @@ export default function TemplatesPage() {
     };
 
     fetchTemplates();
-  }, [selectedCategory, tab, user?.id]);
+  }, [selectedCategory, tab]);
 
   // Filter templates based on search
   const filteredTemplates = useMemo(() => {
@@ -173,7 +183,8 @@ export default function TemplatesPage() {
       toast.success(`Template "${template.name}" ready to use!`);
       setPreviewTemplate(null);
 
-      router.push("/dashboard/page?templateId=" + template._id);
+      // Open editor to create a new page from this template
+      router.push("/edit/new?templateId=" + template._id);
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Failed to apply template");
     } finally {
@@ -217,6 +228,63 @@ export default function TemplatesPage() {
     setIsAnalyticsOpen(true);
   };
 
+  // Handle edit click
+  const handleEdit = (template: Template) => {
+    setSelectedTemplate(template);
+    setIsEditOpen(true);
+  };
+
+  // Handle delete click
+  const handleDelete = (template: Template) => {
+    setSelectedTemplate(template);
+    setIsDeleteOpen(true);
+  };
+
+  // Handle edit success
+  const handleEditSuccess = (updatedTemplate: Template) => {
+    setTemplates((prev) =>
+      prev.map((t) => (t._id === updatedTemplate._id ? updatedTemplate : t)),
+    );
+    setSelectedTemplate(null);
+    setIsEditOpen(false);
+  };
+
+  // Handle delete success
+  const handleDeleteSuccess = () => {
+    setTemplates((prev) => prev.filter((t) => t._id !== selectedTemplate?._id));
+    setSelectedTemplate(null);
+    setIsDeleteOpen(false);
+  };
+
+  // Refresh templates (for after creation)
+  const refreshTemplates = async () => {
+    try {
+      setLoading(true);
+      let data: Template[] = [];
+
+      if (tab === "trending") {
+        data = await getTrendingTemplates(12);
+      } else if (tab === "top-rated") {
+        data = await getTopRatedTemplates(12);
+      } else if (tab === "my-templates") {
+        data = await getUserTemplates();
+        if (selectedCategory !== "all") {
+          data = data.filter((t) => t.category === selectedCategory);
+        }
+      } else {
+        data = await getAllTemplates(
+          selectedCategory === "all" ? undefined : selectedCategory,
+        );
+      }
+
+      setTemplates(data);
+    } catch (err: any) {
+      console.error("Failed to refresh templates", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Redirect if not authenticated
   if (!authLoading && !user) {
     return (
@@ -239,7 +307,7 @@ export default function TemplatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -393,7 +461,7 @@ export default function TemplatesPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center gap-3"
           >
-            <AlertCircle size={20} className="flex-shrink-0" />
+            <AlertCircle size={20} className="shrink-0" />
             <span>{error}</span>
           </motion.div>
         )}
@@ -454,47 +522,77 @@ export default function TemplatesPage() {
                       onApply={() => handleApplyTemplate(template)}
                     />
 
-                    {/* Action buttons below card */}
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <button
-                        onClick={() => handleRating(template)}
-                        title="Rate this template"
-                        className="flex-1 px-3 py-2 text-xs bg-yellow-50 text-yellow-700 rounded hover:bg-yellow-100 transition-colors flex items-center justify-center gap-1"
-                      >
-                        <Star size={14} />
-                        Rate
-                      </button>
-                      <button
-                        onClick={() => handleShare(template)}
-                        title="Share this template"
-                        className="flex-1 px-3 py-2 text-xs bg-purple-50 text-purple-700 rounded hover:bg-purple-100 transition-colors flex items-center justify-center gap-1"
-                      >
-                        <Share2 size={14} />
-                        Share
-                      </button>
+                    {/* Action buttons below card - organized in rows */}
+                    <div className="mt-3 space-y-2">
+                      {/* Primary actions - Use and Preview already in card hover */}
+
+                      {/* Secondary actions */}
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => handleRating(template)}
+                          title="Rate this template"
+                          className="flex-1 px-2 py-1.5 text-xs bg-yellow-50 text-yellow-700 rounded hover:bg-yellow-100 transition-colors flex items-center justify-center gap-1"
+                        >
+                          <Star size={12} />
+                          Rate
+                        </button>
+                        <button
+                          onClick={() => handleShare(template)}
+                          title="Share this template"
+                          className="flex-1 px-2 py-1.5 text-xs bg-purple-50 text-purple-700 rounded hover:bg-purple-100 transition-colors flex items-center justify-center gap-1"
+                        >
+                          <Share2 size={12} />
+                          Share
+                        </button>
+                        <button
+                          onClick={() => handleAnalytics(template)}
+                          title="View analytics"
+                          className="flex-1 px-2 py-1.5 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
+                        >
+                          <BarChart3 size={12} />
+                          Analytics
+                        </button>
+                      </div>
+
+                      {/* Duplicate button - for custom templates */}
                       {template.isCustom && (
                         <button
                           onClick={() => handleDuplicate(template)}
                           disabled={duplicating === template._id}
                           title="Duplicate this template"
-                          className="flex-1 px-3 py-2 text-xs bg-green-50 text-green-700 rounded hover:bg-green-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                          className="w-full px-2 py-1.5 text-xs bg-green-50 text-green-700 rounded hover:bg-green-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
                         >
                           {duplicating === template._id ? (
-                            <Loader2 size={14} className="animate-spin" />
+                            <Loader2 size={12} className="animate-spin" />
                           ) : (
-                            <Copy size={14} />
+                            <Copy size={12} />
                           )}
-                          Duplicate
+                          Duplicate Template
                         </button>
                       )}
-                      <button
-                        onClick={() => handleAnalytics(template)}
-                        title="View analytics"
-                        className="flex-1 px-3 py-2 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
-                      >
-                        <BarChart3 size={14} />
-                        Analytics
-                      </button>
+
+                      {/* Management actions - Edit and Delete for user's own templates */}
+                      {(template.isCustom ||
+                        template.createdBy === user?.id) && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(template)}
+                            title="Edit this template"
+                            className="flex-1 px-2 py-1.5 text-xs bg-indigo-50 text-indigo-700 rounded hover:bg-indigo-100 transition-colors flex items-center justify-center gap-1 font-medium"
+                          >
+                            <Edit size={12} />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(template)}
+                            title="Delete this template"
+                            className="flex-1 px-2 py-1.5 text-xs bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors flex items-center justify-center gap-1 font-medium"
+                          >
+                            <Trash2 size={12} />
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Rating and view count badges */}
@@ -521,6 +619,17 @@ export default function TemplatesPage() {
                         <h3 className="font-semibold text-gray-900">
                           {template.name}
                         </h3>
+                        {template.isPublic ? (
+                          <span className="flex items-center gap-1 text-xs px-2 py-1 bg-green-50 text-green-700 rounded">
+                            <Globe size={12} />
+                            Public
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-xs px-2 py-1 bg-orange-50 text-orange-700 rounded">
+                            <Lock size={12} />
+                            Private
+                          </span>
+                        )}
                         {template.ratingScore > 0 && (
                           <span className="flex items-center gap-1 text-sm text-yellow-600">
                             <Star size={14} className="fill-yellow-400" />
@@ -543,37 +652,58 @@ export default function TemplatesPage() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex gap-2 ml-4 flex-wrap justify-end">
+                      <button
+                        onClick={() => handlePreview(template)}
+                        className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors flex items-center gap-1"
+                      >
+                        <Eye size={12} />
+                        Preview
+                      </button>
+                      <button
+                        onClick={() => handleApplyTemplate(template)}
+                        className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center gap-1 font-medium"
+                      >
+                        <Copy size={12} />
+                        Use
+                      </button>
                       <button
                         onClick={() => handleRating(template)}
-                        className="px-2 py-1 text-xs bg-yellow-50 text-yellow-700 rounded hover:bg-yellow-100"
+                        className="px-2 py-1 text-xs bg-yellow-50 text-yellow-700 rounded hover:bg-yellow-100 transition-colors"
                       >
                         Rate
                       </button>
                       <button
                         onClick={() => handleShare(template)}
-                        className="px-2 py-1 text-xs bg-purple-50 text-purple-700 rounded hover:bg-purple-100"
+                        className="px-2 py-1 text-xs bg-purple-50 text-purple-700 rounded hover:bg-purple-100 transition-colors"
                       >
                         Share
                       </button>
                       <button
                         onClick={() => handleAnalytics(template)}
-                        className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100"
+                        className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
                       >
                         Analytics
                       </button>
-                      <button
-                        onClick={() => handlePreview(template)}
-                        className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
-                      >
-                        Preview
-                      </button>
-                      <button
-                        onClick={() => handleApplyTemplate(template)}
-                        className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-                      >
-                        Use
-                      </button>
+                      {(template.isCustom ||
+                        template.createdBy === user?.id) && (
+                        <>
+                          <button
+                            onClick={() => handleEdit(template)}
+                            className="px-2 py-1 text-xs bg-indigo-50 text-indigo-700 rounded hover:bg-indigo-100 transition-colors flex items-center gap-1"
+                          >
+                            <Edit size={12} />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(template)}
+                            className="px-2 py-1 text-xs bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors flex items-center gap-1"
+                          >
+                            <Trash2 size={12} />
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -621,13 +751,25 @@ export default function TemplatesPage() {
             isOpen={isAnalyticsOpen}
             onClose={() => setIsAnalyticsOpen(false)}
           />
+          <EditTemplateModal
+            template={selectedTemplate}
+            isOpen={isEditOpen}
+            onClose={() => setIsEditOpen(false)}
+            onSuccess={handleEditSuccess}
+          />
+          <DeleteTemplateModal
+            template={selectedTemplate}
+            isOpen={isDeleteOpen}
+            onClose={() => setIsDeleteOpen(false)}
+            onSuccess={handleDeleteSuccess}
+          />
         </>
       )}
 
       <CreateCustomTemplateModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
-        onSuccess={() => setTemplates([])} // Refresh templates
+        onSuccess={refreshTemplates}
       />
     </div>
   );
