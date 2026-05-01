@@ -12,7 +12,10 @@ import {
   X,
   BarChart3,
 } from "lucide-react";
-import { getTemplateAnalytics, TemplateAnalytics } from "@/lib/api/templates.api";
+import {
+  getTemplateAnalytics,
+  TemplateAnalytics,
+} from "@/lib/api/templates.api";
 import { toast } from "sonner";
 
 interface TemplateAnalyticsModalProps {
@@ -36,6 +39,7 @@ export const TemplateAnalyticsModal = ({
     if (isOpen) {
       loadAnalytics();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, templateId, days]);
 
   const loadAnalytics = async () => {
@@ -43,7 +47,7 @@ export const TemplateAnalyticsModal = ({
       setLoading(true);
       const data = await getTemplateAnalytics(templateId, days);
       setAnalytics(data);
-    } catch (err) {
+    } catch {
       toast.error("Failed to load analytics");
     } finally {
       setLoading(false);
@@ -58,7 +62,7 @@ export const TemplateAnalyticsModal = ({
         shares: acc.shares + day.shares,
         duplicates: acc.duplicates + day.duplicateCount,
       }),
-      { views: 0, uses: 0, shares: 0, duplicates: 0 }
+      { views: 0, uses: 0, shares: 0, duplicates: 0 },
     );
   };
 
@@ -85,7 +89,9 @@ export const TemplateAnalyticsModal = ({
             <div className="flex items-center gap-3">
               <BarChart3 size={32} className="text-blue-600" />
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Performance Analytics</h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Performance Analytics
+                </h2>
                 <p className="text-sm text-gray-600">{templateName}</p>
               </div>
             </div>
@@ -129,9 +135,13 @@ export const TemplateAnalyticsModal = ({
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <Eye size={18} className="text-blue-600" />
-                    <span className="text-xs font-medium text-blue-600">Views</span>
+                    <span className="text-xs font-medium text-blue-600">
+                      Views
+                    </span>
                   </div>
-                  <p className="text-2xl font-bold text-blue-900">{totals.views}</p>
+                  <p className="text-2xl font-bold text-blue-900">
+                    {totals.views}
+                  </p>
                 </motion.div>
 
                 <motion.div
@@ -142,9 +152,13 @@ export const TemplateAnalyticsModal = ({
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <Copy size={18} className="text-green-600" />
-                    <span className="text-xs font-medium text-green-600">Uses</span>
+                    <span className="text-xs font-medium text-green-600">
+                      Uses
+                    </span>
                   </div>
-                  <p className="text-2xl font-bold text-green-900">{totals.uses}</p>
+                  <p className="text-2xl font-bold text-green-900">
+                    {totals.uses}
+                  </p>
                 </motion.div>
 
                 <motion.div
@@ -155,9 +169,13 @@ export const TemplateAnalyticsModal = ({
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <Share2 size={18} className="text-purple-600" />
-                    <span className="text-xs font-medium text-purple-600">Shares</span>
+                    <span className="text-xs font-medium text-purple-600">
+                      Shares
+                    </span>
                   </div>
-                  <p className="text-2xl font-bold text-purple-900">{totals.shares}</p>
+                  <p className="text-2xl font-bold text-purple-900">
+                    {totals.shares}
+                  </p>
                 </motion.div>
 
                 <motion.div
@@ -168,16 +186,22 @@ export const TemplateAnalyticsModal = ({
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp size={18} className="text-orange-600" />
-                    <span className="text-xs font-medium text-orange-600">Duplicates</span>
+                    <span className="text-xs font-medium text-orange-600">
+                      Duplicates
+                    </span>
                   </div>
-                  <p className="text-2xl font-bold text-orange-900">{totals.duplicates}</p>
+                  <p className="text-2xl font-bold text-orange-900">
+                    {totals.duplicates}
+                  </p>
                 </motion.div>
               </div>
 
               {/* Daily Breakdown */}
               {analytics.length > 0 ? (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Daily Breakdown</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Daily Breakdown
+                  </h3>
                   {analytics.map((day, idx) => (
                     <motion.div
                       key={day._id}
@@ -201,27 +225,43 @@ export const TemplateAnalyticsModal = ({
 
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <span className="text-gray-500 block mb-1">Views</span>
-                          <span className="font-bold text-gray-900">{day.views}</span>
+                          <span className="text-gray-500 block mb-1">
+                            Views
+                          </span>
+                          <span className="font-bold text-gray-900">
+                            {day.views}
+                          </span>
                         </div>
                         <div>
                           <span className="text-gray-500 block mb-1">Uses</span>
-                          <span className="font-bold text-gray-900">{day.uses}</span>
+                          <span className="font-bold text-gray-900">
+                            {day.uses}
+                          </span>
                         </div>
                         <div>
-                          <span className="text-gray-500 block mb-1">Shares</span>
-                          <span className="font-bold text-gray-900">{day.shares}</span>
+                          <span className="text-gray-500 block mb-1">
+                            Shares
+                          </span>
+                          <span className="font-bold text-gray-900">
+                            {day.shares}
+                          </span>
                         </div>
                         <div>
-                          <span className="text-gray-500 block mb-1">Duplicates</span>
-                          <span className="font-bold text-gray-900">{day.duplicateCount}</span>
+                          <span className="text-gray-500 block mb-1">
+                            Duplicates
+                          </span>
+                          <span className="font-bold text-gray-900">
+                            {day.duplicateCount}
+                          </span>
                         </div>
                       </div>
                     </motion.div>
                   ))}
                 </div>
               ) : (
-                <p className="text-center py-8 text-gray-500">No analytics data available yet</p>
+                <p className="text-center py-8 text-gray-500">
+                  No analytics data available yet
+                </p>
               )}
             </>
           )}

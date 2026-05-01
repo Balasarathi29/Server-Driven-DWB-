@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import React from "react";
 import { useEditor, useNode } from "@craftjs/core";
@@ -13,7 +14,7 @@ type BaseProps = {
   bottom?: string;
   left?: string;
   zIndex?: number;
-  
+
   // Sizing
   width?: string;
   height?: string;
@@ -21,20 +22,20 @@ type BaseProps = {
   maxWidth?: string;
   minHeight?: string;
   maxHeight?: string;
-  
+
   // Margins
   margin?: string;
   marginTop?: string;
   marginRight?: string;
   marginBottom?: string;
   marginLeft?: string;
-  
+
   // Padding
   paddingTop?: string;
   paddingRight?: string;
   paddingBottom?: string;
   paddingLeft?: string;
-  
+
   // ===== COMPONENT CONTENT =====
   title?: string;
   subtitle?: string;
@@ -97,7 +98,13 @@ type BaseProps = {
   badgeRotate?: number;
   badgeScale?: number;
   badgeOpacity?: number;
-  badgeAnimation?: "none" | "pulse" | "bounce" | "float" | "float-reverse" | "glow";
+  badgeAnimation?:
+    | "none"
+    | "pulse"
+    | "bounce"
+    | "float"
+    | "float-reverse"
+    | "glow";
   badgeAnimationDuration?: string;
   badgeAnimationDelay?: string;
   // Badge specific properties - Border
@@ -137,7 +144,9 @@ const getLayoutStyles = (props: BaseProps) => ({
   maxWidth: props.maxWidth || "100%",
   minHeight: props.minHeight || "auto",
   maxHeight: props.maxHeight || "auto",
-  margin: props.margin || `${props.marginTop || "0"} ${props.marginRight || "0"} ${props.marginBottom || "0"} ${props.marginLeft || "0"}`,
+  margin:
+    props.margin ||
+    `${props.marginTop || "0"} ${props.marginRight || "0"} ${props.marginBottom || "0"} ${props.marginLeft || "0"}`,
   boxSizing: "border-box" as const,
 });
 
@@ -173,14 +182,19 @@ const LayoutSettings = () => {
   return (
     <div className="space-y-3">
       <h4 className="font-semibold text-xs text-gray-700">LAYOUT & SPACING</h4>
-      
+
       {/* POSITION TYPE */}
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Position</label>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+          Position
+        </label>
         <select
           value={props.position ?? "static"}
           onChange={(e) =>
-            setProp((p: BaseProps) => (p.position = e.target.value as BaseProps["position"]))
+            setProp(
+              (p: BaseProps) =>
+                (p.position = e.target.value as BaseProps["position"]),
+            )
           }
           className="w-full px-3 py-2 border rounded text-sm"
         >
@@ -195,37 +209,53 @@ const LayoutSettings = () => {
       {props.position !== "static" && (
         <div className="grid grid-cols-4 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Top</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">
+              Top
+            </label>
             <input
               value={props.top ?? "0"}
-              onChange={(e) => setProp((p: BaseProps) => (p.top = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.top = e.target.value))
+              }
               className="w-full px-2 py-1 border rounded text-xs"
               placeholder="0"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Right</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">
+              Right
+            </label>
             <input
               value={props.right ?? "auto"}
-              onChange={(e) => setProp((p: BaseProps) => (p.right = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.right = e.target.value))
+              }
               className="w-full px-2 py-1 border rounded text-xs"
               placeholder="auto"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Bottom</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">
+              Bottom
+            </label>
             <input
               value={props.bottom ?? "auto"}
-              onChange={(e) => setProp((p: BaseProps) => (p.bottom = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.bottom = e.target.value))
+              }
               className="w-full px-2 py-1 border rounded text-xs"
               placeholder="auto"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Left</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">
+              Left
+            </label>
             <input
               value={props.left ?? "auto"}
-              onChange={(e) => setProp((p: BaseProps) => (p.left = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.left = e.target.value))
+              }
               className="w-full px-2 py-1 border rounded text-xs"
               placeholder="auto"
             />
@@ -236,19 +266,27 @@ const LayoutSettings = () => {
       {/* SIZING */}
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Width</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Width
+          </label>
           <input
             value={props.width ?? "100%"}
-            onChange={(e) => setProp((p: BaseProps) => (p.width = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.width = e.target.value))
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="100%"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Height</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Height
+          </label>
           <input
             value={props.height ?? "auto"}
-            onChange={(e) => setProp((p: BaseProps) => (p.height = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.height = e.target.value))
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="auto"
           />
@@ -257,19 +295,27 @@ const LayoutSettings = () => {
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Min Width</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Min Width
+          </label>
           <input
             value={props.minWidth ?? "auto"}
-            onChange={(e) => setProp((p: BaseProps) => (p.minWidth = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.minWidth = e.target.value))
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="auto"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Max Width</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Max Width
+          </label>
           <input
             value={props.maxWidth ?? "100%"}
-            onChange={(e) => setProp((p: BaseProps) => (p.maxWidth = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.maxWidth = e.target.value))
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="100%"
           />
@@ -278,19 +324,27 @@ const LayoutSettings = () => {
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Min Height</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Min Height
+          </label>
           <input
             value={props.minHeight ?? "auto"}
-            onChange={(e) => setProp((p: BaseProps) => (p.minHeight = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.minHeight = e.target.value))
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="auto"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Max Height</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Max Height
+          </label>
           <input
             value={props.maxHeight ?? "auto"}
-            onChange={(e) => setProp((p: BaseProps) => (p.maxHeight = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.maxHeight = e.target.value))
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="auto"
           />
@@ -300,14 +354,18 @@ const LayoutSettings = () => {
       {/* Z-INDEX for absolute/fixed */}
       {(props.position === "absolute" || props.position === "fixed") && (
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Z-Index ({props.zIndex ?? 10})</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Z-Index ({props.zIndex ?? 10})
+          </label>
           <input
             type="range"
             min="0"
             max="1000"
             step="10"
             value={props.zIndex ?? 10}
-            onChange={(e) => setProp((p: BaseProps) => (p.zIndex = Number(e.target.value)))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.zIndex = Number(e.target.value)))
+            }
             className="w-full"
           />
         </div>
@@ -315,10 +373,14 @@ const LayoutSettings = () => {
 
       {/* MARGINS */}
       <div className="border-t pt-2">
-        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Margin (All)</label>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+          Margin (All)
+        </label>
         <input
           value={props.margin ?? "0"}
-          onChange={(e) => setProp((p: BaseProps) => (p.margin = e.target.value))}
+          onChange={(e) =>
+            setProp((p: BaseProps) => (p.margin = e.target.value))
+          }
           className="w-full px-3 py-2 border rounded text-sm"
           placeholder="0"
         />
@@ -326,37 +388,53 @@ const LayoutSettings = () => {
 
       <div className="grid grid-cols-4 gap-2">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">MT</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">
+            MT
+          </label>
           <input
             value={props.marginTop ?? "0"}
-            onChange={(e) => setProp((p: BaseProps) => (p.marginTop = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.marginTop = e.target.value))
+            }
             className="w-full px-2 py-1 border rounded text-xs"
             placeholder="0"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">MR</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">
+            MR
+          </label>
           <input
             value={props.marginRight ?? "0"}
-            onChange={(e) => setProp((p: BaseProps) => (p.marginRight = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.marginRight = e.target.value))
+            }
             className="w-full px-2 py-1 border rounded text-xs"
             placeholder="0"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">MB</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">
+            MB
+          </label>
           <input
             value={props.marginBottom ?? "0"}
-            onChange={(e) => setProp((p: BaseProps) => (p.marginBottom = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.marginBottom = e.target.value))
+            }
             className="w-full px-2 py-1 border rounded text-xs"
             placeholder="0"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">ML</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">
+            ML
+          </label>
           <input
             value={props.marginLeft ?? "0"}
-            onChange={(e) => setProp((p: BaseProps) => (p.marginLeft = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.marginLeft = e.target.value))
+            }
             className="w-full px-2 py-1 border rounded text-xs"
             placeholder="0"
           />
@@ -365,10 +443,14 @@ const LayoutSettings = () => {
 
       {/* PADDING */}
       <div className="border-t pt-2">
-        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Padding (All)</label>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+          Padding (All)
+        </label>
         <input
           value={props.padding ?? "0"}
-          onChange={(e) => setProp((p: BaseProps) => (p.padding = e.target.value))}
+          onChange={(e) =>
+            setProp((p: BaseProps) => (p.padding = e.target.value))
+          }
           className="w-full px-3 py-2 border rounded text-sm"
           placeholder="0"
         />
@@ -376,37 +458,53 @@ const LayoutSettings = () => {
 
       <div className="grid grid-cols-4 gap-2">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">PT</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">
+            PT
+          </label>
           <input
             value={props.paddingTop ?? "0"}
-            onChange={(e) => setProp((p: BaseProps) => (p.paddingTop = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.paddingTop = e.target.value))
+            }
             className="w-full px-2 py-1 border rounded text-xs"
             placeholder="0"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">PR</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">
+            PR
+          </label>
           <input
             value={props.paddingRight ?? "0"}
-            onChange={(e) => setProp((p: BaseProps) => (p.paddingRight = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.paddingRight = e.target.value))
+            }
             className="w-full px-2 py-1 border rounded text-xs"
             placeholder="0"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">PB</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">
+            PB
+          </label>
           <input
             value={props.paddingBottom ?? "0"}
-            onChange={(e) => setProp((p: BaseProps) => (p.paddingBottom = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.paddingBottom = e.target.value))
+            }
             className="w-full px-2 py-1 border rounded text-xs"
             placeholder="0"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">PL</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">
+            PL
+          </label>
           <input
             value={props.paddingLeft ?? "0"}
-            onChange={(e) => setProp((p: BaseProps) => (p.paddingLeft = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.paddingLeft = e.target.value))
+            }
             className="w-full px-2 py-1 border rounded text-xs"
             placeholder="0"
           />
@@ -1345,7 +1443,9 @@ const GridSectionSettings = () => {
           <input
             value={props.sectionTitle ?? ""}
             onChange={(e) =>
-              setProp((p: GridSectionProps) => (p.sectionTitle = e.target.value))
+              setProp(
+                (p: GridSectionProps) => (p.sectionTitle = e.target.value),
+              )
             }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="Section Title"
@@ -1373,7 +1473,9 @@ const GridSectionSettings = () => {
           <textarea
             value={props.cardRowsData ?? ""}
             onChange={(e) =>
-              setProp((p: GridSectionProps) => (p.cardRowsData = e.target.value))
+              setProp(
+                (p: GridSectionProps) => (p.cardRowsData = e.target.value),
+              )
             }
             rows={6}
             className="w-full px-3 py-2 border rounded text-sm"
@@ -1791,7 +1893,9 @@ export const Testimonial = ({
   // Responsive
   maxWidth: maxWidthProp = "500px",
 }: TestimonialProps) => {
-  const { connectors: { connect, drag } } = useNode();
+  const {
+    connectors: { connect, drag },
+  } = useNode();
   const [isHovering, setIsHovering] = React.useState(false);
 
   const shadowMap = {
@@ -1816,7 +1920,25 @@ export const Testimonial = ({
   };
 
   const containerStyle: React.CSSProperties = {
-    ...getLayoutStyles({ position, top, right, bottom, left, zIndex, width, height, minWidth, maxWidth, minHeight, maxHeight, margin, marginTop, marginRight, marginBottom, marginLeft } as BaseProps),
+    ...getLayoutStyles({
+      position,
+      top,
+      right,
+      bottom,
+      left,
+      zIndex,
+      width,
+      height,
+      minWidth,
+      maxWidth,
+      minHeight,
+      maxHeight,
+      margin,
+      marginTop,
+      marginRight,
+      marginBottom,
+      marginLeft,
+    } as BaseProps),
     maxWidth: maxWidthProp,
   };
 
@@ -1868,7 +1990,13 @@ export const Testimonial = ({
           }}
         >
           {/* Quote Icon & Rating Row */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             {showQuoteIcon && (
               <div
                 style={{
@@ -1909,7 +2037,9 @@ export const Testimonial = ({
           />
 
           {/* Author Info */}
-          <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+          <div
+            style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}
+          >
             {showAuthorAvatar && (
               <img
                 src={authorAvatar}
@@ -2057,7 +2187,10 @@ export const Testimonial = ({
             overflow: "hidden",
             transition: "all 0.3s ease",
             ...getAnimationStyle(),
-            ...(isHovering && { borderColor: accentColor, boxShadow: `0 0 20px ${accentColor}30` }),
+            ...(isHovering && {
+              borderColor: accentColor,
+              boxShadow: `0 0 20px ${accentColor}30`,
+            }),
           }}
         >
           {/* Accent decoration */}
@@ -2226,12 +2359,18 @@ const TestimonialSettings = () => {
         <label className="block text-xs font-semibold text-gray-700 bg-blue-50 px-2 py-1 rounded">
           Content
         </label>
-        
+
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Testimonial Text</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Testimonial Text
+          </label>
           <textarea
             value={props.testimonialText ?? ""}
-            onChange={(e) => setProp((p: TestimonialProps) => (p.testimonialText = e.target.value))}
+            onChange={(e) =>
+              setProp(
+                (p: TestimonialProps) => (p.testimonialText = e.target.value),
+              )
+            }
             rows={4}
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="What does your customer say?"
@@ -2240,22 +2379,34 @@ const TestimonialSettings = () => {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Author Name</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Author Name
+            </label>
             <input
               value={props.authorName ?? ""}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.authorName = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.authorName = e.target.value),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="John Doe"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Rating (1-5)</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Rating (1-5)
+            </label>
             <input
               type="number"
               min={1}
               max={5}
               value={props.rating ?? 5}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.rating = Number(e.target.value)))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.rating = Number(e.target.value)),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             />
           </div>
@@ -2263,19 +2414,31 @@ const TestimonialSettings = () => {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Title/Position</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Title/Position
+            </label>
             <input
               value={props.authorTitle ?? ""}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.authorTitle = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.authorTitle = e.target.value),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="CEO"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Company/Org</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Company/Org
+            </label>
             <input
               value={props.authorCompany ?? ""}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.authorCompany = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.authorCompany = e.target.value),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="Company Name"
             />
@@ -2283,10 +2446,16 @@ const TestimonialSettings = () => {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Author Avatar URL</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Author Avatar URL
+          </label>
           <input
             value={props.authorAvatar ?? ""}
-            onChange={(e) => setProp((p: TestimonialProps) => (p.authorAvatar = e.target.value))}
+            onChange={(e) =>
+              setProp(
+                (p: TestimonialProps) => (p.authorAvatar = e.target.value),
+              )
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="https://..."
           />
@@ -2300,10 +2469,16 @@ const TestimonialSettings = () => {
         </label>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Layout Style</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Layout Style
+          </label>
           <select
             value={props.layout ?? "card"}
-            onChange={(e) => setProp((p: TestimonialProps) => (p.layout = e.target.value as any))}
+            onChange={(e) =>
+              setProp(
+                (p: TestimonialProps) => (p.layout = e.target.value as any),
+              )
+            }
             className="w-full px-3 py-2 border rounded text-sm"
           >
             <option value="card">Card (Full Featured)</option>
@@ -2319,45 +2494,86 @@ const TestimonialSettings = () => {
               id="testimonial-rating"
               type="checkbox"
               checked={Boolean(props.showRating ?? true)}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.showRating = e.target.checked))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.showRating = e.target.checked),
+                )
+              }
             />
-            <label htmlFor="testimonial-rating" className="text-sm text-gray-700">Show Rating</label>
+            <label
+              htmlFor="testimonial-rating"
+              className="text-sm text-gray-700"
+            >
+              Show Rating
+            </label>
           </div>
           <div className="flex items-center gap-2">
             <input
               id="testimonial-quote"
               type="checkbox"
               checked={Boolean(props.showQuoteIcon ?? true)}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.showQuoteIcon = e.target.checked))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.showQuoteIcon = e.target.checked),
+                )
+              }
             />
-            <label htmlFor="testimonial-quote" className="text-sm text-gray-700">Quote Icon</label>
+            <label
+              htmlFor="testimonial-quote"
+              className="text-sm text-gray-700"
+            >
+              Quote Icon
+            </label>
           </div>
           <div className="flex items-center gap-2">
             <input
               id="testimonial-avatar"
               type="checkbox"
               checked={Boolean(props.showAuthorAvatar ?? true)}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.showAuthorAvatar = e.target.checked))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) =>
+                    (p.showAuthorAvatar = e.target.checked),
+                )
+              }
             />
-            <label htmlFor="testimonial-avatar" className="text-sm text-gray-700">Show Avatar</label>
+            <label
+              htmlFor="testimonial-avatar"
+              className="text-sm text-gray-700"
+            >
+              Show Avatar
+            </label>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Avatar Size</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Avatar Size
+            </label>
             <input
               value={props.avatarSize ?? "48px"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.avatarSize = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.avatarSize = e.target.value),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="48px"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Avatar Shape</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Avatar Shape
+            </label>
             <select
               value={props.avatarShape ?? "circle"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.avatarShape = e.target.value as any))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) =>
+                    (p.avatarShape = e.target.value as any),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             >
               <option value="circle">Circle</option>
@@ -2375,56 +2591,90 @@ const TestimonialSettings = () => {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Background</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Background
+            </label>
             <input
               type="color"
               value={props.backgroundColor ?? "#ffffff"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.backgroundColor = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.backgroundColor = e.target.value),
+                )
+              }
               className="w-full h-10 border rounded"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Card Background</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Card Background
+            </label>
             <input
               type="color"
               value={props.cardBgColor ?? "#f8fafc"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.cardBgColor = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.cardBgColor = e.target.value),
+                )
+              }
               className="w-full h-10 border rounded"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Text Color</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Text Color
+            </label>
             <input
               type="color"
               value={props.textColor ?? "#1e293b"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.textColor = e.target.value))}
+              onChange={(e) =>
+                setProp((p: TestimonialProps) => (p.textColor = e.target.value))
+              }
               className="w-full h-10 border rounded"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Accent Color</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Accent Color
+            </label>
             <input
               type="color"
               value={props.accentColor ?? "#3b82f6"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.accentColor = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.accentColor = e.target.value),
+                )
+              }
               className="w-full h-10 border rounded"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Border Color</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Border Color
+            </label>
             <input
               type="color"
               value={props.borderColor ?? "#e2e8f0"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.borderColor = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.borderColor = e.target.value),
+                )
+              }
               className="w-full h-10 border rounded"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Rating Color</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Rating Color
+            </label>
             <input
               type="color"
               value={props.ratingColor ?? "#fbbf24"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.ratingColor = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.ratingColor = e.target.value),
+                )
+              }
               className="w-full h-10 border rounded"
             />
           </div>
@@ -2432,19 +2682,32 @@ const TestimonialSettings = () => {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Border Radius</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Border Radius
+            </label>
             <input
               value={props.borderRadius ?? "12px"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.borderRadius = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.borderRadius = e.target.value),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="12px"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Shadow</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Shadow
+            </label>
             <select
               value={props.shadowLevel ?? "medium"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.shadowLevel = e.target.value as any))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) =>
+                    (p.shadowLevel = e.target.value as any),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             >
               <option value="none">None</option>
@@ -2454,19 +2717,27 @@ const TestimonialSettings = () => {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Padding</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Padding
+            </label>
             <input
               value={props.padding ?? "24px"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.padding = e.target.value))}
+              onChange={(e) =>
+                setProp((p: TestimonialProps) => (p.padding = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="24px"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Gap</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Gap
+            </label>
             <input
               value={props.gap ?? "12px"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.gap = e.target.value))}
+              onChange={(e) =>
+                setProp((p: TestimonialProps) => (p.gap = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="12px"
             />
@@ -2482,37 +2753,61 @@ const TestimonialSettings = () => {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Testimonial Size</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Testimonial Size
+            </label>
             <input
               value={props.testimonialSize ?? "16px"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.testimonialSize = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.testimonialSize = e.target.value),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="16px"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Author Name Size</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Author Name Size
+            </label>
             <input
               value={props.authorNameSize ?? "15px"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.authorNameSize = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.authorNameSize = e.target.value),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="15px"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Title Size</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Title Size
+            </label>
             <input
               value={props.authorTitleSize ?? "13px"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.authorTitleSize = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.authorTitleSize = e.target.value),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="13px"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Line Height</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Line Height
+            </label>
             <input
               value={props.lineHeight ?? "1.6"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.lineHeight = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) => (p.lineHeight = e.target.value),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="1.6"
             />
@@ -2528,10 +2823,17 @@ const TestimonialSettings = () => {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Hover Effect</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Hover Effect
+            </label>
             <select
               value={props.hoverEffect ?? "lift"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.hoverEffect = e.target.value as any))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) =>
+                    (p.hoverEffect = e.target.value as any),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             >
               <option value="none">None</option>
@@ -2541,10 +2843,17 @@ const TestimonialSettings = () => {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Animation</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Animation
+            </label>
             <select
               value={props.animationType ?? "fadeIn"}
-              onChange={(e) => setProp((p: TestimonialProps) => (p.animationType = e.target.value as any))}
+              onChange={(e) =>
+                setProp(
+                  (p: TestimonialProps) =>
+                    (p.animationType = e.target.value as any),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             >
               <option value="none">None</option>
@@ -2556,10 +2865,16 @@ const TestimonialSettings = () => {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Animation Duration</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Animation Duration
+          </label>
           <input
             value={props.animationDuration ?? "0.6s"}
-            onChange={(e) => setProp((p: TestimonialProps) => (p.animationDuration = e.target.value))}
+            onChange={(e) =>
+              setProp(
+                (p: TestimonialProps) => (p.animationDuration = e.target.value),
+              )
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="0.6s"
           />
@@ -2592,7 +2907,8 @@ const TestimonialSettings = () => {
     marginBottom: "0",
     marginLeft: "0",
     // Content
-    testimonialText: "This experience was transformative. The team went above and beyond to ensure success. I highly recommend their services to anyone looking for excellence.",
+    testimonialText:
+      "This experience was transformative. The team went above and beyond to ensure success. I highly recommend their services to anyone looking for excellence.",
     authorName: "Sarah Johnson",
     authorTitle: "Student",
     authorCompany: "Class of 2026",
@@ -2692,7 +3008,9 @@ export const Timeline = ({
     connectors: { connect, drag },
   } = useNode();
   const [buttonHover, setButtonHover] = React.useState(false);
-  const [windowWidth, setWindowWidth] = React.useState(typeof window !== "undefined" ? window.innerWidth : 1024);
+  const [windowWidth, setWindowWidth] = React.useState(
+    typeof window !== "undefined" ? window.innerWidth : 1024,
+  );
 
   React.useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -2751,7 +3069,9 @@ export const Timeline = ({
         maxWidth: maxWidth || "100%",
         minHeight: minHeight || "auto",
         maxHeight: maxHeight || "auto",
-        margin: margin || `${marginTop || "0"} ${marginRight || "0"} ${marginBottom || "0"} ${marginLeft || "0"}`,
+        margin:
+          margin ||
+          `${marginTop || "0"} ${marginRight || "0"} ${marginBottom || "0"} ${marginLeft || "0"}`,
         boxSizing: "border-box",
         // Component Styles
         background: timelineBackground,
@@ -2846,7 +3166,8 @@ export const Timeline = ({
               style={{
                 borderRadius: "16px",
                 border: `1px solid ${timelineBorderColor}`,
-                background: "linear-gradient(150deg, rgba(255,255,255,0.94), rgba(240,249,255,0.78))",
+                background:
+                  "linear-gradient(150deg, rgba(255,255,255,0.94), rgba(240,249,255,0.78))",
                 padding: "14px 16px",
                 color: timelineBodyTextColor,
                 fontSize: bodySize,
@@ -2869,78 +3190,78 @@ export const Timeline = ({
             flexDirection: "column",
             gap: "16px",
           }}
-      >
-        {timelineItems.map((item, idx) => {
-          const isLast = idx === timelineItems.length - 1;
-          return (
-            <li
-              key={`timeline-item-${idx}`}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "46px 1fr",
-                gap: "14px",
-                alignItems: "start",
-                position: "relative",
-              }}
-            >
-              <div
+        >
+          {timelineItems.map((item, idx) => {
+            const isLast = idx === timelineItems.length - 1;
+            return (
+              <li
+                key={`timeline-item-${idx}`}
                 style={{
+                  display: "grid",
+                  gridTemplateColumns: "46px 1fr",
+                  gap: "14px",
+                  alignItems: "start",
                   position: "relative",
-                  display: "flex",
-                  justifyContent: "center",
                 }}
               >
-                <span
+                <div
                   style={{
-                    width: "34px",
-                    height: "34px",
-                    borderRadius: "999px",
-                    background:
-                      "linear-gradient(135deg, #0891b2 0%, #0ea5e9 55%, #38bdf8 100%)",
-                    color: "#ffffff",
-                    fontWeight: 800,
-                    fontSize: "13px",
-                    display: "grid",
-                    placeItems: "center",
-                    boxShadow: "0 12px 22px rgba(14,116,144,0.34)",
-                    zIndex: 2,
+                    position: "relative",
+                    display: "flex",
+                    justifyContent: "center",
                   }}
                 >
-                  {idx + 1}
-                </span>
-                {!isLast ? (
                   <span
                     style={{
-                      position: "absolute",
-                      top: "37px",
-                      width: "3px",
-                      height: "calc(100% + 16px)",
-                      background:
-                        "linear-gradient(to bottom, rgba(14,116,144,0.46), rgba(14,116,144,0.08))",
+                      width: "34px",
+                      height: "34px",
                       borderRadius: "999px",
+                      background:
+                        "linear-gradient(135deg, #0891b2 0%, #0ea5e9 55%, #38bdf8 100%)",
+                      color: "#ffffff",
+                      fontWeight: 800,
+                      fontSize: "13px",
+                      display: "grid",
+                      placeItems: "center",
+                      boxShadow: "0 12px 22px rgba(14,116,144,0.34)",
+                      zIndex: 2,
                     }}
-                  />
-                ) : null}
-              </div>
+                  >
+                    {idx + 1}
+                  </span>
+                  {!isLast ? (
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: "37px",
+                        width: "3px",
+                        height: "calc(100% + 16px)",
+                        background:
+                          "linear-gradient(to bottom, rgba(14,116,144,0.46), rgba(14,116,144,0.08))",
+                        borderRadius: "999px",
+                      }}
+                    />
+                  ) : null}
+                </div>
 
-              <div
-                style={{
-                  borderRadius: "16px",
-                  border: "1px solid rgba(125,211,252,0.45)",
-                  background:
-                    "linear-gradient(150deg, rgba(255,255,255,0.94), rgba(240,249,255,0.78))",
-                  padding: "14px 16px",
-                  color: timelineBodyTextColor,
-                  fontSize: bodySize,
-                  lineHeight: 1.6,
-                  boxShadow: "0 14px 24px rgba(15,23,42,0.08)",
-                }}
-              >
-                {item}
-              </div>
-            </li>
-          );
-        })}
+                <div
+                  style={{
+                    borderRadius: "16px",
+                    border: "1px solid rgba(125,211,252,0.45)",
+                    background:
+                      "linear-gradient(150deg, rgba(255,255,255,0.94), rgba(240,249,255,0.78))",
+                    padding: "14px 16px",
+                    color: timelineBodyTextColor,
+                    fontSize: bodySize,
+                    lineHeight: 1.6,
+                    boxShadow: "0 14px 24px rgba(15,23,42,0.08)",
+                  }}
+                >
+                  {item}
+                </div>
+              </li>
+            );
+          })}
         </ol>
       )}
 
@@ -3043,19 +3364,27 @@ const BadgeSettings = () => {
       {/* CONTENT SECTION */}
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Title</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Title
+          </label>
           <input
             value={props.title ?? ""}
-            onChange={(e) => setProp((p: BaseProps) => (p.title = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.title = e.target.value))
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="Badge title"
-            />
+          />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Subtitle</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Subtitle
+          </label>
           <input
             value={props.subtitle ?? ""}
-            onChange={(e) => setProp((p: BaseProps) => (p.subtitle = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.subtitle = e.target.value))
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="Badge subtitle"
           />
@@ -3063,10 +3392,14 @@ const BadgeSettings = () => {
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Description</label>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+          Description
+        </label>
         <textarea
           value={props.description ?? ""}
-          onChange={(e) => setProp((p: BaseProps) => (p.description = e.target.value))}
+          onChange={(e) =>
+            setProp((p: BaseProps) => (p.description = e.target.value))
+          }
           className="w-full px-3 py-2 border rounded text-sm"
           rows={2}
           placeholder="Badge description"
@@ -3078,11 +3411,16 @@ const BadgeSettings = () => {
         <h4 className="font-semibold text-xs text-gray-700">SIZE & LAYOUT</h4>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Badge Size</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Badge Size
+            </label>
             <select
               value={props.badgeSize ?? "medium"}
               onChange={(e) =>
-                setProp((p: BaseProps) => (p.badgeSize = e.target.value as BaseProps["badgeSize"]))
+                setProp(
+                  (p: BaseProps) =>
+                    (p.badgeSize = e.target.value as BaseProps["badgeSize"]),
+                )
               }
               className="w-full px-3 py-2 border rounded text-sm"
             >
@@ -3093,11 +3431,17 @@ const BadgeSettings = () => {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Alignment</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Alignment
+            </label>
             <select
               value={props.badgeAlignment ?? "left"}
               onChange={(e) =>
-                setProp((p: BaseProps) => (p.badgeAlignment = e.target.value as BaseProps["badgeAlignment"]))
+                setProp(
+                  (p: BaseProps) =>
+                    (p.badgeAlignment = e.target
+                      .value as BaseProps["badgeAlignment"]),
+                )
               }
               className="w-full px-3 py-2 border rounded text-sm"
             >
@@ -3110,19 +3454,27 @@ const BadgeSettings = () => {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Width</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Width
+            </label>
             <input
               value={props.badgeWidth ?? "300px"}
-              onChange={(e) => setProp((p: BaseProps) => (p.badgeWidth = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.badgeWidth = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="300px"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Height</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Height
+            </label>
             <input
               value={props.badgeHeight ?? "auto"}
-              onChange={(e) => setProp((p: BaseProps) => (p.badgeHeight = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.badgeHeight = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="auto"
             />
@@ -3131,19 +3483,27 @@ const BadgeSettings = () => {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Max Width</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Max Width
+            </label>
             <input
               value={props.maxWidth ?? "100%"}
-              onChange={(e) => setProp((p: BaseProps) => (p.maxWidth = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.maxWidth = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="100%"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Min Width</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Min Width
+            </label>
             <input
               value={props.minWidth ?? "240px"}
-              onChange={(e) => setProp((p: BaseProps) => (p.minWidth = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.minWidth = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="240px"
             />
@@ -3155,11 +3515,17 @@ const BadgeSettings = () => {
       <div className="border-t pt-3 space-y-3">
         <h4 className="font-semibold text-xs text-gray-700">POSITIONING</h4>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Position Type</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Position Type
+          </label>
           <select
             value={props.badgePosition ?? "static"}
             onChange={(e) =>
-              setProp((p: BaseProps) => (p.badgePosition = e.target.value as BaseProps["badgePosition"]))
+              setProp(
+                (p: BaseProps) =>
+                  (p.badgePosition = e.target
+                    .value as BaseProps["badgePosition"]),
+              )
             }
             className="w-full px-3 py-2 border rounded text-sm"
           >
@@ -3174,37 +3540,53 @@ const BadgeSettings = () => {
           <>
             <div className="grid grid-cols-4 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Top</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Top
+                </label>
                 <input
                   value={props.badgeTop ?? "0"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.badgeTop = e.target.value))}
+                  onChange={(e) =>
+                    setProp((p: BaseProps) => (p.badgeTop = e.target.value))
+                  }
                   className="w-full px-2 py-1 border rounded text-xs"
                   placeholder="0"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Right</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Right
+                </label>
                 <input
                   value={props.badgeRight ?? "0"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.badgeRight = e.target.value))}
+                  onChange={(e) =>
+                    setProp((p: BaseProps) => (p.badgeRight = e.target.value))
+                  }
                   className="w-full px-2 py-1 border rounded text-xs"
                   placeholder="0"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Bottom</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Bottom
+                </label>
                 <input
                   value={props.badgeBottom ?? "auto"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.badgeBottom = e.target.value))}
+                  onChange={(e) =>
+                    setProp((p: BaseProps) => (p.badgeBottom = e.target.value))
+                  }
                   className="w-full px-2 py-1 border rounded text-xs"
                   placeholder="auto"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Left</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Left
+                </label>
                 <input
                   value={props.badgeLeft ?? "auto"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.badgeLeft = e.target.value))}
+                  onChange={(e) =>
+                    setProp((p: BaseProps) => (p.badgeLeft = e.target.value))
+                  }
                   className="w-full px-2 py-1 border rounded text-xs"
                   placeholder="auto"
                 />
@@ -3212,14 +3594,20 @@ const BadgeSettings = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Z-Index ({props.badgeZIndex ?? 10})</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                Z-Index ({props.badgeZIndex ?? 10})
+              </label>
               <input
                 type="range"
                 min="0"
                 max="1000"
                 step="10"
                 value={props.badgeZIndex ?? 10}
-                onChange={(e) => setProp((p: BaseProps) => (p.badgeZIndex = Number(e.target.value)))}
+                onChange={(e) =>
+                  setProp(
+                    (p: BaseProps) => (p.badgeZIndex = Number(e.target.value)),
+                  )
+                }
                 className="w-full"
               />
             </div>
@@ -3229,32 +3617,46 @@ const BadgeSettings = () => {
 
       {/* SPACING & MARGINS */}
       <div className="border-t pt-3 space-y-3">
-        <h4 className="font-semibold text-xs text-gray-700">SPACING & MARGINS</h4>
+        <h4 className="font-semibold text-xs text-gray-700">
+          SPACING & MARGINS
+        </h4>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Padding</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Padding
+          </label>
           <input
             value={props.padding ?? "16px"}
-            onChange={(e) => setProp((p: BaseProps) => (p.padding = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.padding = e.target.value))
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="16px"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Gap</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Gap
+          </label>
           <input
             value={props.gap ?? "6px"}
-            onChange={(e) => setProp((p: BaseProps) => (p.gap = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.gap = e.target.value))
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="6px"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Margin (All)</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Margin (All)
+          </label>
           <input
             value={props.badgeMargin ?? "0"}
-            onChange={(e) => setProp((p: BaseProps) => (p.badgeMargin = e.target.value))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.badgeMargin = e.target.value))
+            }
             className="w-full px-3 py-2 border rounded text-sm"
             placeholder="0"
           />
@@ -3262,37 +3664,55 @@ const BadgeSettings = () => {
 
         <div className="grid grid-cols-4 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">M-Top</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              M-Top
+            </label>
             <input
               value={props.badgeMarginTop ?? "0"}
-              onChange={(e) => setProp((p: BaseProps) => (p.badgeMarginTop = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.badgeMarginTop = e.target.value))
+              }
               className="w-full px-2 py-1 border rounded text-xs"
               placeholder="0"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">M-Right</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              M-Right
+            </label>
             <input
               value={props.badgeMarginRight ?? "0"}
-              onChange={(e) => setProp((p: BaseProps) => (p.badgeMarginRight = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.badgeMarginRight = e.target.value))
+              }
               className="w-full px-2 py-1 border rounded text-xs"
               placeholder="0"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">M-Bottom</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              M-Bottom
+            </label>
             <input
               value={props.badgeMarginBottom ?? "0"}
-              onChange={(e) => setProp((p: BaseProps) => (p.badgeMarginBottom = e.target.value))}
+              onChange={(e) =>
+                setProp(
+                  (p: BaseProps) => (p.badgeMarginBottom = e.target.value),
+                )
+              }
               className="w-full px-2 py-1 border rounded text-xs"
               placeholder="0"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">M-Left</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              M-Left
+            </label>
             <input
               value={props.badgeMarginLeft ?? "0"}
-              onChange={(e) => setProp((p: BaseProps) => (p.badgeMarginLeft = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.badgeMarginLeft = e.target.value))
+              }
               className="w-full px-2 py-1 border rounded text-xs"
               placeholder="0"
             />
@@ -3308,29 +3728,41 @@ const BadgeSettings = () => {
             id="show-icon"
             type="checkbox"
             checked={Boolean(props.showIcon)}
-            onChange={(e) => setProp((p: BaseProps) => (p.showIcon = e.target.checked))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.showIcon = e.target.checked))
+            }
           />
-          <label htmlFor="show-icon" className="text-sm text-gray-700">Show Icon</label>
+          <label htmlFor="show-icon" className="text-sm text-gray-700">
+            Show Icon
+          </label>
         </div>
 
         {props.showIcon && (
           <>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Icon</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Icon
+                </label>
                 <input
                   value={props.iconEmoji ?? "★"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.iconEmoji = e.target.value))}
+                  onChange={(e) =>
+                    setProp((p: BaseProps) => (p.iconEmoji = e.target.value))
+                  }
                   className="w-full px-3 py-2 border rounded text-center text-lg"
                   placeholder="★"
                   maxLength={3}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Icon Size</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Icon Size
+                </label>
                 <input
                   value={props.iconSize ?? "28px"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.iconSize = e.target.value))}
+                  onChange={(e) =>
+                    setProp((p: BaseProps) => (p.iconSize = e.target.value))
+                  }
                   className="w-full px-3 py-2 border rounded text-sm"
                   placeholder="28px"
                 />
@@ -3339,11 +3771,17 @@ const BadgeSettings = () => {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Icon Style</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Icon Style
+                </label>
                 <select
                   value={props.iconStyle ?? "circle"}
                   onChange={(e) =>
-                    setProp((p: BaseProps) => (p.iconStyle = e.target.value as BaseProps["iconStyle"]))
+                    setProp(
+                      (p: BaseProps) =>
+                        (p.iconStyle = e.target
+                          .value as BaseProps["iconStyle"]),
+                    )
                   }
                   className="w-full px-3 py-2 border rounded text-sm"
                 >
@@ -3354,11 +3792,17 @@ const BadgeSettings = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Position</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Position
+                </label>
                 <select
                   value={props.iconPosition ?? "inline-title"}
                   onChange={(e) =>
-                    setProp((p: BaseProps) => (p.iconPosition = e.target.value as BaseProps["iconPosition"]))
+                    setProp(
+                      (p: BaseProps) =>
+                        (p.iconPosition = e.target
+                          .value as BaseProps["iconPosition"]),
+                    )
                   }
                   className="w-full px-3 py-2 border rounded text-sm"
                 >
@@ -3372,20 +3816,28 @@ const BadgeSettings = () => {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Icon Background</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Icon Background
+                </label>
                 <input
                   type="color"
                   value={props.iconBgColor ?? "#f97316"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.iconBgColor = e.target.value))}
+                  onChange={(e) =>
+                    setProp((p: BaseProps) => (p.iconBgColor = e.target.value))
+                  }
                   className="w-full h-10 border rounded"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Icon Color</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Icon Color
+                </label>
                 <input
                   type="color"
                   value={props.iconColor ?? "#ffffff"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.iconColor = e.target.value))}
+                  onChange={(e) =>
+                    setProp((p: BaseProps) => (p.iconColor = e.target.value))
+                  }
                   className="w-full h-10 border rounded"
                 />
               </div>
@@ -3399,49 +3851,69 @@ const BadgeSettings = () => {
         <h4 className="font-semibold text-xs text-gray-700">COLORS</h4>
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Background</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Background
+            </label>
             <input
               type="color"
               value={props.backgroundColor ?? "#fef3c7"}
-              onChange={(e) => setProp((p: BaseProps) => (p.backgroundColor = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.backgroundColor = e.target.value))
+              }
               className="w-full h-10 border rounded"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Title</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Title
+            </label>
             <input
               type="color"
               value={props.titleColor ?? "#7c2d12"}
-              onChange={(e) => setProp((p: BaseProps) => (p.titleColor = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.titleColor = e.target.value))
+              }
               className="w-full h-10 border rounded"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Subtitle</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Subtitle
+            </label>
             <input
               type="color"
               value={props.subtitleColor ?? "#9a3412"}
-              onChange={(e) => setProp((p: BaseProps) => (p.subtitleColor = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.subtitleColor = e.target.value))
+              }
               className="w-full h-10 border rounded"
             />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Body Text</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Body Text
+            </label>
             <input
               type="color"
               value={props.bodyTextColor ?? "#92400e"}
-              onChange={(e) => setProp((p: BaseProps) => (p.bodyTextColor = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.bodyTextColor = e.target.value))
+              }
               className="w-full h-10 border rounded"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Border</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Border
+            </label>
             <input
               type="color"
               value={props.borderColor ?? "rgba(251,146,60,0.45)"}
-              onChange={(e) => setProp((p: BaseProps) => (p.borderColor = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.borderColor = e.target.value))
+              }
               className="w-full h-10 border rounded"
             />
           </div>
@@ -3453,48 +3925,73 @@ const BadgeSettings = () => {
         <h4 className="font-semibold text-xs text-gray-700">TYPOGRAPHY</h4>
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Title Size</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Title Size
+            </label>
             <input
               value={props.titleSize ?? "20px"}
-              onChange={(e) => setProp((p: BaseProps) => (p.titleSize = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.titleSize = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Subtitle Size</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Subtitle Size
+            </label>
             <input
               value={props.subtitleSize ?? "11px"}
-              onChange={(e) => setProp((p: BaseProps) => (p.subtitleSize = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.subtitleSize = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Body Size</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Body Size
+            </label>
             <input
               value={props.bodySize ?? "13px"}
-              onChange={(e) => setProp((p: BaseProps) => (p.bodySize = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.bodySize = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Font Family</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Font Family
+            </label>
             <select
               value={props.fontFamily ?? "inherit"}
-              onChange={(e) => setProp((p: BaseProps) => (p.fontFamily = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.fontFamily = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             >
               {FONT_FAMILY_OPTIONS.map((font) => (
-                <option key={font} value={font}>{font}</option>
+                <option key={font} value={font}>
+                  {font}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Text Style</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Text Style
+            </label>
             <select
               value={props.textStyle ?? "normal"}
-              onChange={(e) => setProp((p: BaseProps) => (p.textStyle = e.target.value as BaseProps["textStyle"]))}
+              onChange={(e) =>
+                setProp(
+                  (p: BaseProps) =>
+                    (p.textStyle = e.target.value as BaseProps["textStyle"]),
+                )
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             >
               <option value="normal">Normal</option>
@@ -3506,32 +4003,47 @@ const BadgeSettings = () => {
 
       {/* BORDERS & SHADOWS */}
       <div className="border-t pt-3 space-y-3">
-        <h4 className="font-semibold text-xs text-gray-700">BORDERS & SHADOWS</h4>
+        <h4 className="font-semibold text-xs text-gray-700">
+          BORDERS & SHADOWS
+        </h4>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Border Radius</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Border Radius
+            </label>
             <input
               value={props.borderRadius ?? "999px"}
-              onChange={(e) => setProp((p: BaseProps) => (p.borderRadius = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.borderRadius = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Border Width</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Border Width
+            </label>
             <input
               value={props.borderWidth ?? "1px"}
-              onChange={(e) => setProp((p: BaseProps) => (p.borderWidth = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.borderWidth = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Border Style</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Border Style
+          </label>
           <select
             value={props.borderStyle ?? "solid"}
             onChange={(e) =>
-              setProp((p: BaseProps) => (p.borderStyle = e.target.value as BaseProps["borderStyle"]))
+              setProp(
+                (p: BaseProps) =>
+                  (p.borderStyle = e.target.value as BaseProps["borderStyle"]),
+              )
             }
             className="w-full px-3 py-2 border rounded text-sm"
           >
@@ -3544,41 +4056,59 @@ const BadgeSettings = () => {
 
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Shadow Color</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Shadow Color
+            </label>
             <input
               type="color"
               value={props.shadowColor ?? "rgba(217,119,6,0.2)"}
-              onChange={(e) => setProp((p: BaseProps) => (p.shadowColor = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.shadowColor = e.target.value))
+              }
               className="w-full h-10 border rounded"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Shadow Blur</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Shadow Blur
+            </label>
             <input
               value={props.shadowBlur ?? "40px"}
-              onChange={(e) => setProp((p: BaseProps) => (p.shadowBlur = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.shadowBlur = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Shadow Spread</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Shadow Spread
+            </label>
             <input
               value={props.shadowSpread ?? "0px"}
-              onChange={(e) => setProp((p: BaseProps) => (p.shadowSpread = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.shadowSpread = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Shadow Opacity ({Math.round((props.shadowOpacity ?? 1) * 100)}%)</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Shadow Opacity ({Math.round((props.shadowOpacity ?? 1) * 100)}%)
+          </label>
           <input
             type="range"
             min="0"
             max="1"
             step="0.1"
             value={props.shadowOpacity ?? 1}
-            onChange={(e) => setProp((p: BaseProps) => (p.shadowOpacity = Number(e.target.value)))}
+            onChange={(e) =>
+              setProp(
+                (p: BaseProps) => (p.shadowOpacity = Number(e.target.value)),
+              )
+            }
             className="w-full"
           />
         </div>
@@ -3586,53 +4116,79 @@ const BadgeSettings = () => {
 
       {/* TRANSFORM & ANIMATION */}
       <div className="border-t pt-3 space-y-3">
-        <h4 className="font-semibold text-xs text-gray-700">TRANSFORM & ANIMATION</h4>
-        
+        <h4 className="font-semibold text-xs text-gray-700">
+          TRANSFORM & ANIMATION
+        </h4>
+
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Rotate ({props.badgeRotate ?? 0}°)</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Rotate ({props.badgeRotate ?? 0}°)
+            </label>
             <input
               type="range"
               min="-360"
               max="360"
               step="5"
               value={props.badgeRotate ?? 0}
-              onChange={(e) => setProp((p: BaseProps) => (p.badgeRotate = Number(e.target.value)))}
+              onChange={(e) =>
+                setProp(
+                  (p: BaseProps) => (p.badgeRotate = Number(e.target.value)),
+                )
+              }
               className="w-full"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Scale ({props.badgeScale ?? 1}x)</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Scale ({props.badgeScale ?? 1}x)
+            </label>
             <input
               type="range"
               min="0.5"
               max="2"
               step="0.1"
               value={props.badgeScale ?? 1}
-              onChange={(e) => setProp((p: BaseProps) => (p.badgeScale = Number(e.target.value)))}
+              onChange={(e) =>
+                setProp(
+                  (p: BaseProps) => (p.badgeScale = Number(e.target.value)),
+                )
+              }
               className="w-full"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Opacity ({Math.round((props.badgeOpacity ?? 1) * 100)}%)</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Opacity ({Math.round((props.badgeOpacity ?? 1) * 100)}%)
+            </label>
             <input
               type="range"
               min="0"
               max="1"
               step="0.1"
               value={props.badgeOpacity ?? 1}
-              onChange={(e) => setProp((p: BaseProps) => (p.badgeOpacity = Number(e.target.value)))}
+              onChange={(e) =>
+                setProp(
+                  (p: BaseProps) => (p.badgeOpacity = Number(e.target.value)),
+                )
+              }
               className="w-full"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Animation</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            Animation
+          </label>
           <select
             value={props.badgeAnimation ?? "none"}
             onChange={(e) =>
-              setProp((p: BaseProps) => (p.badgeAnimation = e.target.value as BaseProps["badgeAnimation"]))
+              setProp(
+                (p: BaseProps) =>
+                  (p.badgeAnimation = e.target
+                    .value as BaseProps["badgeAnimation"]),
+              )
             }
             className="w-full px-3 py-2 border rounded text-sm"
           >
@@ -3649,19 +4205,33 @@ const BadgeSettings = () => {
           <>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Duration</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Duration
+                </label>
                 <input
                   value={props.badgeAnimationDuration ?? "2s"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.badgeAnimationDuration = e.target.value))}
+                  onChange={(e) =>
+                    setProp(
+                      (p: BaseProps) =>
+                        (p.badgeAnimationDuration = e.target.value),
+                    )
+                  }
                   className="w-full px-3 py-2 border rounded text-sm"
                   placeholder="2s"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Delay</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Delay
+                </label>
                 <input
                   value={props.badgeAnimationDelay ?? "0s"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.badgeAnimationDelay = e.target.value))}
+                  onChange={(e) =>
+                    setProp(
+                      (p: BaseProps) =>
+                        (p.badgeAnimationDelay = e.target.value),
+                    )
+                  }
                   className="w-full px-3 py-2 border rounded text-sm"
                   placeholder="0s"
                 />
@@ -3674,26 +4244,40 @@ const BadgeSettings = () => {
           <h5 className="text-xs font-semibold text-gray-700">HOVER EFFECTS</h5>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Rotate on Hover ({props.badgeRotateOnHover ?? 0}°)</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                Rotate on Hover ({props.badgeRotateOnHover ?? 0}°)
+              </label>
               <input
                 type="range"
                 min="-180"
                 max="180"
                 step="5"
                 value={props.badgeRotateOnHover ?? 0}
-                onChange={(e) => setProp((p: BaseProps) => (p.badgeRotateOnHover = Number(e.target.value)))}
+                onChange={(e) =>
+                  setProp(
+                    (p: BaseProps) =>
+                      (p.badgeRotateOnHover = Number(e.target.value)),
+                  )
+                }
                 className="w-full"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Scale on Hover ({props.badgeScaleOnHover ?? 1}x)</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                Scale on Hover ({props.badgeScaleOnHover ?? 1}x)
+              </label>
               <input
                 type="range"
                 min="0.5"
                 max="2"
                 step="0.1"
                 value={props.badgeScaleOnHover ?? 1}
-                onChange={(e) => setProp((p: BaseProps) => (p.badgeScaleOnHover = Number(e.target.value)))}
+                onChange={(e) =>
+                  setProp(
+                    (p: BaseProps) =>
+                      (p.badgeScaleOnHover = Number(e.target.value)),
+                  )
+                }
                 className="w-full"
               />
             </div>
@@ -3709,19 +4293,27 @@ const BadgeSettings = () => {
             id="count-badge"
             type="checkbox"
             checked={Boolean(props.countBadge)}
-            onChange={(e) => setProp((p: BaseProps) => (p.countBadge = e.target.checked))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.countBadge = e.target.checked))
+            }
           />
-          <label htmlFor="count-badge" className="text-sm text-gray-700">Show Count Badge</label>
+          <label htmlFor="count-badge" className="text-sm text-gray-700">
+            Show Count Badge
+          </label>
         </div>
 
         {props.countBadge && (
           <>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Count Number</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Count Number
+                </label>
                 <input
                   value={props.countNumber ?? "5"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.countNumber = e.target.value))}
+                  onChange={(e) =>
+                    setProp((p: BaseProps) => (p.countNumber = e.target.value))
+                  }
                   className="w-full px-3 py-2 border rounded text-sm"
                   placeholder="5"
                 />
@@ -3730,20 +4322,30 @@ const BadgeSettings = () => {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Count Background</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Count Background
+                </label>
                 <input
                   type="color"
                   value={props.countBgColor ?? "#ef4444"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.countBgColor = e.target.value))}
+                  onChange={(e) =>
+                    setProp((p: BaseProps) => (p.countBgColor = e.target.value))
+                  }
                   className="w-full h-10 border rounded"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Count Text</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Count Text
+                </label>
                 <input
                   type="color"
                   value={props.countTextColor ?? "#ffffff"}
-                  onChange={(e) => setProp((p: BaseProps) => (p.countTextColor = e.target.value))}
+                  onChange={(e) =>
+                    setProp(
+                      (p: BaseProps) => (p.countTextColor = e.target.value),
+                    )
+                  }
                   className="w-full h-10 border rounded"
                 />
               </div>
@@ -3759,28 +4361,39 @@ const BadgeSettings = () => {
             id="show-cta"
             type="checkbox"
             checked={Boolean(props.showCta)}
-            onChange={(e) => setProp((p: BaseProps) => (p.showCta = e.target.checked))}
+            onChange={(e) =>
+              setProp((p: BaseProps) => (p.showCta = e.target.checked))
+            }
           />
-          <label htmlFor="show-cta" className="text-sm text-gray-700">Show Action Button</label>
+          <label htmlFor="show-cta" className="text-sm text-gray-700">
+            Show Action Button
+          </label>
         </div>
         {props.showCta && (
           <>
             <input
               value={props.ctaText ?? "View"}
-              onChange={(e) => setProp((p: BaseProps) => (p.ctaText = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.ctaText = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="Button text"
             />
             <input
               value={props.ctaUrl ?? "#"}
-              onChange={(e) => setProp((p: BaseProps) => (p.ctaUrl = e.target.value))}
+              onChange={(e) =>
+                setProp((p: BaseProps) => (p.ctaUrl = e.target.value))
+              }
               className="w-full px-3 py-2 border rounded text-sm"
               placeholder="Button URL"
             />
             <select
               value={props.ctaTarget ?? "same"}
               onChange={(e) =>
-                setProp((p: BaseProps) => (p.ctaTarget = e.target.value as BaseProps["ctaTarget"]))
+                setProp(
+                  (p: BaseProps) =>
+                    (p.ctaTarget = e.target.value as BaseProps["ctaTarget"]),
+                )
               }
               className="w-full px-3 py-2 border rounded text-sm"
             >
@@ -3791,19 +4404,29 @@ const BadgeSettings = () => {
               <input
                 type="color"
                 value={props.buttonColor ?? "#9a3412"}
-                onChange={(e) => setProp((p: BaseProps) => (p.buttonColor = e.target.value))}
+                onChange={(e) =>
+                  setProp((p: BaseProps) => (p.buttonColor = e.target.value))
+                }
                 className="w-full h-10 border rounded"
               />
               <input
                 type="color"
                 value={props.buttonTextColor ?? "#ffffff"}
-                onChange={(e) => setProp((p: BaseProps) => (p.buttonTextColor = e.target.value))}
+                onChange={(e) =>
+                  setProp(
+                    (p: BaseProps) => (p.buttonTextColor = e.target.value),
+                  )
+                }
                 className="w-full h-10 border rounded"
               />
               <input
                 type="color"
                 value={props.buttonHoverColor ?? "#7c2d12"}
-                onChange={(e) => setProp((p: BaseProps) => (p.buttonHoverColor = e.target.value))}
+                onChange={(e) =>
+                  setProp(
+                    (p: BaseProps) => (p.buttonHoverColor = e.target.value),
+                  )
+                }
                 className="w-full h-10 border rounded"
               />
             </div>
@@ -3939,18 +4562,21 @@ export const Badge = ({
 
   // Calculate transform
   const getTransform = () => {
-    let transforms = [];
+    const transforms = [];
     if (badgeRotate !== 0) transforms.push(`rotate(${badgeRotate}deg)`);
     if (badgeScale !== 1) transforms.push(`scale(${badgeScale})`);
-    if (badgeTransform !== "none" && badgeTransform) transforms.push(badgeTransform);
+    if (badgeTransform !== "none" && badgeTransform)
+      transforms.push(badgeTransform);
     return transforms.length > 0 ? transforms.join(" ") : "none";
   };
 
   // Calculate hover transform
   const getHoverTransform = () => {
-    let transforms = [];
-    if (badgeRotateOnHover !== 0) transforms.push(`rotate(${badgeRotate + badgeRotateOnHover}deg)`);
-    if (badgeScaleOnHover !== 1) transforms.push(`scale(${badgeScale * badgeScaleOnHover})`);
+    const transforms = [];
+    if (badgeRotateOnHover !== 0)
+      transforms.push(`rotate(${badgeRotate + badgeRotateOnHover}deg)`);
+    if (badgeScaleOnHover !== 1)
+      transforms.push(`scale(${badgeScale * badgeScaleOnHover})`);
     return transforms.length > 0 ? transforms.join(" ") : getTransform();
   };
 
@@ -3968,7 +4594,8 @@ export const Badge = ({
 
   // Calculate background
   const calculateBackground = () => {
-    if (backgroundGradient && backgroundGradient !== "none") return backgroundGradient;
+    if (backgroundGradient && backgroundGradient !== "none")
+      return backgroundGradient;
     return backgroundColor;
   };
 
@@ -4030,7 +4657,25 @@ export const Badge = ({
         onMouseEnter={() => setBadgeHover(true)}
         onMouseLeave={() => setBadgeHover(false)}
         style={{
-          ...getLayoutStyles({ position, top, right, bottom, left, zIndex, width, height, minWidth, maxWidth, minHeight, maxHeight, margin, marginTop, marginRight, marginBottom, marginLeft } as BaseProps),
+          ...getLayoutStyles({
+            position,
+            top,
+            right,
+            bottom,
+            left,
+            zIndex,
+            width,
+            height,
+            minWidth,
+            maxWidth,
+            minHeight,
+            maxHeight,
+            margin,
+            marginTop,
+            marginRight,
+            marginBottom,
+            marginLeft,
+          } as BaseProps),
           overflow: "hidden",
           background: calculateBackground(),
           border: `${borderWidth} ${borderStyle} ${borderColor}`,
@@ -4046,155 +4691,160 @@ export const Badge = ({
           width: actualWidth,
           height,
           flexShrink: 0,
-          alignItems: alignmentMap[badgeAlignment as keyof typeof alignmentMap] || "flex-start",
+          alignItems:
+            alignmentMap[badgeAlignment as keyof typeof alignmentMap] ||
+            "flex-start",
           opacity: badgeOpacity,
           transform: badgeHover ? getHoverTransform() : getTransform(),
           animation: getAnimationString(),
           transition: "transform 0.3s ease, opacity 0.3s ease",
         }}
       >
-      {/* Decorative gradient circle */}
-      <div
-        style={{
-          position: "absolute",
-          right: "-18px",
-          top: "-18px",
-          width: "82px",
-          height: "82px",
-          borderRadius: "999px",
-          background: "radial-gradient(circle, rgba(251,146,60,0.35) 0%, rgba(251,146,60,0) 70%)",
-          pointerEvents: "none",
-        }}
-      />
-
-      <p
-        style={{
-          margin: 0,
-          fontSize: subtitleSize,
-          color: subtitleColor,
-          letterSpacing: "0.16em",
-          textTransform: "uppercase",
-          fontWeight: 800,
-        }}
-      >
-        {subtitle}
-      </p>
-
-      {showIcon && iconPosition !== "inline-title" && (
-        <span
+        {/* Decorative gradient circle */}
+        <div
           style={{
-            width: iconSize,
-            height: iconSize,
+            position: "absolute",
+            right: "-18px",
+            top: "-18px",
+            width: "82px",
+            height: "82px",
             borderRadius: "999px",
-            background: iconBgColor,
-            boxShadow: iconStyle !== "none" ? `0 8px 14px ${iconBgColor}44` : "none",
-            color: iconColor,
-            fontSize: `calc(${iconSize} * 0.5)`,
-            display: "grid",
-            placeItems: "center",
-            ...getIconBackgroundStyle(),
+            background:
+              "radial-gradient(circle, rgba(251,146,60,0.35) 0%, rgba(251,146,60,0) 70%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        <p
+          style={{
+            margin: 0,
+            fontSize: subtitleSize,
+            color: subtitleColor,
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+            fontWeight: 800,
           }}
         >
-          {iconEmoji}
-        </span>
-      )}
+          {subtitle}
+        </p>
 
-      <h4
-        style={{
-          margin: 0,
-          fontSize: titleSize,
-          fontWeight: 900,
-          color: titleColor,
-          fontStyle: textStyle,
-          lineHeight: 1.2,
-          display: "flex",
-          alignItems: "center",
-          gap: `calc(${iconSize} * 0.4)`,
-        }}
-      >
-        {showIcon && iconPosition === "inline-title" && (
+        {showIcon && iconPosition !== "inline-title" && (
           <span
             style={{
               width: iconSize,
               height: iconSize,
               borderRadius: "999px",
               background: iconBgColor,
-              boxShadow: iconStyle !== "none" ? `0 8px 14px ${iconBgColor}44` : "none",
+              boxShadow:
+                iconStyle !== "none" ? `0 8px 14px ${iconBgColor}44` : "none",
               color: iconColor,
               fontSize: `calc(${iconSize} * 0.5)`,
               display: "grid",
               placeItems: "center",
-              flexShrink: 0,
               ...getIconBackgroundStyle(),
             }}
           >
             {iconEmoji}
           </span>
         )}
-        {title}
-      </h4>
 
-      <p
-        style={{
-          margin: 0,
-          fontSize: bodySize,
-          lineHeight: 1.55,
-          color: bodyTextColor,
-          fontWeight: 600,
-          maxWidth: "34ch",
-        }}
-      >
-        {description}
-      </p>
-
-      {showCta ? (
-        <div style={{ marginTop: "4px" }}>
-          <button
-            type="button"
-            onMouseEnter={() => setButtonHover(true)}
-            onMouseLeave={() => setButtonHover(false)}
-            onClick={handleActionClick}
-            style={{
-              backgroundColor: buttonHover ? buttonHoverColor : buttonColor,
-              color: buttonTextColor,
-              border: "none",
-              borderRadius: "10px",
-              padding: "9px 14px",
-              fontWeight: 700,
-              cursor: "pointer",
-              boxShadow: "0 10px 20px rgba(154,52,18,0.24)",
-            }}
-          >
-            {ctaText || "View"}
-          </button>
-        </div>
-      ) : null}
-      
-      {/* Count Badge */}
-      {countBadge && (
-        <div
+        <h4
           style={{
-            position: "absolute",
-            top: "-8px",
-            right: "-8px",
-            backgroundColor: countBgColor,
-            color: countTextColor,
-            borderRadius: "999px",
-            width: "32px",
-            height: "32px",
+            margin: 0,
+            fontSize: titleSize,
+            fontWeight: 900,
+            color: titleColor,
+            fontStyle: textStyle,
+            lineHeight: 1.2,
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            fontSize: "12px",
-            fontWeight: "bold",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-            border: "2px solid white",
+            gap: `calc(${iconSize} * 0.4)`,
           }}
         >
-          {countNumber}
-        </div>
-      )}
-    </section>
+          {showIcon && iconPosition === "inline-title" && (
+            <span
+              style={{
+                width: iconSize,
+                height: iconSize,
+                borderRadius: "999px",
+                background: iconBgColor,
+                boxShadow:
+                  iconStyle !== "none" ? `0 8px 14px ${iconBgColor}44` : "none",
+                color: iconColor,
+                fontSize: `calc(${iconSize} * 0.5)`,
+                display: "grid",
+                placeItems: "center",
+                flexShrink: 0,
+                ...getIconBackgroundStyle(),
+              }}
+            >
+              {iconEmoji}
+            </span>
+          )}
+          {title}
+        </h4>
+
+        <p
+          style={{
+            margin: 0,
+            fontSize: bodySize,
+            lineHeight: 1.55,
+            color: bodyTextColor,
+            fontWeight: 600,
+            maxWidth: "34ch",
+          }}
+        >
+          {description}
+        </p>
+
+        {showCta ? (
+          <div style={{ marginTop: "4px" }}>
+            <button
+              type="button"
+              onMouseEnter={() => setButtonHover(true)}
+              onMouseLeave={() => setButtonHover(false)}
+              onClick={handleActionClick}
+              style={{
+                backgroundColor: buttonHover ? buttonHoverColor : buttonColor,
+                color: buttonTextColor,
+                border: "none",
+                borderRadius: "10px",
+                padding: "9px 14px",
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "0 10px 20px rgba(154,52,18,0.24)",
+              }}
+            >
+              {ctaText || "View"}
+            </button>
+          </div>
+        ) : null}
+
+        {/* Count Badge */}
+        {countBadge && (
+          <div
+            style={{
+              position: "absolute",
+              top: "-8px",
+              right: "-8px",
+              backgroundColor: countBgColor,
+              color: countTextColor,
+              borderRadius: "999px",
+              width: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "12px",
+              fontWeight: "bold",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              border: "2px solid white",
+            }}
+          >
+            {countNumber}
+          </div>
+        )}
+      </section>
     </>
   );
 };
@@ -7665,9 +8315,7 @@ export const AnnouncementBanner = ({
             {subtitle}
           </p>
         </div>
-        <p className="text-sm font-medium m-0 break-word">
-          {announcementText}
-        </p>
+        <p className="text-sm font-medium m-0 break-word">{announcementText}</p>
         <div className="mt-2 flex items-center gap-3">
           {showTimestamp ? (
             <span className="text-xs text-slate-500">{timestampText}</span>

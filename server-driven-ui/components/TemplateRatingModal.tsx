@@ -3,7 +3,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Star, ThumbsUp, Send, Loader2 } from "lucide-react";
-import { rateTemplate, getTemplateRatings, TemplateRating } from "@/lib/api/templates.api";
+import {
+  rateTemplate,
+  getTemplateRatings,
+  TemplateRating,
+} from "@/lib/api/templates.api";
 import { toast } from "sonner";
 
 interface TemplateRatingModalProps {
@@ -28,6 +32,7 @@ export const TemplateRatingModal = ({
     if (isOpen) {
       loadReviews();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, templateId]);
 
   const loadReviews = async () => {
@@ -78,7 +83,9 @@ export const TemplateRatingModal = ({
         className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-96 overflow-y-auto"
       >
         <div className="p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Rate This Template</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            Rate This Template
+          </h2>
 
           {/* Rating Stars */}
           <div className="mb-6">
@@ -143,10 +150,15 @@ export const TemplateRatingModal = ({
 
           {/* Recent Reviews */}
           <div className="mt-8 pt-8 border-t">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Reviews</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Recent Reviews
+            </h3>
             {loadingReviews ? (
               <div className="text-center py-4">
-                <Loader2 size={20} className="animate-spin mx-auto text-gray-400" />
+                <Loader2
+                  size={20}
+                  className="animate-spin mx-auto text-gray-400"
+                />
               </div>
             ) : reviews.length === 0 ? (
               <p className="text-gray-500 text-center py-4">No reviews yet</p>
@@ -176,7 +188,9 @@ export const TemplateRatingModal = ({
                       </span>
                     </div>
                     {review.review && (
-                      <p className="text-sm text-gray-700 mb-2">{review.review}</p>
+                      <p className="text-sm text-gray-700 mb-2">
+                        {review.review}
+                      </p>
                     )}
                     <div className="flex items-center gap-1 text-xs text-gray-500">
                       <ThumbsUp size={12} />

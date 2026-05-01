@@ -3,7 +3,6 @@
 import React, { useEffect, useRef } from "react";
 import { useNode, useEditor } from "@craftjs/core";
 import { Trash2, Move } from "lucide-react";
-import ReactDOM from "react-dom";
 import { useEditorSelection } from "./EditorSelectionContext";
 
 export const RenderNode = ({ render }: { render: React.ReactElement }) => {
@@ -17,7 +16,6 @@ export const RenderNode = ({ render }: { render: React.ReactElement }) => {
   const {
     isRoot,
     connectors: { connect },
-    actions: { setProp },
     name,
   } = useNode((node) => ({
     isRoot: node.id === "ROOT",

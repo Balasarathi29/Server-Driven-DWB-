@@ -27,9 +27,8 @@ export const Circle = ({
   zIndex = "1",
 }: ShapeProps) => {
   const {
-    id,
     connectors: { connect, drag },
-  } = useNode((node) => ({ id: node.id }));
+  } = useNode();
 
   const safeZ = Number.isNaN(Number(zIndex)) ? 1 : Number(zIndex);
 
@@ -118,6 +117,9 @@ export const CircleSettings = () => {
           Border Width
         </label>
         <input
+          aria-label="Border width"
+          title="Border width"
+          placeholder="e.g. 2px"
           className="w-full px-2 py-1 border rounded text-sm"
           value={props.borderWidth}
           onChange={(e) =>

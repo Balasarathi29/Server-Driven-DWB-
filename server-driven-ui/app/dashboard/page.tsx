@@ -40,7 +40,6 @@ import {
   ArrowDown,
   Trash2,
   Download,
-  AlertTriangle,
   ShieldCheck,
   CalendarClock,
   CheckSquare,
@@ -165,7 +164,7 @@ const FullSiteBuilderModal = ({
       setSitePlan(pages);
       setBuildStates(pages.map((p) => ({ ...p, status: "pending" })));
       setStep("plan");
-    } catch (e) {
+    } catch {
       toast.error("Failed to plan site. Please try again.");
     } finally {
       setIsPlanning(false);
@@ -195,7 +194,7 @@ const FullSiteBuilderModal = ({
         });
         createdPages.push(created);
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to create pages in database.");
       setStep("plan");
       return;

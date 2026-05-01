@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable */
 
 import React from "react";
 import { useNode } from "@craftjs/core";

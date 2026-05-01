@@ -13,7 +13,6 @@ interface TemplatePreviewIframeProps {
 }
 
 export const TemplatePreviewIframe = ({
-  templateId,
   templateName,
   isOpen,
   onClose,
@@ -34,7 +33,7 @@ export const TemplatePreviewIframe = ({
     const element = document.createElement("a");
     element.setAttribute(
       "href",
-      "data:text/html;charset=utf-8," + encodeURIComponent(iframeContent)
+      "data:text/html;charset=utf-8," + encodeURIComponent(iframeContent),
     );
     element.setAttribute("download", `${templateName}.html`);
     element.style.display = "none";
@@ -61,7 +60,11 @@ export const TemplatePreviewIframe = ({
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         onClick={(e) => e.stopPropagation()}
-        className={isFullscreen ? "w-full h-full flex flex-col" : "bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col"}
+        className={
+          isFullscreen
+            ? "w-full h-full flex flex-col"
+            : "bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col"
+        }
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -104,7 +107,10 @@ export const TemplatePreviewIframe = ({
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <Loader2 size={40} className="animate-spin text-blue-600 mx-auto mb-4" />
+                <Loader2
+                  size={40}
+                  className="animate-spin text-blue-600 mx-auto mb-4"
+                />
                 <p className="text-gray-600">Loading preview...</p>
               </div>
             </div>

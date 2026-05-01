@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Editor, Frame, Element } from "@craftjs/core";
 import { ComponentMapper } from "@/components/renderer/ComponentMapper";
@@ -10,7 +11,6 @@ import { useAuth } from "@/lib/context/AuthContext";
 import { toast } from "sonner";
 import { Container } from "@/components/builder-components/Container";
 import { ArrowLeft, Edit3 } from "lucide-react";
-import { Page } from "@/lib/types/page.types";
 import { SafeHTMLRenderer } from "@/components/editor/SafeHTMLRenderer";
 
 interface PageClientProps {
@@ -22,13 +22,13 @@ interface PageClientProps {
 // script and sent to window.top so the full Next.js app navigates properly.
 const FullPageRenderer = ({ html }: { html: string }) => (
   <div className="fixed inset-0 w-screen h-screen bg-white overflow-hidden">
-    <a
+    <Link
       href="/#pages"
       className="fixed top-4 left-4 z-60 inline-flex items-center gap-2 rounded-xl bg-white/90 px-4 py-2 text-xs font-bold text-gray-700 shadow-md ring-1 ring-black/5 backdrop-blur hover:bg-white"
     >
       <ArrowLeft className="h-4 w-4" />
       Back to projects
-    </a>
+    </Link>
     <SafeHTMLRenderer html={html} fullPage className="w-full h-full" />
   </div>
 );
@@ -37,7 +37,6 @@ export default function PageClient({ slug }: PageClientProps) {
   const searchParams = useSearchParams();
   const { user, isLoading: authLoading } = useAuth();
   const [pageData, setPageData] = useState<any>(null);
-  const [allPages, setAllPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
   const [isProjectMissingPage, setIsProjectMissingPage] = useState(false);
 
@@ -69,7 +68,6 @@ export default function PageClient({ slug }: PageClientProps) {
       try {
         const institutionId = scopedInstitutionId;
         let data;
-        let isPublicPage = true;
 
         try {
           data = await publicPagesApi.getPublishedPageBySlug(
@@ -92,18 +90,9 @@ export default function PageClient({ slug }: PageClientProps) {
             normalizedSlug,
             user.institutionId,
           );
-          isPublicPage = false;
         }
 
         setPageData(data);
-
-        // Only fetch all pages for block-mode (HTML pages have their own navbar)
-        if (!data?.useHtml) {
-          const pages = isPublicPage
-            ? await publicPagesApi.getPublishedPages(institutionId)
-            : await pagesApi.getAllPages();
-          setAllPages(pages);
-        }
       } catch (error) {
         const status = (error as any)?.response?.status;
         const message =
@@ -127,7 +116,7 @@ export default function PageClient({ slug }: PageClientProps) {
     };
 
     fetchData();
-  }, [slug, scopedInstitutionId, user, authLoading]);
+  }, [authLoading, normalizedSlug, scopedInstitutionId, user]);
 
   if (loading || authLoading) {
     return (
@@ -163,19 +152,19 @@ export default function PageClient({ slug }: PageClientProps) {
             redirects are blocked.
           </p>
           <div className="flex items-center justify-center gap-3">
-            <a
+            <Link
               href="/dashboard"
               className="h-11 px-5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-bold inline-flex items-center"
             >
               Go To Dashboard
-            </a>
+            </Link>
             {canCreate && (
-              <a
+              <Link
                 href={createPageHref}
                 className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold inline-flex items-center"
               >
                 Create New Design
-              </a>
+              </Link>
             )}
           </div>
         </div>
@@ -204,13 +193,13 @@ export default function PageClient({ slug }: PageClientProps) {
             <Edit3 className="w-8 h-8 text-violet-600" />
           </div>
           <h2 className="text-xl font-bold text-gray-900">Open in Editor</h2>
-          <a
+          <Link
             href={`/edit/${slug}`}
             className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-bold px-6 py-3 rounded-xl transition-all hover:scale-105"
           >
             <Edit3 className="w-4 h-4" />
             Open Editor
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -220,13 +209,13 @@ export default function PageClient({ slug }: PageClientProps) {
   return (
     <div className="min-h-screen bg-white">
       <div className="sticky top-0 z-40 border-b border-gray-100 bg-white/90 px-4 py-3 backdrop-blur">
-        <a
+        <Link
           href="/#pages"
           className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to projects
-        </a>
+        </Link>
       </div>
       <Editor enabled={false} resolver={ComponentMapper}>
         <Frame

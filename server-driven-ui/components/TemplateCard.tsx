@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Eye, Copy, ExternalLink } from "lucide-react";
+import { Eye, Copy } from "lucide-react";
 import Image from "next/image";
 import { Template } from "@/lib/api/templates.api";
 
@@ -16,19 +16,42 @@ export const TemplateCard = ({
   onPreview,
   onApply,
 }: TemplateCardProps) => {
-  const categoryColors: Record<string, { bg: string; text: string; badge: string }> = {
+  const categoryColors: Record<
+    string,
+    { bg: string; text: string; badge: string }
+  > = {
     homepage: { bg: "bg-blue-50", text: "text-blue-700", badge: "bg-blue-100" },
-    about: { bg: "bg-purple-50", text: "text-purple-700", badge: "bg-purple-100" },
-    courses: { bg: "bg-green-50", text: "text-green-700", badge: "bg-green-100" },
+    about: {
+      bg: "bg-purple-50",
+      text: "text-purple-700",
+      badge: "bg-purple-100",
+    },
+    courses: {
+      bg: "bg-green-50",
+      text: "text-green-700",
+      badge: "bg-green-100",
+    },
     departments: {
       bg: "bg-indigo-50",
       text: "text-indigo-700",
       badge: "bg-indigo-100",
     },
-    contact: { bg: "bg-orange-50", text: "text-orange-700", badge: "bg-orange-100" },
+    contact: {
+      bg: "bg-orange-50",
+      text: "text-orange-700",
+      badge: "bg-orange-100",
+    },
     blog: { bg: "bg-pink-50", text: "text-pink-700", badge: "bg-pink-100" },
-    events: { bg: "bg-amber-50", text: "text-amber-700", badge: "bg-amber-100" },
-    custom: { bg: "bg-slate-50", text: "text-slate-700", badge: "bg-slate-100" },
+    events: {
+      bg: "bg-amber-50",
+      text: "text-amber-700",
+      badge: "bg-amber-100",
+    },
+    custom: {
+      bg: "bg-slate-50",
+      text: "text-slate-700",
+      badge: "bg-slate-100",
+    },
   };
 
   const colors = categoryColors[template.category] || categoryColors.custom;
@@ -41,7 +64,9 @@ export const TemplateCard = ({
       transition={{ duration: 0.3 }}
       className="group"
     >
-      <div className={`relative h-48 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-400 transition-all duration-300 hover:shadow-lg ${colors.bg}`}>
+      <div
+        className={`relative h-48 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-400 transition-all duration-300 hover:shadow-lg ${colors.bg}`}
+      >
         {/* Thumbnail Image */}
         {template.thumbnail ? (
           <Image
@@ -82,7 +107,9 @@ export const TemplateCard = ({
 
         {/* Category Badge */}
         <div className="absolute top-3 right-3">
-          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${colors.badge} ${colors.text} capitalize`}>
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-semibold ${colors.badge} ${colors.text} capitalize`}
+          >
             {template.category}
           </span>
         </div>

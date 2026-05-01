@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable */
 
 import { useNode } from "@craftjs/core";
 import { Link } from "lucide-react";

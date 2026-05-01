@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Copy, ExternalLink, Calendar, User } from "lucide-react";
+import { X, Copy, Calendar } from "lucide-react";
 import Image from "next/image";
 import { Template } from "@/lib/api/templates.api";
 
@@ -127,8 +127,13 @@ export const TemplatePreviewModal = ({
                   </h3>
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <p className="text-sm text-blue-800">
-                      This template includes a full page layout with pre-configured components,
-                      styling, and responsive design patterns optimized for {template.category === 'custom' ? 'custom usage' : template.category}.
+                      This template includes a full page layout with
+                      pre-configured components, styling, and responsive design
+                      patterns optimized for{" "}
+                      {template.category === "custom"
+                        ? "custom usage"
+                        : template.category}
+                      .
                     </p>
                   </div>
                 </div>

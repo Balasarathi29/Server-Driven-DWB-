@@ -103,7 +103,7 @@ export default function SettingsPage() {
             ...(response.settings?.email || {}),
           },
         });
-      } catch (error) {
+      } catch {
         toast.error("Failed to load settings");
       } finally {
         setLoading(false);

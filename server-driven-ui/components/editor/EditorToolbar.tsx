@@ -19,7 +19,6 @@ import {
   MoreVertical,
   Grid,
 } from "lucide-react";
-import Button from "../ui/Button";
 import { APIHealthIndicator } from "./APIHealthIndicator";
 import { useEditorSelection } from "./EditorSelectionContext";
 
@@ -143,7 +142,7 @@ export const EditorToolbar = ({
 
   const allSelectableIds = React.useMemo(
     () => Object.keys(query.getNodes()).filter((id) => id !== "ROOT"),
-    [query, selectedIds.length],
+    [query],
   );
 
   const isAllSelected =
@@ -169,42 +168,43 @@ export const EditorToolbar = ({
     });
   }, [query, selectedIds]);
 
-  const buildClipboardElement = React.useCallback(
-    (nodeId: string): React.ReactElement | null => {
-      const node = query.node(nodeId).get();
+  const buildClipboardElement = (nodeId: string): React.ReactElement | null => {
+    const node = query.node(nodeId).get();
 
-      if (!node || node.id === "ROOT") {
-        return null;
-      }
-
-      const childElements = node.data.nodes
-        .map((childId) => buildClipboardElement(childId))
-        .filter(Boolean) as React.ReactElement[];
-
-      const props = { ...(node.data.props as Record<string, unknown>) };
-      if (childElements.length > 0) {
-        props.children =
-          childElements.length === 1 ? childElements[0] : childElements;
-      }
-
-      return React.createElement(node.data.type as React.ElementType, props);
-    },
-    [query],
-  );
-
-  const handleCopy = React.useCallback(() => {
-    const idsToCopy = getTopLevelSelectionIds();
-    if (idsToCopy.length === 0) {
-      return;
+    if (!node || node.id === "ROOT") {
+      return null;
     }
 
-    setClipboardItems(
-      idsToCopy.map((id) => ({
-        sourceId: id,
-        element: buildClipboardElement(id) as React.ReactElement,
-      })),
-    );
-  }, [buildClipboardElement, getTopLevelSelectionIds, setClipboardItems]);
+    const childElements = node.data.nodes
+      .map((childId) => buildClipboardElement(childId))
+      .filter(Boolean) as React.ReactElement[];
+
+    const props = { ...(node.data.props as Record<string, unknown>) };
+    if (childElements.length > 0) {
+      props.children =
+        childElements.length === 1 ? childElements[0] : childElements;
+    }
+
+    return React.createElement(node.data.type as React.ElementType, props);
+  };
+
+  const handleCopy = React.useCallback(
+    () => {
+      const idsToCopy = getTopLevelSelectionIds();
+      if (idsToCopy.length === 0) {
+        return;
+      }
+
+      setClipboardItems(
+        idsToCopy.map((id) => ({
+          sourceId: id,
+          element: buildClipboardElement(id) as React.ReactElement,
+        })),
+      );
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [getTopLevelSelectionIds, setClipboardItems],
+  );
 
   const handlePaste = React.useCallback(() => {
     if (clipboardItems.length === 0) {
@@ -268,7 +268,7 @@ export const EditorToolbar = ({
 
     actions.delete(filteredIds);
     clearSelection();
-  }, [actions, clearSelection, selectedIds, selectedNodeId]);
+  }, [actions, clearSelection, query, selectedIds, selectedNodeId]);
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -343,9 +343,6 @@ export const EditorToolbar = ({
     selectedIds.length,
     selectedNodeId,
   ]);
-
-  const hasSelection =
-    selectedIds.length > 0 || (selectedNodeId && selectedNodeId !== "ROOT");
 
   return (
     <nav className="flex items-center justify-between bg-white border-b border-gray-200 px-8 h-16 sticky top-0 z-50">

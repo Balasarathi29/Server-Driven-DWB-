@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Plus,
-  Upload,
   X,
   Loader2,
   AlertCircle,
@@ -49,12 +48,15 @@ export const CreateCustomTemplateModal = ({
   const [jsonConfig, setJsonConfig] = useState<any>({});
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value, type } = e.target;
     setFormData({
       ...formData,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     });
   };
 
@@ -86,7 +88,9 @@ export const CreateCustomTemplateModal = ({
     }
   };
 
-  const handleJsonConfigChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleJsonConfigChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
     try {
       setJsonConfig(JSON.parse(e.target.value));
     } catch {
@@ -163,7 +167,9 @@ export const CreateCustomTemplateModal = ({
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <Plus size={28} className="text-blue-600" />
-              <h2 className="text-2xl font-bold text-gray-900">Create Custom Template</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Create Custom Template
+              </h2>
             </div>
             <button
               onClick={onClose}
@@ -268,14 +274,24 @@ export const CreateCustomTemplateModal = ({
                   <label htmlFor="thumbnail-upload" className="cursor-pointer">
                     {thumbnail ? (
                       <div className="flex flex-col items-center">
-                        <img src={thumbnail} alt="Thumbnail" className="w-20 h-20 object-cover rounded mb-2" />
-                        <p className="text-sm text-blue-600 font-medium">Change image</p>
+                        <img
+                          src={thumbnail}
+                          alt="Thumbnail"
+                          className="w-20 h-20 object-cover rounded mb-2"
+                        />
+                        <p className="text-sm text-blue-600 font-medium">
+                          Change image
+                        </p>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center">
                         <ImageIcon size={32} className="text-gray-400 mb-2" />
-                        <p className="text-gray-600 font-medium">Upload thumbnail</p>
-                        <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 2MB</p>
+                        <p className="text-gray-600 font-medium">
+                          Upload thumbnail
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          PNG, JPG up to 2MB
+                        </p>
                       </div>
                     )}
                   </label>
@@ -338,10 +354,13 @@ export const CreateCustomTemplateModal = ({
                 </label>
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-3">
                   <details className="text-xs text-gray-600 cursor-pointer">
-                    <summary className="font-medium mb-2">Need help? Click here</summary>
+                    <summary className="font-medium mb-2">
+                      Need help? Click here
+                    </summary>
                     <p className="mt-2 p-2 bg-blue-50 rounded">
-                      Add your template's JSON configuration. This should include all the page layout,
-                      components, and styling information. Example:
+                      Add your template's JSON configuration. This should
+                      include all the page layout, components, and styling
+                      information. Example:
                     </p>
                     <code className="block p-2 bg-gray-100 rounded mt-2 text-gray-700 overflow-x-auto">
                       {`{
@@ -362,7 +381,10 @@ export const CreateCustomTemplateModal = ({
                 />
                 {Object.keys(jsonConfig).length === 0 && (
                   <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
-                    <AlertCircle size={18} className="text-yellow-700 flex-shrink-0 mt-0.5" />
+                    <AlertCircle
+                      size={18}
+                      className="text-yellow-700 flex-shrink-0 mt-0.5"
+                    />
                     <p className="text-sm text-yellow-800">
                       Template configuration is required to proceed
                     </p>

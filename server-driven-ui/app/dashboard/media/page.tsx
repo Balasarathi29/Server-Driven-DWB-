@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -150,7 +150,7 @@ export default function MediaHubPage() {
     }
   }, [isLoading, user, router]);
 
-  const refreshAll = async () => {
+  const refreshAll = useCallback(async () => {
     setLoading(true);
     try {
       const [mediaItems, folderItems, usageAnalytics] = await Promise.all([
@@ -167,17 +167,17 @@ export default function MediaHubPage() {
       setMedia(mediaItems);
       setFolders(folderItems);
       setAnalytics(usageAnalytics);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load media hub data.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, selectedFolder, selectedType, selectedCategory]);
 
   useEffect(() => {
     if (!user) return;
     void refreshAll();
-  }, [user, searchQuery, selectedFolder, selectedType, selectedCategory]);
+  }, [refreshAll, user]);
 
   const handleUpload = async (files: FileList | null) => {
     if (!files?.length) return;

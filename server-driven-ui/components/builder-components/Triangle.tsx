@@ -25,9 +25,8 @@ export const Triangle = ({
   zIndex = "1",
 }: ShapeProps) => {
   const {
-    id,
     connectors: { connect, drag },
-  } = useNode((node) => ({ id: node.id }));
+  } = useNode();
 
   const safeZ = Number.isNaN(Number(zIndex)) ? 1 : Number(zIndex);
 

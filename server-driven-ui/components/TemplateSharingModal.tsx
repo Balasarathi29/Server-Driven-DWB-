@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Share2, Copy, Mail, Lock, Check, Loader2, X } from "lucide-react";
+import { Share2, Copy, Mail, Lock, Loader2, X } from "lucide-react";
 import { shareTemplate } from "@/lib/api/templates.api";
 import { toast } from "sonner";
 
@@ -15,13 +15,14 @@ interface TemplateSharingModalProps {
 
 export const TemplateSharingModal = ({
   templateId,
-  templateName,
   isOpen,
   onClose,
 }: TemplateSharingModalProps) => {
   const [emails, setEmails] = useState<string[]>([]);
   const [currentEmail, setCurrentEmail] = useState("");
-  const [accessLevel, setAccessLevel] = useState<"view" | "use" | "edit">("view");
+  const [accessLevel, setAccessLevel] = useState<"view" | "use" | "edit">(
+    "view",
+  );
   const [expiresIn, setExpiresIn] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [shareLink, setShareLink] = useState<string | null>(null);
@@ -57,11 +58,11 @@ export const TemplateSharingModal = ({
         : undefined;
 
       await shareTemplate(templateId, emails, accessLevel, expiresAt);
-      
+
       setShareLink(
-        `${window.location.origin}/templates/shared/${templateId}?access=${accessLevel}`
+        `${window.location.origin}/templates/shared/${templateId}?access=${accessLevel}`,
       );
-      
+
       setEmails([]);
       toast.success("Template shared successfully!");
     } catch (err: any) {
@@ -112,7 +113,9 @@ export const TemplateSharingModal = ({
             // Success State
             <div className="space-y-4">
               <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-green-800 font-medium mb-3">Share link generated!</p>
+                <p className="text-green-800 font-medium mb-3">
+                  Share link generated!
+                </p>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
@@ -195,7 +198,10 @@ export const TemplateSharingModal = ({
                 </label>
                 <div className="space-y-2">
                   {(["view", "use", "edit"] as const).map((level) => (
-                    <label key={level} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <label
+                      key={level}
+                      className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    >
                       <input
                         type="radio"
                         checked={accessLevel === level}
@@ -203,7 +209,9 @@ export const TemplateSharingModal = ({
                         className="w-4 h-4"
                       />
                       <div>
-                        <p className="font-medium text-gray-900 capitalize">{level}</p>
+                        <p className="font-medium text-gray-900 capitalize">
+                          {level}
+                        </p>
                         <p className="text-xs text-gray-500">
                           {level === "view" && "View only"}
                           {level === "use" && "View and use"}
@@ -222,7 +230,11 @@ export const TemplateSharingModal = ({
                 </label>
                 <select
                   value={expiresIn || ""}
-                  onChange={(e) => setExpiresIn(e.target.value ? parseInt(e.target.value) : null)}
+                  onChange={(e) =>
+                    setExpiresIn(
+                      e.target.value ? parseInt(e.target.value) : null,
+                    )
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Never (no expiration)</option>

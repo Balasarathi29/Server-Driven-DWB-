@@ -64,18 +64,28 @@ import { Line } from "../builder-components/Line";
 
 type GenericComponentProps = Record<string, unknown>;
 
+type CraftComponentType = React.ComponentType<GenericComponentProps> & {
+  craft?: {
+    displayName?: string;
+    props?: Record<string, unknown>;
+  };
+};
+
 // Ensure all components have required craft metadata
 const ensureComponentMetadata = (
   component: React.ComponentType<GenericComponentProps>,
   displayName: string,
 ): React.ComponentType<GenericComponentProps> => {
-  if (!component.craft) {
-    (component as any).craft = {
+  const craftComponent = component as CraftComponentType;
+
+  if (!craftComponent.craft) {
+    craftComponent.craft = {
       displayName,
       props: {},
     };
   }
-  return component;
+
+  return craftComponent;
 };
 
 export const ComponentMapper: Record<
