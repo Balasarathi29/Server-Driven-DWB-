@@ -216,8 +216,25 @@ export const EditorToolbar = ({
     const parentId = targetIsCanvas ? targetId : "ROOT";
 
     clipboardItems.forEach((item, index) => {
-      const tree = query.parseReactElement(item.element).toNodeTree();
-      actions.addNodeTree(tree, parentId, index);
+      try {
+        const tree = query.parseReactElement(item.element).toNodeTree();
+        actions.addNodeTree(tree, parentId, index);
+      } catch (error) {
+        console.error("Failed to paste component:", error);
+        // Log the element type for debugging
+        if (
+          item.element &&
+          typeof item.element === "object" &&
+          "type" in item.element
+        ) {
+          const elementType = (item.element as any).type;
+          if (elementType && typeof elementType === "function") {
+            console.warn(
+              `Component paste failed. Type name: ${elementType.displayName || elementType.name}`,
+            );
+          }
+        }
+      }
     });
   }, [actions, clipboardItems, getPrimarySelection, query]);
 

@@ -225,6 +225,8 @@ export const RectangleSettings = () => {
   );
 };
 
+Rectangle.displayName = "Rectangle";
+
 Rectangle.craft = {
   displayName: "Rectangle",
   props: {

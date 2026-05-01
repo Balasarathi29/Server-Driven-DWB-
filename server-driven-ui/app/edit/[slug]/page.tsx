@@ -184,6 +184,22 @@ const sanitizeJsonConfig = (config: unknown): Record<string, unknown> => {
       const looksLikeBadge =
         normalizedResolvedName === "badge" || normalizedDisplayName === "badge";
 
+      // Shape component normalization
+      const looksLikeRectangle =
+        normalizedResolvedName === "rectangle" ||
+        normalizedDisplayName === "rectangle";
+      const looksLikeCircle =
+        normalizedResolvedName === "circle" ||
+        normalizedDisplayName === "circle";
+      const looksLikeTriangle =
+        normalizedResolvedName === "triangle" ||
+        normalizedDisplayName === "triangle";
+      const looksLikeEllipse =
+        normalizedResolvedName === "ellipse" ||
+        normalizedDisplayName === "ellipse";
+      const looksLikeLine =
+        normalizedResolvedName === "line" || normalizedDisplayName === "line";
+
       if (looksLikeTimeline) {
         resolvedName = "Timeline";
       }
@@ -194,6 +210,27 @@ const sanitizeJsonConfig = (config: unknown): Record<string, unknown> => {
 
       if (looksLikeBadge) {
         resolvedName = "Badge";
+      }
+
+      // Ensure shape components have correct casing
+      if (looksLikeRectangle) {
+        resolvedName = "Rectangle";
+      }
+
+      if (looksLikeCircle) {
+        resolvedName = "Circle";
+      }
+
+      if (looksLikeTriangle) {
+        resolvedName = "Triangle";
+      }
+
+      if (looksLikeEllipse) {
+        resolvedName = "Ellipse";
+      }
+
+      if (looksLikeLine) {
+        resolvedName = "Line";
       }
 
       if (!resolvedName || !validResolvedNames.includes(resolvedName)) {

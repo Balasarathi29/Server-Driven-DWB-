@@ -152,9 +152,54 @@ export const EllipseSettings = () => {
           onChange={(e) => setProp((p: any) => (p.rotation = e.target.value))}
         />
       </div>
+
+      <div>
+        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+          Position
+        </label>
+        <select
+          aria-label="Position"
+          title="Position"
+          className="w-full px-2 py-1 border rounded text-sm"
+          value={props.positionMode ?? "flow"}
+          onChange={(e) =>
+            setProp((p: any) => (p.positionMode = e.target.value))
+          }
+        >
+          <option value="flow">Flow</option>
+          <option value="absolute">Absolute</option>
+        </select>
+      </div>
+      {props.positionMode === "absolute" && (
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+            X / Y
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              aria-label="X"
+              title="X"
+              placeholder="e.g. 0px"
+              className="px-2 py-1 border rounded text-sm"
+              value={props.x ?? ""}
+              onChange={(e) => setProp((p: any) => (p.x = e.target.value))}
+            />
+            <input
+              aria-label="Y"
+              title="Y"
+              placeholder="e.g. 0px"
+              className="px-2 py-1 border rounded text-sm"
+              value={props.y ?? ""}
+              onChange={(e) => setProp((p: any) => (p.y = e.target.value))}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+Ellipse.displayName = "Ellipse";
 
 Ellipse.craft = {
   displayName: "Ellipse",
