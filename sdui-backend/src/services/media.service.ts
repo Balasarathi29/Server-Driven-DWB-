@@ -179,7 +179,7 @@ export class MediaService {
     try {
       // Validate Cloudinary configuration
       const config = cloudinary.config();
-      if (!config.cloud_name || !config.api_key) {
+      if (!config.cloud_name || !config.api_key || !config.api_secret) {
         throw new AppError(
           "Cloudinary is not properly configured. Please contact the administrator.",
           503,

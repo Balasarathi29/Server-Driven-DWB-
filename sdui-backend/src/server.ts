@@ -94,7 +94,11 @@ const startServer = async (): Promise<void> => {
     }
 
     // Configure Cloudinary (Optional for MVP)
-    if (env.cloudinary.cloudName && env.cloudinary.apiKey) {
+    if (
+      env.cloudinary.cloudName &&
+      env.cloudinary.apiKey &&
+      env.cloudinary.apiSecret
+    ) {
       configureCloudinary();
     } else {
       console.warn(`
