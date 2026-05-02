@@ -177,6 +177,16 @@ export class MediaService {
     input: UploadMediaInput = {},
   ): Promise<IMedia> {
     try {
+      // Validate Cloudinary configuration
+      const config = cloudinary.config();
+      if (!config.cloud_name || !config.api_key) {
+        throw new AppError(
+          "Cloudinary is not properly configured. Please contact the administrator.",
+          503,
+          "CLOUDINARY_NOT_CONFIGURED",
+        );
+      }
+
       let resourceType: "image" | "video" | "raw" = "image";
       let mediaType: MediaType = "image";
 
@@ -220,10 +230,19 @@ export class MediaService {
             eager_async: false,
           },
           (error, uploadResult) => {
-            if (error) reject(error);
-            else resolve(uploadResult);
+            if (error) {
+              console.error("Cloudinary upload error:", error);
+              reject(error);
+            } else {
+              resolve(uploadResult);
+            }
           },
         );
+
+        uploadStream.on("error", (error) => {
+          console.error("Upload stream error:", error);
+          reject(error);
+        });
 
         uploadStream.end(file.buffer);
       });
@@ -288,9 +307,35 @@ export class MediaService {
       });
 
       return media;
-    } catch (error) {
+    } catch (error: any) {
       console.error("File upload error:", error);
-      throw new AppError("Failed to upload file", 500, "UPLOAD_ERROR");
+
+      // Handle Cloudinary-specific errors
+      if (error?.http_code === 401 || error?.message?.includes("401")) {
+        throw new AppError(
+          "Cloudinary authentication failed. Please check your credentials.",
+          503,
+          "CLOUDINARY_AUTH_ERROR",
+        );
+      }
+
+      if (error?.http_code === 400 || error?.message?.includes("Invalid")) {
+        throw new AppError(
+          `Invalid file: ${error?.message || "Unknown error"}`,
+          400,
+          "INVALID_FILE",
+        );
+      }
+
+      if (error instanceof AppError) {
+        throw error;
+      }
+
+      throw new AppError(
+        error?.message || "Failed to upload file",
+        error?.statusCode || 500,
+        "UPLOAD_ERROR",
+      );
     }
   }
 

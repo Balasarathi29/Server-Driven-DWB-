@@ -97,9 +97,24 @@ const startServer = async (): Promise<void> => {
     if (env.cloudinary.cloudName && env.cloudinary.apiKey) {
       configureCloudinary();
     } else {
-      console.warn(
-        "⚠️ Cloudinary not configured. Skipping Cloudinary configuration.",
-      );
+      console.warn(`
+╔════════════════════════════════════════════════════════════════╗
+║  ⚠️  CLOUDINARY NOT CONFIGURED                               ║
+╠════════════════════════════════════════════════════════════════╣
+║                                                                ║
+║  Media upload feature is disabled.                            ║
+║                                                                ║
+║  To enable media uploads:                                     ║
+║  1. Sign up at https://cloudinary.com                         ║
+║  2. Get your Cloud Name, API Key, and API Secret              ║
+║  3. Add to .env file:                                         ║
+║     CLOUDINARY_CLOUD_NAME=your_cloud_name                     ║
+║     CLOUDINARY_API_KEY=your_api_key                           ║
+║     CLOUDINARY_API_SECRET=your_api_secret                     ║
+║  4. Restart the server                                        ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+      `);
     }
 
     // Start Express server
