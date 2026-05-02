@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2, Lock, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { Template, updateTemplate } from "@/lib/api/templates.api";
-import { uploadMedia } from "@/lib/api/media.api";
 
 interface EditTemplateModalProps {
   template: Template | null;
@@ -95,28 +94,19 @@ export function EditTemplateModal({
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    try {
-      setLoading(true);
-      const media = await uploadMedia(file, { category: "template-thumbnail" });
-      if (media && (media as any).url) {
-        setThumbnailUrl((media as any).url);
-        toast.success("Thumbnail uploaded");
-      } else if ((media as any).secureUrl) {
-        setThumbnailUrl((media as any).secureUrl);
-        toast.success("Thumbnail uploaded");
-      } else {
-        toast.success("Uploaded, but no URL returned");
-      }
-    } catch (err: any) {
-      console.error("Thumbnail upload failed", err);
-      toast.error(err?.response?.data?.message || "Failed to upload thumbnail");
-    } finally {
-      setLoading(false);
-    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setThumbnailUrl(reader.result as string);
+      toast.success("Thumbnail selected");
+    };
+    reader.onerror = () => {
+      toast.error("Failed to read thumbnail image");
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleThumbnailUrlChange = (value: string) => {
