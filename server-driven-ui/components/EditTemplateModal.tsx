@@ -253,27 +253,48 @@ export function EditTemplateModal({
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Thumbnail (upload or URL)
                   </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="border border-gray-200 rounded-md p-2 bg-white"
-                    />
-                    <input
-                      type="text"
-                      value={thumbnailUrl || ""}
-                      onChange={(e) => handleThumbnailUrlChange(e.target.value)}
-                      placeholder="Or paste image URL"
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                    />
+                  <div className="space-y-3">
+                    {/* File Upload Button */}
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        id="thumbnail-upload"
+                      />
+                      <label
+                        htmlFor="thumbnail-upload"
+                        className="block w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all text-sm text-gray-600 font-medium"
+                      >
+                        {loading ? "Uploading..." : "Click to upload image"}
+                      </label>
+                    </div>
+
+                    {/* URL Input */}
+                    <div>
+                      <input
+                        type="text"
+                        value={thumbnailUrl || ""}
+                        onChange={(e) =>
+                          handleThumbnailUrlChange(e.target.value)
+                        }
+                        placeholder="Or paste image URL"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      />
+                    </div>
                   </div>
+
+                  {/* Thumbnail Preview */}
                   {thumbnailUrl && (
-                    <div className="mt-3">
+                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-600 mb-2 font-medium">
+                        Preview:
+                      </p>
                       <img
                         src={thumbnailUrl}
                         alt="thumbnail preview"
-                        className="w-48 h-28 object-cover rounded-md border"
+                        className="w-full max-w-xs h-32 object-cover rounded-md border border-gray-200"
                       />
                     </div>
                   )}
