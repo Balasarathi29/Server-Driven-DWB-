@@ -152,9 +152,14 @@ export class TemplateService {
   }
 
   // Record template view
-  async recordView(templateId: string): Promise<void> {
-    await Template.findByIdAndUpdate(templateId, { $inc: { viewCount: 1 } });
+  async recordView(templateId: string): Promise<ITemplate> {
+    const template = await Template.findByIdAndUpdate(
+      templateId,
+      { $inc: { viewCount: 1 } },
+      { new: true },
+    );
     await this.trackTemplateAction(templateId, "view");
+    return template as ITemplate;
   }
 
   // Add/Update rating and review

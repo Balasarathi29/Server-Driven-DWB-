@@ -35,6 +35,7 @@ import {
   Template,
   getTrendingTemplates,
   getTopRatedTemplates,
+  recordTemplateView,
 } from "@/lib/api/templates.api";
 import { TemplateCard } from "@/components/TemplateCard";
 import { TemplatePreviewModal } from "@/components/TemplatePreviewModal";
@@ -168,8 +169,20 @@ export default function TemplatesPage() {
   }, [templates, searchQuery]);
 
   // Handle template preview
-  const handlePreview = (template: Template) => {
+  const handlePreview = async (template: Template) => {
     setPreviewTemplate(template);
+    try {
+      // Record the view
+      const updatedTemplate = await recordTemplateView(template._id);
+      // Update the template in the list with the new view count
+      setTemplates((prev) =>
+        prev.map((t) => (t._id === template._id ? updatedTemplate : t)),
+      );
+      // Update the preview template as well
+      setPreviewTemplate(updatedTemplate);
+    } catch (err: any) {
+      console.error("Failed to record view:", err);
+    }
   };
 
   // Handle apply template
@@ -320,13 +333,6 @@ export default function TemplatesPage() {
               <span>Back to Dashboard</span>
             </Link>
             <div className="flex gap-3">
-              <Link
-                href="/edit"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-              >
-                <Plus size={18} />
-                New Page
-              </Link>
               <button
                 onClick={() => setIsCreateOpen(true)}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"

@@ -36,7 +36,7 @@ export interface TemplateShare {
   ownerId: string;
   sharedWith: string[];
   uniqueShareCode: string;
-  accessLevel: 'view' | 'use' | 'edit';
+  accessLevel: "view" | "use" | "edit";
   expiresAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -59,7 +59,9 @@ export interface TemplateAnalytics {
 }
 
 // Get all templates
-export const getAllTemplates = async (category?: string): Promise<Template[]> => {
+export const getAllTemplates = async (
+  category?: string,
+): Promise<Template[]> => {
   const params = category ? { category } : {};
   const response = await apiClient.get("/templates", { params });
   return response.data.data;
@@ -95,7 +97,7 @@ export const createTemplate = async (data: {
 // Update template
 export const updateTemplate = async (
   id: string,
-  data: Partial<Template>
+  data: Partial<Template>,
 ): Promise<Template> => {
   const response = await apiClient.put(`/templates/${id}`, data);
   return response.data.data;
@@ -109,7 +111,7 @@ export const deleteTemplate = async (id: string): Promise<void> => {
 // Duplicate template
 export const duplicateTemplate = async (
   id: string,
-  name?: string
+  name?: string,
 ): Promise<Template> => {
   const response = await apiClient.post(`/templates/${id}/duplicate`, { name });
   return response.data.data;
@@ -125,7 +127,7 @@ export const applyTemplate = async (id: string): Promise<any> => {
 export const rateTemplate = async (
   id: string,
   rating: number,
-  review?: string
+  review?: string,
 ): Promise<TemplateRating> => {
   const response = await apiClient.post(`/templates/${id}/rate`, {
     rating,
@@ -135,7 +137,9 @@ export const rateTemplate = async (
 };
 
 // Get template ratings
-export const getTemplateRatings = async (id: string): Promise<TemplateRating[]> => {
+export const getTemplateRatings = async (
+  id: string,
+): Promise<TemplateRating[]> => {
   const response = await apiClient.get(`/templates/${id}/ratings`);
   return response.data.data;
 };
@@ -144,8 +148,8 @@ export const getTemplateRatings = async (id: string): Promise<TemplateRating[]> 
 export const shareTemplate = async (
   id: string,
   sharedWith: string[],
-  accessLevel: 'view' | 'use' | 'edit',
-  expiresAt?: string
+  accessLevel: "view" | "use" | "edit",
+  expiresAt?: string,
 ): Promise<TemplateShare> => {
   const response = await apiClient.post(`/templates/${id}/share`, {
     sharedWith,
@@ -156,13 +160,17 @@ export const shareTemplate = async (
 };
 
 // Get template shares
-export const getTemplateShares = async (id: string): Promise<TemplateShare[]> => {
+export const getTemplateShares = async (
+  id: string,
+): Promise<TemplateShare[]> => {
   const response = await apiClient.get(`/templates/${id}/shares`);
   return response.data.data;
 };
 
 // Get shared template by code
-export const getSharedTemplate = async (shareCode: string): Promise<Template> => {
+export const getSharedTemplate = async (
+  shareCode: string,
+): Promise<Template> => {
   const response = await apiClient.get(`/templates/share/${shareCode}`);
   return response.data.data;
 };
@@ -170,22 +178,28 @@ export const getSharedTemplate = async (shareCode: string): Promise<Template> =>
 // Get template analytics
 export const getTemplateAnalytics = async (
   id: string,
-  days?: number
+  days?: number,
 ): Promise<TemplateAnalytics[]> => {
   const params = days ? { days } : {};
-  const response = await apiClient.get(`/templates/${id}/analytics`, { params });
+  const response = await apiClient.get(`/templates/${id}/analytics`, {
+    params,
+  });
   return response.data.data;
 };
 
 // Get trending templates
-export const getTrendingTemplates = async (limit?: number): Promise<Template[]> => {
+export const getTrendingTemplates = async (
+  limit?: number,
+): Promise<Template[]> => {
   const params = limit ? { limit } : {};
   const response = await apiClient.get("/templates/trending", { params });
   return response.data.data;
 };
 
 // Get top-rated templates
-export const getTopRatedTemplates = async (limit?: number): Promise<Template[]> => {
+export const getTopRatedTemplates = async (
+  limit?: number,
+): Promise<Template[]> => {
   const params = limit ? { limit } : {};
   const response = await apiClient.get("/templates/top-rated", { params });
   return response.data.data;
@@ -193,6 +207,14 @@ export const getTopRatedTemplates = async (limit?: number): Promise<Template[]> 
 
 // Search templates
 export const searchTemplates = async (query: string): Promise<Template[]> => {
-  const response = await apiClient.get("/templates/search", { params: { q: query } });
+  const response = await apiClient.get("/templates/search", {
+    params: { q: query },
+  });
+  return response.data.data;
+};
+
+// Record template view
+export const recordTemplateView = async (id: string): Promise<Template> => {
+  const response = await apiClient.post(`/templates/${id}/view`);
   return response.data.data;
 };

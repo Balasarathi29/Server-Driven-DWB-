@@ -152,6 +152,13 @@ router.post(
   templateController.applyTemplate,
 );
 
+// Record template view
+router.post(
+  "/:id/view",
+  validate([param("id").isMongoId().withMessage("Invalid template ID")]),
+  templateController.recordTemplateView,
+);
+
 // Rate template
 router.post(
   "/:id/rate",

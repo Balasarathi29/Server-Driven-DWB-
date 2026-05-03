@@ -30,6 +30,15 @@ export class TemplateController {
     return sendSuccess(res, template);
   });
 
+  // Record template view
+  recordTemplateView = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const template = await templateService.recordView(id);
+
+    return sendSuccess(res, template, "View recorded successfully");
+  });
+
   // Get user's custom templates
   getUserTemplates = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
