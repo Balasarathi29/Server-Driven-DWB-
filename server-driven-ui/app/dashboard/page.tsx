@@ -101,6 +101,107 @@ interface ComplianceReport {
   }>;
 }
 
+// ─── EDIT INSTITUTION MODAL ───────────────────────────────────────────────────
+const EditInstitutionModal = ({
+  isOpen,
+  onClose,
+  institutionName,
+  onSave,
+  saving,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  institutionName: string;
+  onSave: (name: string) => Promise<void>;
+  saving: boolean;
+}) => {
+  const [name, setName] = useState(institutionName);
+
+  useEffect(() => {
+    if (isOpen) {
+      setName(institutionName);
+    }
+  }, [isOpen, institutionName]);
+
+  const handleSave = async () => {
+    if (!name.trim()) {
+      toast.error("Institution name cannot be empty");
+      return;
+    }
+    try {
+      await onSave(name.trim());
+      toast.success("Institution name updated successfully");
+      onClose();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update institution name");
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/65 backdrop-blur-md"
+        onClick={onClose}
+      />
+
+      <div className="relative bg-white w-full max-w-xl rounded-[2rem] shadow-2xl border border-gray-100 overflow-hidden">
+        <div className="p-7 pb-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-2xl font-black text-gray-900 tracking-tight">
+              Edit Institution Name
+            </h3>
+            <p className="text-sm text-gray-500 font-medium">
+              Update your institution name
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            title="Close"
+            aria-label="Close"
+            className="p-2 rounded-xl hover:bg-gray-50 text-gray-400 hover:text-gray-700 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="px-7 pb-7 space-y-5">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">
+              Institution Name
+            </label>
+            <input
+              autoFocus
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-gray-50/60 text-gray-900 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              placeholder="Your institution name"
+            />
+          </div>
+        </div>
+
+        <div className="px-7 py-5 bg-gray-50/70 border-t border-gray-100 flex items-center justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="h-11 px-5 rounded-xl text-gray-500 font-bold hover:text-gray-900 transition"
+          >
+            Cancel
+          </button>
+          <button
+            disabled={!name.trim() || saving}
+            onClick={handleSave}
+            className="h-11 px-6 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 text-white text-sm font-black tracking-wide disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-95 transition-all"
+          >
+            {saving ? "Saving…" : "Save Changes"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ── FULL-SITE BUILDER MODAL ───────────────────────────────────────────────────
 const FullSiteBuilderModal = ({
   isOpen,
@@ -1131,12 +1232,14 @@ const ScheduleModal = ({
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
-  const { user, isLoading, logout } = useAuth();
+  const { user, institution, isLoading, logout, updateInstitution } = useAuth();
   const [pages, setPages] = useState<Page[]>([]);
   const [fetchingPages, setFetchingPages] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewPageModal, setShowNewPageModal] = useState(false);
   const [showSiteBuilder, setShowSiteBuilder] = useState(false);
+  const [showEditInstitution, setShowEditInstitution] = useState(false);
+  const [savingInstitution, setSavingInstitution] = useState(false);
   const [openActionsFor, setOpenActionsFor] = useState<string | null>(null);
   const [openActionsUpward, setOpenActionsUpward] = useState(false);
   const [openActionsPosition, setOpenActionsPosition] = useState({
@@ -1508,6 +1611,15 @@ export default function DashboardPage() {
     }
   };
 
+  const handleUpdateInstitution = async (name: string) => {
+    setSavingInstitution(true);
+    try {
+      await updateInstitution(name);
+    } finally {
+      setSavingInstitution(false);
+    }
+  };
+
   const handlePublishPage = async (page: Page) => {
     setPublishingPageId(page._id);
     try {
@@ -1618,9 +1730,22 @@ export default function DashboardPage() {
                 <p className="text-lg font-black text-slate-900 tracking-tight uppercase">
                   Campus<span className="text-sky-600">Sync</span>
                 </p>
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">
-                  Command Center
-                </p>
+                {institution && (
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.24em] text-sky-600">
+                      {institution.name}
+                    </p>
+                    {user?.role === "super-admin" && (
+                      <button
+                        onClick={() => setShowEditInstitution(true)}
+                        className="text-[10px] font-bold text-gray-400 hover:text-gray-600 transition"
+                        title="Edit institution name"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -2200,6 +2325,14 @@ export default function DashboardPage() {
         isOpen={showSiteBuilder}
         onClose={() => setShowSiteBuilder(false)}
         onDone={handleSiteDone}
+      />
+
+      <EditInstitutionModal
+        isOpen={showEditInstitution}
+        onClose={() => setShowEditInstitution(false)}
+        institutionName={institution?.name || ""}
+        onSave={handleUpdateInstitution}
+        saving={savingInstitution}
       />
     </div>
   );

@@ -1,14 +1,15 @@
-import { Institution, IInstitution } from '../models/Institution.model';
-import { User, IUser } from '../models/User.model';
-import { hashPassword, comparePassword } from '../utils/bcrypt.util';
-import { generateAuthTokens, verifyRefreshToken } from '../utils/jwt.util';
-import { AppError } from '../middleware/error.middleware';
-import { AuthTokens, JWTPayload } from '../types/auth.types';
+import { Institution, IInstitution } from "../models/Institution.model";
+import { User, IUser } from "../models/User.model";
+import { hashPassword, comparePassword } from "../utils/bcrypt.util";
+import { generateAuthTokens, verifyRefreshToken } from "../utils/jwt.util";
+import { AppError } from "../middleware/error.middleware";
+import { AuthTokens, JWTPayload } from "../types/auth.types";
 
 export class AuthService {
   // Register new institution
   async registerInstitution(data: {
-    name: string;
+    adminName: string;
+    institutionName: string;
     email: string;
     password: string;
     subdomain: string;
@@ -19,7 +20,11 @@ export class AuthService {
     });
 
     if (existingInstitution) {
-      throw new AppError('Institution already exists with this email or subdomain', 409, 'DUPLICATE_INSTITUTION');
+      throw new AppError(
+        "Institution already exists with this email or subdomain",
+        409,
+        "DUPLICATE_INSTITUTION",
+      );
     }
 
     // Hash password
@@ -27,7 +32,7 @@ export class AuthService {
 
     // Create institution
     const institution = await Institution.create({
-      name: data.name,
+      name: data.institutionName,
       email: data.email,
       passwordHash,
       subdomain: data.subdomain,
@@ -36,10 +41,10 @@ export class AuthService {
     // Create super admin user
     const user = await User.create({
       institutionId: institution._id,
-      name: data.name,
+      name: data.adminName,
       email: data.email,
       passwordHash,
-      role: 'super-admin',
+      role: "super-admin",
     });
 
     // Generate tokens
@@ -56,24 +61,27 @@ export class AuthService {
   }
 
   // Login user
-  async login(email: string, password: string): Promise<{ user: IUser; tokens: AuthTokens }> {
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{ user: IUser; tokens: AuthTokens }> {
     // Find user
-    const user = await User.findOne({ email }).populate('institutionId');
+    const user = await User.findOne({ email }).populate("institutionId");
 
     if (!user) {
-      throw new AppError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
+      throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
     }
 
     // Check if user is active
     if (!user.isActive) {
-      throw new AppError('Account is deactivated', 403, 'ACCOUNT_DEACTIVATED');
+      throw new AppError("Account is deactivated", 403, "ACCOUNT_DEACTIVATED");
     }
 
     // Verify password
     const isPasswordValid = await comparePassword(password, user.passwordHash);
 
     if (!isPasswordValid) {
-      throw new AppError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
+      throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
     }
 
     // Update last login
@@ -83,7 +91,9 @@ export class AuthService {
     // Generate tokens
     const payload: JWTPayload = {
       userId: user._id.toString(),
-      institutionId: user.institutionId._id ? user.institutionId._id.toString() : user.institutionId.toString(),
+      institutionId: user.institutionId._id
+        ? user.institutionId._id.toString()
+        : user.institutionId.toString(),
       role: user.role,
       email: user.email,
     };
@@ -103,20 +113,22 @@ export class AuthService {
       const user = await User.findById(decoded.userId);
 
       if (!user || !user.isActive) {
-        throw new AppError('Invalid refresh token', 401, 'INVALID_TOKEN');
+        throw new AppError("Invalid refresh token", 401, "INVALID_TOKEN");
       }
 
       // Generate new tokens
       const payload: JWTPayload = {
         userId: user._id.toString(),
-        institutionId: user.institutionId._id ? user.institutionId._id.toString() : user.institutionId.toString(),
+        institutionId: user.institutionId._id
+          ? user.institutionId._id.toString()
+          : user.institutionId.toString(),
         role: user.role,
         email: user.email,
       };
 
       return generateAuthTokens(payload);
     } catch (error) {
-      throw new AppError('Invalid refresh token', 401, 'INVALID_TOKEN');
+      throw new AppError("Invalid refresh token", 401, "INVALID_TOKEN");
     }
   }
 
@@ -126,13 +138,17 @@ export class AuthService {
     name: string;
     email: string;
     password: string;
-    role: 'editor' | 'viewer';
+    role: "editor" | "viewer";
   }): Promise<IUser> {
     // Check if user already exists
     const existingUser = await User.findOne({ email: data.email });
 
     if (existingUser) {
-      throw new AppError('User already exists with this email', 409, 'DUPLICATE_USER');
+      throw new AppError(
+        "User already exists with this email",
+        409,
+        "DUPLICATE_USER",
+      );
     }
 
     // Hash password
@@ -152,12 +168,40 @@ export class AuthService {
 
   // Get user by ID
   async getUserById(userId: string): Promise<IUser | null> {
-    return User.findById(userId).select('-passwordHash');
+    return User.findById(userId).select("-passwordHash");
   }
 
   // Get all institutions (public info)
   async getAllInstitutions(): Promise<IInstitution[]> {
-    return Institution.find().select('name subdomain settings');
+    return Institution.find().select("name subdomain settings");
+  }
+
+  // Get institution by ID
+  async getInstitutionById(
+    institutionId: string,
+  ): Promise<IInstitution | null> {
+    return Institution.findById(institutionId).select(
+      "name subdomain email settings",
+    );
+  }
+
+  // Update institution
+  async updateInstitution(data: {
+    institutionId: string;
+    name?: string;
+  }): Promise<IInstitution> {
+    const institution = await Institution.findById(data.institutionId);
+
+    if (!institution) {
+      throw new AppError("Institution not found", 404, "INSTITUTION_NOT_FOUND");
+    }
+
+    if (data.name) {
+      institution.name = data.name;
+    }
+
+    await institution.save();
+    return institution;
   }
 }
 

@@ -1,15 +1,16 @@
-import { Request, Response } from 'express';
-import authService from '../services/auth.service';
-import { sendSuccess, sendError } from '../utils/response.util';
-import { asyncHandler } from '../middleware/error.middleware';
+import { Request, Response } from "express";
+import authService from "../services/auth.service";
+import { sendSuccess, sendError } from "../utils/response.util";
+import { asyncHandler } from "../middleware/error.middleware";
 
 export class AuthController {
   // Register institution
   register = asyncHandler(async (req: Request, res: Response) => {
-    const { name, email, password, subdomain } = req.body;
+    const { adminName, institutionName, email, password, subdomain } = req.body;
 
     const result = await authService.registerInstitution({
-      name,
+      adminName,
+      institutionName,
       email,
       password,
       subdomain,
@@ -32,8 +33,8 @@ export class AuthController {
         accessToken: result.tokens.accessToken,
         refreshToken: result.tokens.refreshToken,
       },
-      'Institution registered successfully',
-      201
+      "Institution registered successfully",
+      201,
     );
   });
 
@@ -42,6 +43,11 @@ export class AuthController {
     const { email, password } = req.body;
 
     const result = await authService.login(email, password);
+    const institution = await authService.getInstitutionById(
+      result.user.institutionId._id
+        ? result.user.institutionId._id.toString()
+        : result.user.institutionId.toString(),
+    );
 
     return sendSuccess(res, {
       user: {
@@ -49,8 +55,17 @@ export class AuthController {
         name: result.user.name,
         email: result.user.email,
         role: result.user.role,
-        institutionId: result.user.institutionId._id ? result.user.institutionId._id.toString() : result.user.institutionId.toString(),
+        institutionId: result.user.institutionId._id
+          ? result.user.institutionId._id.toString()
+          : result.user.institutionId.toString(),
       },
+      institution: institution
+        ? {
+            id: institution._id,
+            name: institution.name,
+            subdomain: institution.subdomain,
+          }
+        : undefined,
       accessToken: result.tokens.accessToken,
       refreshToken: result.tokens.refreshToken,
     });
@@ -68,13 +83,13 @@ export class AuthController {
   // Get current user
   getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
-      return sendError(res, 'Unauthorized', 401);
+      return sendError(res, "Unauthorized", 401);
     }
 
     const user = await authService.getUserById(req.user.userId);
 
     if (!user) {
-      return sendError(res, 'User not found', 404);
+      return sendError(res, "User not found", 404);
     }
 
     return sendSuccess(res, {
@@ -89,7 +104,7 @@ export class AuthController {
   // Create user (by super admin)
   createUser = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
-      return sendError(res, 'Unauthorized', 401);
+      return sendError(res, "Unauthorized", 401);
     }
 
     const { name, email, password, role } = req.body;
@@ -110,8 +125,8 @@ export class AuthController {
         email: user.email,
         role: user.role,
       },
-      'User created successfully',
-      201
+      "User created successfully",
+      201,
     );
   });
 
@@ -119,6 +134,30 @@ export class AuthController {
   getInstitutions = asyncHandler(async (_req: Request, res: Response) => {
     const institutions = await authService.getAllInstitutions();
     return sendSuccess(res, institutions);
+  });
+
+  // Update institution
+  updateInstitution = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) {
+      return sendError(res, "Unauthorized", 401);
+    }
+
+    const { name } = req.body;
+
+    const institution = await authService.updateInstitution({
+      institutionId: req.user.institutionId,
+      name,
+    });
+
+    return sendSuccess(
+      res,
+      {
+        id: institution._id,
+        name: institution.name,
+        subdomain: institution.subdomain,
+      },
+      "Institution updated successfully",
+    );
   });
 }
 

@@ -1,4 +1,10 @@
-export type UserRole = 'super-admin' | 'admin' | 'editor' | 'viewer';
+export type UserRole = "super-admin" | "admin" | "editor" | "viewer";
+
+export interface Institution {
+  id: string;
+  name: string;
+  subdomain: string;
+}
 
 export interface User {
   id: string;
@@ -6,12 +12,7 @@ export interface User {
   email: string;
   role: UserRole;
   institutionId: string;
-}
-
-export interface Institution {
-  id: string;
-  name: string;
-  subdomain: string;
+  institution?: Institution;
 }
 
 export interface AuthTokens {
@@ -21,6 +22,7 @@ export interface AuthTokens {
 
 export interface LoginResponse {
   user: User;
+  institution?: Institution;
   accessToken: string;
   refreshToken: string;
 }

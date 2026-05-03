@@ -17,7 +17,8 @@ import {
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: "",
+    adminName: "",
+    institutionName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -47,7 +48,8 @@ export default function RegisterPage() {
 
     try {
       await register({
-        name: formData.name,
+        adminName: formData.adminName,
+        institutionName: formData.institutionName,
         email: formData.email,
         password: formData.password,
         subdomain: formData.subdomain,
@@ -154,18 +156,34 @@ export default function RegisterPage() {
             <div className="grid sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
+                  <UserCircle2 className="w-3 h-3" /> Administrator Name
+                </label>
+                <Input
+                  name="adminName"
+                  value={formData.adminName}
+                  onChange={handleChange}
+                  placeholder="e.g. John Smith"
+                  required
+                  className="h-12 rounded-xl border-gray-100 focus:border-blue-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
                   <Building2 className="w-3 h-3" /> Institution Name
                 </label>
                 <Input
-                  name="name"
-                  value={formData.name}
+                  name="institutionName"
+                  value={formData.institutionName}
                   onChange={handleChange}
                   placeholder="e.g. Stanford University"
                   required
                   className="h-12 rounded-xl border-gray-100 focus:border-blue-500"
                 />
               </div>
+            </div>
 
+            <div className="grid sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
                   <Globe className="w-3 h-3" /> Subdomain
@@ -184,21 +202,21 @@ export default function RegisterPage() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
-                <UserCircle2 className="w-3 h-3" /> Administrator Email
-              </label>
-              <Input
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="admin@institution.edu"
-                required
-                className="h-12 rounded-xl border-gray-100 focus:border-blue-500"
-              />
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
+                  <UserCircle2 className="w-3 h-3" /> Administrator Email
+                </label>
+                <Input
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="admin@institution.edu"
+                  required
+                  className="h-12 rounded-xl border-gray-100 focus:border-blue-500"
+                />
+              </div>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-6">

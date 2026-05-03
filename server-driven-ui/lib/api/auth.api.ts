@@ -1,8 +1,14 @@
 import apiClient from "./client";
-import { LoginResponse, RegisterResponse, User } from "../types/auth.types";
+import {
+  LoginResponse,
+  RegisterResponse,
+  User,
+  Institution,
+} from "../types/auth.types";
 
 export const register = async (data: {
-  name: string;
+  adminName: string;
+  institutionName: string;
   email: string;
   password: string;
   subdomain: string;
@@ -37,5 +43,12 @@ export const verifyToken = async (token: string): Promise<User> => {
       Authorization: `Bearer ${token}`,
     },
   });
+  return response.data.data;
+};
+
+export const updateInstitution = async (data: {
+  name: string;
+}): Promise<Institution> => {
+  const response = await apiClient.put("/auth/institution", data);
   return response.data.data;
 };
