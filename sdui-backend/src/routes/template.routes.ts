@@ -118,6 +118,19 @@ router.put(
     param("id").isMongoId().withMessage("Invalid template ID"),
     body("name").optional().trim(),
     body("description").optional().trim(),
+    body("category")
+      .optional()
+      .isIn([
+        "homepage",
+        "about",
+        "courses",
+        "departments",
+        "contact",
+        "blog",
+        "events",
+        "custom",
+      ])
+      .withMessage("Invalid category"),
     body("thumbnail").optional().trim(),
     body("jsonConfig").optional().isObject(),
     body("isPublic").optional().isBoolean(),
@@ -179,7 +192,12 @@ router.post(
   authenticate,
   validate([
     param("id").isMongoId().withMessage("Invalid template ID"),
-    body("sharedWith").isArray().withMessage("sharedWith must be an array"),
+    body("sharedWith")
+      .isArray({ min: 1 })
+      .withMessage("sharedWith must be a non-empty array"),
+    body("sharedWith.*")
+      .isEmail()
+      .withMessage("Each shared email must be valid"),
     body("accessLevel")
       .isIn(["view", "use", "edit"])
       .withMessage("Invalid access level"),

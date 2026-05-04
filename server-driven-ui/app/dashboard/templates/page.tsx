@@ -14,7 +14,6 @@ import {
   Grid3x3,
   List,
   Star,
-  Share2,
   Copy,
   BarChart3,
   TrendingUp,
@@ -40,8 +39,8 @@ import {
 import { TemplateCard } from "@/components/TemplateCard";
 import { TemplatePreviewModal } from "@/components/TemplatePreviewModal";
 import { TemplateRatingModal } from "@/components/TemplateRatingModal";
-import { TemplateSharingModal } from "@/components/TemplateSharingModal";
 import { TemplateAnalyticsModal } from "@/components/TemplateAnalyticsModal";
+import { TemplateSharingModal } from "@/components/TemplateSharingModal";
 import { CreateCustomTemplateModal } from "@/components/CreateCustomTemplateModal";
 import { EditTemplateModal } from "@/components/EditTemplateModal";
 import { DeleteTemplateModal } from "@/components/DeleteTemplateModal";
@@ -114,8 +113,8 @@ export default function TemplatesPage() {
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [isRatingOpen, setIsRatingOpen] = useState(false);
-  const [isSharingOpen, setIsSharingOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -223,16 +222,16 @@ export default function TemplatesPage() {
     }
   };
 
+  // Handle share click
+  const handleShare = (template: Template) => {
+    setSelectedTemplate(template);
+    setIsShareOpen(true);
+  };
+
   // Handle rating click
   const handleRating = (template: Template) => {
     setSelectedTemplate(template);
     setIsRatingOpen(true);
-  };
-
-  // Handle sharing click
-  const handleShare = (template: Template) => {
-    setSelectedTemplate(template);
-    setIsSharingOpen(true);
   };
 
   // Handle analytics click
@@ -543,14 +542,6 @@ export default function TemplatesPage() {
                           Rate
                         </button>
                         <button
-                          onClick={() => handleShare(template)}
-                          title="Share this template"
-                          className="flex-1 px-2 py-1.5 text-xs bg-purple-50 text-purple-700 rounded hover:bg-purple-100 transition-colors flex items-center justify-center gap-1"
-                        >
-                          <Share2 size={12} />
-                          Share
-                        </button>
-                        <button
                           onClick={() => handleAnalytics(template)}
                           title="View analytics"
                           className="flex-1 px-2 py-1.5 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
@@ -558,24 +549,31 @@ export default function TemplatesPage() {
                           <BarChart3 size={12} />
                           Analytics
                         </button>
-                      </div>
-
-                      {/* Duplicate button - for custom templates */}
-                      {template.isCustom && (
                         <button
                           onClick={() => handleDuplicate(template)}
                           disabled={duplicating === template._id}
                           title="Duplicate this template"
-                          className="w-full px-2 py-1.5 text-xs bg-green-50 text-green-700 rounded hover:bg-green-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                          className="flex-1 px-2 py-1.5 text-xs bg-green-50 text-green-700 rounded hover:bg-green-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
                         >
                           {duplicating === template._id ? (
                             <Loader2 size={12} className="animate-spin" />
                           ) : (
                             <Copy size={12} />
                           )}
-                          Duplicate Template
+                          Duplicate
                         </button>
-                      )}
+                        {(template.isCustom ||
+                          template.createdBy === user?.id) && (
+                          <button
+                            onClick={() => handleShare(template)}
+                            title="Share this template"
+                            className="flex-1 px-2 py-1.5 text-xs bg-cyan-50 text-cyan-700 rounded hover:bg-cyan-100 transition-colors flex items-center justify-center gap-1 font-medium"
+                          >
+                            <Globe size={12} />
+                            Share
+                          </button>
+                        )}
+                      </div>
 
                       {/* Management actions - Edit and Delete for user's own templates */}
                       {(template.isCustom ||
@@ -680,20 +678,33 @@ export default function TemplatesPage() {
                         Rate
                       </button>
                       <button
-                        onClick={() => handleShare(template)}
-                        className="px-2 py-1 text-xs bg-purple-50 text-purple-700 rounded hover:bg-purple-100 transition-colors"
-                      >
-                        Share
-                      </button>
-                      <button
                         onClick={() => handleAnalytics(template)}
                         className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
                       >
                         Analytics
                       </button>
+                      <button
+                        onClick={() => handleDuplicate(template)}
+                        disabled={duplicating === template._id}
+                        className="px-2 py-1 text-xs bg-green-50 text-green-700 rounded hover:bg-green-100 transition-colors flex items-center gap-1 disabled:opacity-50"
+                      >
+                        {duplicating === template._id ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : (
+                          <Copy size={12} />
+                        )}
+                        Duplicate
+                      </button>
                       {(template.isCustom ||
                         template.createdBy === user?.id) && (
                         <>
+                          <button
+                            onClick={() => handleShare(template)}
+                            className="px-2 py-1 text-xs bg-cyan-50 text-cyan-700 rounded hover:bg-cyan-100 transition-colors flex items-center gap-1"
+                          >
+                            <Globe size={12} />
+                            Share
+                          </button>
                           <button
                             onClick={() => handleEdit(template)}
                             className="px-2 py-1 text-xs bg-indigo-50 text-indigo-700 rounded hover:bg-indigo-100 transition-colors flex items-center gap-1"
@@ -745,17 +756,17 @@ export default function TemplatesPage() {
             isOpen={isRatingOpen}
             onClose={() => setIsRatingOpen(false)}
           />
-          <TemplateSharingModal
-            templateId={selectedTemplate._id}
-            templateName={selectedTemplate.name}
-            isOpen={isSharingOpen}
-            onClose={() => setIsSharingOpen(false)}
-          />
           <TemplateAnalyticsModal
             templateId={selectedTemplate._id}
             templateName={selectedTemplate.name}
             isOpen={isAnalyticsOpen}
             onClose={() => setIsAnalyticsOpen(false)}
+          />
+          <TemplateSharingModal
+            templateId={selectedTemplate._id}
+            templateName={selectedTemplate.name}
+            isOpen={isShareOpen}
+            onClose={() => setIsShareOpen(false)}
           />
           <EditTemplateModal
             template={selectedTemplate}

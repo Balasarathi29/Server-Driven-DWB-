@@ -1,4 +1,5 @@
 import { Template, ITemplate } from "../models/Template.model";
+import { User } from "../models/User.model";
 import {
   TemplateRating,
   ITemplateRating,
@@ -78,6 +79,7 @@ export class TemplateService {
     data: {
       name?: string;
       description?: string;
+      category?: string;
       thumbnail?: string;
       jsonConfig?: PageJSON;
       isPublic?: boolean;
@@ -249,12 +251,57 @@ export class TemplateService {
     accessLevel: "view" | "use" | "edit";
     expiresAt?: Date;
   }): Promise<ITemplateShare> {
+    const owner = await User.findById(data.ownerId).select(
+      "institutionId email isActive",
+    );
+
+    if (!owner) {
+      throw new AppError("Owner not found", 404, "USER_NOT_FOUND");
+    }
+
+    const requestedEmails = Array.from(
+      new Set(
+        data.sharedWith
+          .map((email) => email.trim().toLowerCase())
+          .filter(Boolean),
+      ),
+    );
+
+    if (requestedEmails.length === 0) {
+      throw new AppError(
+        "Please provide at least one registered email",
+        400,
+        "INVALID_SHARED_WITH",
+      );
+    }
+
+    const verifiedUsers = await User.find({
+      email: { $in: requestedEmails },
+      institutionId: owner.institutionId,
+      isActive: true,
+    }).select("_id email");
+
+    const verifiedEmails = new Set(
+      verifiedUsers.map((user) => user.email.toLowerCase()),
+    );
+    const unregisteredEmails = requestedEmails.filter(
+      (email) => !verifiedEmails.has(email),
+    );
+
+    if (unregisteredEmails.length > 0) {
+      throw new AppError(
+        `These emails are not registered in this institution: ${unregisteredEmails.join(", ")}`,
+        400,
+        "UNVERIFIED_RECIPIENT",
+      );
+    }
+
     const uniqueShareCode = crypto.randomBytes(16).toString("hex");
 
     const share = await TemplateShare.create({
       templateId: data.templateId,
       ownerId: data.ownerId,
-      sharedWith: data.sharedWith,
+      sharedWith: verifiedUsers.map((user) => user._id),
       accessLevel: data.accessLevel,
       expiresAt: data.expiresAt,
       uniqueShareCode,
@@ -262,16 +309,93 @@ export class TemplateService {
 
     // Increment share count
     await Template.findByIdAndUpdate(data.templateId, {
-      $inc: { shareCount: data.sharedWith.length },
+      $inc: { shareCount: verifiedUsers.length },
     });
 
     await this.trackTemplateAction(
       data.templateId,
       "share",
-      data.sharedWith.length,
+      verifiedUsers.length,
     );
 
+    // Send emails to shared recipients
+    try {
+      const template = await this.getTemplateById(data.templateId);
+      const shareLink = `${process.env.FRONTEND_URL || "http://localhost:3000"}/templates/shared/${uniqueShareCode}`;
+
+      for (const user of verifiedUsers) {
+        this.sendShareEmail(
+          user.email,
+          template.name,
+          template.description,
+          shareLink,
+          data.expiresAt,
+        ).catch((err) => {
+          console.error(`Failed to send email to ${user.email}:`, err);
+        });
+      }
+    } catch (error) {
+      console.error("Error sending share emails:", error);
+    }
+
     return share;
+  }
+
+  // Send share email
+  private async sendShareEmail(
+    to: string,
+    templateName: string,
+    templateDescription: string,
+    shareLink: string,
+    expiresAt?: Date,
+  ): Promise<void> {
+    try {
+      const nodemailer = await import("nodemailer");
+
+      const transporter = nodemailer.default.createTransport({
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: parseInt(process.env.SMTP_PORT || "587"),
+        secure: process.env.SMTP_SECURE === "true",
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      const expirationText = expiresAt
+        ? `This link expires on ${new Date(expiresAt).toLocaleDateString()}`
+        : "This link does not expire";
+
+      const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Template Shared with You!</h2>
+          <p style="color: #666; line-height: 1.6;">
+            Someone has shared a template with you.
+          </p>
+          <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #0066cc; margin-top: 0;">${templateName}</h3>
+            <p style="color: #666; margin: 10px 0;">${templateDescription}</p>
+          </div>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${shareLink}" style="display: inline-block; padding: 12px 30px; background-color: #0066cc; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+              View Template
+            </a>
+          </div>
+          <p style="color: #999; font-size: 12px; margin-top: 20px;">
+            ${expirationText}
+          </p>
+        </div>
+      `;
+
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER,
+        to,
+        subject: `Template "${templateName}" has been shared with you`,
+        html: htmlContent,
+      });
+    } catch (error) {
+      console.error("Error sending share email:", error);
+    }
   }
 
   // Get template shares

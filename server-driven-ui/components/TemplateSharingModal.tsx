@@ -57,10 +57,15 @@ export const TemplateSharingModal = ({
         ? new Date(Date.now() + expiresIn * 24 * 60 * 60 * 1000).toISOString()
         : undefined;
 
-      await shareTemplate(templateId, emails, accessLevel, expiresAt);
+      const result = await shareTemplate(
+        templateId,
+        emails,
+        accessLevel,
+        expiresAt,
+      );
 
       setShareLink(
-        `${window.location.origin}/templates/shared/${templateId}?access=${accessLevel}`,
+        `${window.location.origin}/templates/shared/${result.uniqueShareCode}?access=${accessLevel}`,
       );
 
       setEmails([]);

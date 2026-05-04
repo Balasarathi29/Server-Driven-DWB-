@@ -89,8 +89,15 @@ export class TemplateController {
     }
 
     const { id } = req.params;
-    const { name, description, thumbnail, jsonConfig, isPublic, tags } =
-      req.body;
+    const {
+      name,
+      description,
+      category,
+      thumbnail,
+      jsonConfig,
+      isPublic,
+      tags,
+    } = req.body;
 
     // Verify ownership
     const template = await templateService.getTemplateById(id);
@@ -101,6 +108,7 @@ export class TemplateController {
     const updated = await templateService.updateTemplate(id, {
       name,
       description,
+      category,
       thumbnail,
       jsonConfig,
       isPublic,

@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import {
   Eye,
   Copy,
-  Share2,
   TrendingUp,
   Calendar,
   Loader2,
@@ -59,10 +58,9 @@ export const TemplateAnalyticsModal = ({
       (acc, day) => ({
         views: acc.views + day.views,
         uses: acc.uses + day.uses,
-        shares: acc.shares + day.shares,
         duplicates: acc.duplicates + day.duplicateCount,
       }),
-      { views: 0, uses: 0, shares: 0, duplicates: 0 },
+      { views: 0, uses: 0, duplicates: 0 },
     );
   };
 
@@ -127,7 +125,7 @@ export const TemplateAnalyticsModal = ({
           ) : (
             <>
               {/* Metrics Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+              <div className="grid grid-cols-3 gap-4 mb-8">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -165,23 +163,6 @@ export const TemplateAnalyticsModal = ({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="p-4 bg-purple-50 rounded-lg border border-purple-200"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Share2 size={18} className="text-purple-600" />
-                    <span className="text-xs font-medium text-purple-600">
-                      Shares
-                    </span>
-                  </div>
-                  <p className="text-2xl font-bold text-purple-900">
-                    {totals.shares}
-                  </p>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
                   className="p-4 bg-orange-50 rounded-lg border border-orange-200"
                 >
                   <div className="flex items-center gap-2 mb-2">
@@ -223,7 +204,7 @@ export const TemplateAnalyticsModal = ({
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                      <div className="grid grid-cols-3 gap-4 text-sm">
                         <div>
                           <span className="text-gray-500 block mb-1">
                             Views
@@ -236,14 +217,6 @@ export const TemplateAnalyticsModal = ({
                           <span className="text-gray-500 block mb-1">Uses</span>
                           <span className="font-bold text-gray-900">
                             {day.uses}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 block mb-1">
-                            Shares
-                          </span>
-                          <span className="font-bold text-gray-900">
-                            {day.shares}
                           </span>
                         </div>
                         <div>
