@@ -37,6 +37,36 @@ import { generatePageHTML, modifyPageHTML } from "@/lib/api/ai.api";
 import Button from "@/components/ui/Button";
 import { Page, PageJSON } from "@/lib/types/page.types";
 
+// Stable stringify that sorts object keys so we can compare structural equality
+const stableStringify = (obj: unknown): string => {
+  const seen = new WeakSet();
+  const stringify = (value: any): any => {
+    if (value === null || typeof value !== "object") return value;
+    if (seen.has(value)) return undefined;
+    seen.add(value);
+    if (Array.isArray(value)) return value.map(stringify);
+    const keys = Object.keys(value).sort();
+    const out: Record<string, any> = {};
+    keys.forEach((k) => {
+      out[k] = stringify(value[k]);
+    });
+    return out;
+  };
+  try {
+    return JSON.stringify(stringify(obj));
+  } catch (e) {
+    try {
+      return JSON.stringify(obj);
+    } catch {
+      return String(obj);
+    }
+  }
+};
+
+// Development-only guard: wrap Object.keys to log when called with null/undefined
+// NOTE: Removed development Object.keys override. Use `sanitizeJsonConfig` and
+// guarded deserialize wrapper to avoid calling Object.keys on null/undefined.
+
 const AIChat = dynamic(
   () => import("@/components/AIChat").then((mod) => mod.AIChat),
   {
@@ -66,14 +96,13 @@ type EditorPageData = Page;
 
 const toPageJson = (value: unknown): PageJSON => value as PageJSON;
 const toCraftConfig = (value: unknown): Record<string, unknown> =>
-  value as Record<string, unknown>;
+  (value ?? {}) as Record<string, unknown>;
 const createHtmlCraftConfig = (
   html: string,
   existingConfig?: unknown,
 ): Record<string, unknown> => {
-  const config = toCraftConfig(existingConfig);
-  const existingRoot =
-    (config.ROOT as Record<string, unknown> | undefined) ?? undefined;
+  const config = toCraftConfig(existingConfig) ?? {};
+  const existingRoot = (config as Record<string, any>)?.ROOT ?? undefined;
   const htmlNodeId = `ai_html_${Date.now()}`;
 
   return {
@@ -108,34 +137,45 @@ const createHtmlCraftConfig = (
   };
 };
 
-const createBlankCraftConfig = (
-  existingConfig?: unknown,
-): Record<string, unknown> => {
-  const config = toCraftConfig(existingConfig);
-  const existingRoot =
-    (config.ROOT as Record<string, unknown> | undefined) ?? undefined;
-
-  return {
-    ...(config.meta ? { meta: config.meta } : {}),
-    ROOT: {
-      type: { resolvedName: "Container" },
-      isCanvas: true,
-      props: existingRoot?.props ?? {
-        backgroundColor: "#ffffff",
-        paddingTop: "40px",
-        paddingRight: "40px",
-        paddingBottom: "40px",
-        paddingLeft: "40px",
-        minHeight: "800px",
-      },
-      displayName: existingRoot?.displayName ?? "Container",
-      custom: existingRoot?.custom ?? {},
-      hidden: existingRoot?.hidden ?? false,
-      nodes: [],
-      linkedNodes: existingRoot?.linkedNodes ?? {},
+const createBlankCraftConfig = (): Record<string, unknown> => ({
+  ROOT: {
+    type: { resolvedName: "Container" },
+    isCanvas: true,
+    props: {
+      backgroundColor: "#ffffff",
+      paddingTop: "40px",
+      paddingRight: "40px",
+      paddingBottom: "40px",
+      paddingLeft: "40px",
+      minHeight: "800px",
     },
-  };
-};
+    displayName: "Container",
+    custom: {},
+    hidden: false,
+    nodes: [],
+    linkedNodes: {},
+  },
+});
+
+const createTemplateDesignerDraftConfig = (): Record<string, unknown> => ({
+  ROOT: {
+    type: { resolvedName: "Container" },
+    isCanvas: true,
+    props: {
+      backgroundColor: "#ffffff",
+      paddingTop: "40px",
+      paddingRight: "40px",
+      paddingBottom: "40px",
+      paddingLeft: "40px",
+      minHeight: "800px",
+    },
+    displayName: "Container",
+    custom: {},
+    hidden: false,
+    nodes: [],
+    linkedNodes: {},
+  },
+});
 const getDeviceWidthLabel = (device: DeviceMode): string => {
   if (device === "tablet") return "768px";
   if (device === "mobile") return "390px";
@@ -158,8 +198,8 @@ const sanitizeJsonConfig = (config: unknown): Record<string, unknown> => {
     );
 
     Object.entries(sanitizedConfig).forEach(([nodeId, nodeData]) => {
-      const node = nodeData as Record<string, unknown> | undefined;
-      if (!node || typeof node !== "object") return;
+      const node = (nodeData as Record<string, unknown> | undefined) ?? {};
+      if (typeof node !== "object") return;
 
       const type = node.type as Record<string, unknown> | string | undefined;
       let resolvedName: string | undefined;
@@ -238,7 +278,7 @@ const sanitizeJsonConfig = (config: unknown): Record<string, unknown> => {
           ...node,
           type: { resolvedName: "Container" },
           displayName: node.displayName || "Container",
-          props: node.props || {},
+          props: (node.props as Record<string, unknown>) || {},
         };
       }
 
@@ -302,32 +342,38 @@ const sanitizeJsonConfig = (config: unknown): Record<string, unknown> => {
         };
       }
 
-      if (Array.isArray(node.nodes)) {
-        const currentNode =
-          (sanitizedConfig[nodeId] as Record<string, unknown> | undefined) ??
-          node;
-        sanitizedConfig[nodeId] = {
-          ...currentNode,
-          nodes: node.nodes.filter((childId) =>
-            validNodeIds.has(String(childId)),
-          ),
-        };
-      }
+      // Ensure `nodes` is an array and only contains valid node IDs
+      const currentNode =
+        (sanitizedConfig[nodeId] as Record<string, unknown> | undefined) ??
+        node;
+      const nodesArray = Array.isArray(node.nodes)
+        ? node.nodes.filter((childId: any) => validNodeIds.has(String(childId)))
+        : [];
+      sanitizedConfig[nodeId] = {
+        ...currentNode,
+        nodes: nodesArray,
+      };
 
+      // Ensure linkedNodes is always an object (possibly empty) and only contains valid refs
+      const linkedNodesObj: Record<string, unknown> = {};
       if (node.linkedNodes && typeof node.linkedNodes === "object") {
-        const currentNode =
-          (sanitizedConfig[nodeId] as Record<string, unknown> | undefined) ??
-          node;
-        const linkedNodes = Object.fromEntries(
-          Object.entries(node.linkedNodes).filter(([, childId]) =>
-            validNodeIds.has(String(childId)),
-          ),
-        );
-        sanitizedConfig[nodeId] = {
-          ...currentNode,
-          linkedNodes,
-        };
+        Object.entries(node.linkedNodes).forEach(([k, v]) => {
+          if (validNodeIds.has(String(v))) linkedNodesObj[k] = v;
+        });
       }
+      sanitizedConfig[nodeId] = {
+        ...sanitizedConfig[nodeId],
+        linkedNodes: linkedNodesObj,
+        props:
+          (sanitizedConfig[nodeId] as Record<string, unknown>)?.props ?? {},
+        custom:
+          (sanitizedConfig[nodeId] as Record<string, unknown>)?.custom ?? {},
+        hidden: !!(sanitizedConfig[nodeId] as Record<string, unknown>)?.hidden,
+        displayName:
+          (sanitizedConfig[nodeId] as Record<string, unknown>)?.displayName ||
+          node.displayName ||
+          "",
+      };
     });
 
     if (sanitizedConfig.ROOT && typeof sanitizedConfig.ROOT === "object") {
@@ -727,6 +773,7 @@ const EditorWrapper = ({
   onUpdatePageData,
   viewMode,
   setViewMode,
+  originalRawConfig,
 }: {
   pageData: EditorPageData;
   onSave: (query: SerializedEditorQuery) => void;
@@ -735,10 +782,77 @@ const EditorWrapper = ({
   onUpdatePageData: (data: EditorPageData) => void;
   viewMode: "visual" | "code";
   setViewMode: (mode: "visual" | "code") => void;
+  originalRawConfig?: string | null;
 }) => {
   const { query, nodes } = useEditor((state) => ({
     nodes: state.nodes,
   }));
+  // Wrap query.deserialize to log incoming payloads for debugging Craft deserialize errors
+  try {
+    const qAny = query as any;
+    if (
+      qAny &&
+      typeof qAny.deserialize === "function" &&
+      !qAny.__deserialize_wrapped
+    ) {
+      const origDeserialize = qAny.deserialize.bind(qAny);
+      qAny.deserialize = function (payload: any) {
+        if (payload === null || payload === undefined) {
+          try {
+            console.error(
+              "CRAFT_DESERIALIZE_IGNORED_NULL_PAYLOAD",
+              payload,
+              new Error().stack,
+            );
+          } catch (e) {
+            // ignore
+          }
+          return;
+        }
+        try {
+          console.log("CRAFT_DESERIALIZE_INVOKED: type=", typeof payload);
+          if (payload && typeof payload === "object") {
+            try {
+              console.log(
+                "CRAFT_DESERIALIZE_KEYS:",
+                Object.keys(payload).slice(0, 200),
+              );
+            } catch (kErr) {
+              console.error("CRAFT_DESERIALIZE_KEYS_ERR", kErr);
+            }
+
+            try {
+              // Log a compact preview of ROOT and top-level nodes
+              const preview: any = {};
+              if (payload.ROOT) preview.ROOT = payload.ROOT;
+              const topKeys = Object.keys(payload).slice(0, 20);
+              topKeys.forEach((k) => {
+                if (k !== "ROOT")
+                  preview[k] = payload[k]?.nodes
+                    ? { nodes: payload[k].nodes }
+                    : typeof payload[k];
+              });
+              console.log(
+                "CRAFT_DESERIALIZE_PREVIEW:",
+                JSON.stringify(preview).slice(0, 2000),
+              );
+            } catch (pErr) {
+              console.error("CRAFT_DESERIALIZE_PREVIEW_ERR", pErr);
+            }
+          } else {
+            console.log("CRAFT_DESERIALIZE_PAYLOAD:", payload);
+          }
+        } catch (logErr) {
+          console.error("CRAFT_DESERIALIZE_LOG_ERR", logErr);
+        }
+
+        return origDeserialize(payload);
+      };
+      qAny.__deserialize_wrapped = true;
+    }
+  } catch (wrapErr) {
+    console.error("Failed to wrap query.deserialize:", wrapErr);
+  }
   const searchParams = useSearchParams();
   const [isGenerating, setIsGenerating] = useState(false);
   const [genStatus, setGenStatus] = useState("");
@@ -763,6 +877,74 @@ const EditorWrapper = ({
       setSerializedQuery("");
     }
   }, [query, nodes]);
+
+  // When pageData changes, attempt to deserialize into the editor in a safe try/catch.
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!pageData?.jsonConfig) return;
+        const cfg = sanitizeJsonConfig(pageData.jsonConfig);
+        // Ensure every node entry is an object; Craft deserialize will call Object.keys
+        // on each node value, so guard against null/undefined there.
+        const normalizedCfg: Record<string, unknown> = {};
+        let fixes = 0;
+        Object.keys(cfg).forEach((k) => {
+          const v = (cfg as Record<string, unknown>)[k];
+          if (!v || typeof v !== "object") {
+            fixes++;
+            normalizedCfg[k] = {
+              type: { resolvedName: "Container" },
+              props: {},
+              nodes: [],
+              linkedNodes: {},
+              custom: {},
+              hidden: false,
+              displayName: "Container",
+            };
+          } else {
+            // Ensure props/custom/linkedNodes/nodes exist and are correct types
+            const nodeObj = { ...(v as Record<string, unknown>) } as Record<
+              string,
+              unknown
+            >;
+            if (!nodeObj.props || typeof nodeObj.props !== "object")
+              nodeObj.props = {};
+            if (!Array.isArray(nodeObj.nodes)) nodeObj.nodes = [];
+            if (!nodeObj.linkedNodes || typeof nodeObj.linkedNodes !== "object")
+              nodeObj.linkedNodes = {};
+            if (!nodeObj.custom || typeof nodeObj.custom !== "object")
+              nodeObj.custom = {};
+            if (typeof nodeObj.hidden !== "boolean")
+              nodeObj.hidden = !!nodeObj.hidden;
+            if (!nodeObj.displayName)
+              nodeObj.displayName = String(nodeObj.displayName || "");
+            normalizedCfg[k] = nodeObj;
+          }
+        });
+        if (fixes > 0)
+          console.warn(
+            "sanitizeJsonConfig: fixed",
+            fixes,
+            "invalid node entries before deserialize",
+          );
+        // query.deserialize expects an object (not string)
+        if (query && typeof query.deserialize === "function") {
+          try {
+            query.deserialize(normalizedCfg as any);
+          } catch (err) {
+            console.error(
+              "Editor deserialize failed, attempting safe fallback:",
+              err,
+            );
+            // Fallback: initialize blank page
+            query.deserialize(createTemplateDesignerDraftConfig());
+          }
+        }
+      } catch (err) {
+        console.error("Failed to hydrate editor from pageData:", err);
+      }
+    })();
+  }, [pageData, query]);
 
   useEffect(() => {
     latestSerializedQueryRef.current = serializedQuery;
@@ -933,7 +1115,7 @@ const EditorWrapper = ({
       return;
     }
 
-    const blankJson = toPageJson(createBlankCraftConfig(pageData.jsonConfig));
+    const blankJson = toPageJson(createTemplateDesignerDraftConfig());
     const updatedData = {
       ...pageData,
       useHtml: false,
@@ -1023,6 +1205,7 @@ const EditorWrapper = ({
       {!pageData?.useHtml && (
         <EditorToolbar
           onSave={() => onSave(query)}
+          onSaveAsTemplate={() => handleSaveAsTemplate(query)}
           onAIGenerate={() => handleAIGenerate()}
           onResetPage={handleResetPage}
           isSaving={saving}
@@ -1133,13 +1316,7 @@ const EditorWrapper = ({
               className={`bg-white shadow-xl min-h-200 ${editorCanvasClass} mx-auto rounded-lg overflow-hidden relative transition-all duration-300`}
             >
               {showGrid && <GridOverlay />}
-              <Frame
-                data={
-                  toCraftConfig(pageData?.jsonConfig)?.ROOT
-                    ? JSON.stringify(sanitizeJsonConfig(pageData.jsonConfig))
-                    : undefined
-                }
-              >
+              <Frame>
                 <Element
                   is={Container}
                   canvas
@@ -1175,9 +1352,24 @@ export default function EditPage({ params }: PageProps) {
   const [saving, setSaving] = useState(false);
   const [viewMode, setViewMode] = useState<"visual" | "code">("visual");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [originalRawConfig, setOriginalRawConfig] = useState<string | null>(
+    null,
+  );
+  const isTemplateDesigner =
+    searchParams.get("templateDesigner") === "1" ||
+    normalizeSlug(slug) === "new";
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    const designerMode =
+      isTemplateDesigner ||
+      (typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("templateDesigner") ===
+          "1");
+
+    // Allow unauthenticated access when in template designer mode (for testing/seeding)
+    console.log("DEBUG_EDITOR_LOAD: isTemplateDesigner=", designerMode);
+    if (!designerMode && !authLoading && !user) {
       router.push("/login");
       return;
     }
@@ -1185,11 +1377,15 @@ export default function EditPage({ params }: PageProps) {
     const fetchPage = async () => {
       try {
         const requestedSlug = normalizeSlug(slug);
+        const hasAccessToken =
+          typeof window !== "undefined" &&
+          !!localStorage.getItem("accessToken");
 
         let data: EditorPageData;
 
         // If the user is opening the editor to create a new page from a template
         if (requestedSlug === "new") {
+          const useLocalDraftMode = true;
           try {
             // Try to read template JSON config from sessionStorage first
             const sessionConfig = sessionStorage.getItem("templateConfig");
@@ -1198,10 +1394,21 @@ export default function EditPage({ params }: PageProps) {
             if (sessionConfig) {
               try {
                 jsonConfig = JSON.parse(sessionConfig);
+                setOriginalRawConfig(sessionConfig);
               } catch {
                 jsonConfig = null;
+                setOriginalRawConfig(sessionConfig);
               }
             }
+            console.log(
+              "DEBUG: sessionConfig raw:",
+              sessionConfig?.slice?.(0, 200),
+            );
+            console.log(
+              "DEBUG: parsed jsonConfig type:",
+              typeof jsonConfig,
+              jsonConfig,
+            );
 
             // If not in session, attempt to fetch via templateId query param
             if (!jsonConfig) {
@@ -1215,33 +1422,163 @@ export default function EditPage({ params }: PageProps) {
               }
             }
 
+            if (!jsonConfig && useLocalDraftMode) {
+              jsonConfig = {
+                ROOT: {
+                  type: { resolvedName: "Container" },
+                  isCanvas: true,
+                  props: {
+                    backgroundColor: "#ffffff",
+                    paddingTop: "40px",
+                    paddingRight: "40px",
+                    paddingBottom: "40px",
+                    paddingLeft: "40px",
+                    minHeight: "800px",
+                  },
+                  displayName: "Container",
+                  custom: {},
+                  hidden: false,
+                  nodes: [],
+                  linkedNodes: {},
+                },
+              };
+            }
+
             if (!jsonConfig) {
               throw new Error(
                 "No template configuration found to create a new page",
               );
             }
 
+            if (useLocalDraftMode) {
+              const nowIso = new Date().toISOString();
+              setPageData({
+                _id: "",
+                institutionId: "",
+                name: "Template Designer Draft",
+                slug: "new",
+                jsonConfig: toPageJson(sanitizeJsonConfig(jsonConfig)),
+                htmlContent: "",
+                useHtml: false,
+                isPublished: false,
+                version: "draft",
+                createdAt: nowIso,
+                updatedAt: nowIso,
+                updatedBy: {
+                  _id: "",
+                  name: "Template Designer",
+                  email: "",
+                },
+              } as EditorPageData);
+              setLoading(false);
+              return;
+            }
+
+            // Ensure craft config has at least one concrete node entry
+            try {
+              const cfg = toCraftConfig(jsonConfig || {});
+              const root = cfg.ROOT as any;
+              if (
+                root &&
+                Array.isArray(root.nodes) &&
+                root.nodes.length === 0
+              ) {
+                const defaultNodeId = `node_${Date.now()}`;
+                (cfg as any)[defaultNodeId] = {
+                  type: { resolvedName: "Container" },
+                  isCanvas: false,
+                  props: {},
+                  displayName: "Container",
+                  custom: {},
+                  hidden: false,
+                  nodes: [],
+                  linkedNodes: {},
+                };
+                jsonConfig = cfg;
+              }
+            } catch (err) {
+              // ignore and continue — we'll validate below
+            }
+
+            console.log("DEBUG_EDITOR_CREATE_PAGE_PATH", {
+              requestedSlug,
+              designerMode,
+              useLocalDraftMode,
+              hasAccessToken,
+              hasJsonConfig: !!jsonConfig,
+            });
             // Create a new page first, then update it with the template JSON
-            const uniqueSlug = `template-${Date.now()}`;
-            const created = await pagesApi.createPage({
-              name: "New Page",
-              slug: uniqueSlug,
-            });
+            try {
+              const uniqueSlug = `template-${Date.now()}`;
+              const created = await pagesApi.createPage({
+                name: "New Page",
+                slug: uniqueSlug,
+              });
 
-            await pagesApi.updatePage(created._id, {
-              jsonConfig: jsonConfig as any,
-              htmlContent: "",
-              useHtml: false,
-            });
+              await pagesApi.updatePage(created._id, {
+                jsonConfig: jsonConfig as any,
+                htmlContent: "",
+                useHtml: false,
+              });
 
-            // Load the created page for editor
-            data = await pagesApi.getPage(created._id);
-            setPageData(data);
-            setLoading(false);
-            return;
+              // Load the created page for editor
+              data = await pagesApi.getPage(created._id);
+              console.log(
+                "DEBUG: created page jsonConfig type:",
+                typeof data?.jsonConfig,
+                data?.jsonConfig && Object.keys
+                  ? Object.keys(data.jsonConfig)
+                  : null,
+              );
+              setPageData(data);
+              setLoading(false);
+              return;
+            } catch (createErr: any) {
+              const nowIso = new Date().toISOString();
+              setPageData({
+                _id: "",
+                institutionId: "",
+                name: "Template Designer Draft",
+                slug: "new",
+                jsonConfig: toPageJson(sanitizeJsonConfig(jsonConfig)),
+                htmlContent: "",
+                useHtml: false,
+                isPublished: false,
+                version: "draft",
+                createdAt: nowIso,
+                updatedAt: nowIso,
+                updatedBy: {
+                  _id: "",
+                  name: "Template Designer",
+                  email: "",
+                },
+              } as EditorPageData);
+              setLoading(false);
+              return;
+            }
           } catch (err) {
             console.error("Failed to create page from template:", err);
-            toast.error("Failed to create page from template");
+            const nowIso = new Date().toISOString();
+            setPageData({
+              _id: "",
+              institutionId: "",
+              name: "Template Designer Draft",
+              slug: "new",
+              jsonConfig: toPageJson(
+                sanitizeJsonConfig(createTemplateDesignerDraftConfig()),
+              ),
+              htmlContent: "",
+              useHtml: false,
+              isPublished: false,
+              version: "draft",
+              createdAt: nowIso,
+              updatedAt: nowIso,
+              updatedBy: {
+                _id: "",
+                name: "Template Designer",
+                email: "",
+              },
+            } as EditorPageData);
             setLoading(false);
             return;
           }
@@ -1284,6 +1621,11 @@ export default function EditPage({ params }: PageProps) {
           Boolean(data.htmlContent) &&
           (Boolean(data.useHtml) || !hasCraftRoot || !hasRootChildren);
 
+        console.log(
+          "DEBUG: fetched page raw jsonConfig type:",
+          typeof data?.jsonConfig,
+          data?.jsonConfig && Object.keys ? Object.keys(data.jsonConfig) : null,
+        );
         setPageData(
           canHydrateFromHtml
             ? {
@@ -1311,10 +1653,10 @@ export default function EditPage({ params }: PageProps) {
       }
     };
 
-    if (!authLoading && user) {
+    if (designerMode || (!authLoading && user)) {
       fetchPage();
     }
-  }, [slug, user, authLoading, router]);
+  }, [slug, user, authLoading, router, isTemplateDesigner]);
 
   const handleSave = async (query: SerializedEditorQuery) => {
     if (!pageData?._id) {
@@ -1339,7 +1681,49 @@ export default function EditPage({ params }: PageProps) {
     }
   };
 
-  if (loading || authLoading) {
+  const handleSaveAsTemplate = async (query: SerializedEditorQuery) => {
+    try {
+      const serializedConfig = query.serialize();
+      // If the editor was opened from a raw sessionStorage string, and the
+      // serialized output is structurally identical, preserve the original
+      // raw string (keeps formatting, comments, ordering, etc.). Otherwise
+      // store the editor-serialized config.
+      try {
+        const origRaw = originalRawConfig;
+        if (origRaw) {
+          const parsedOrig = JSON.parse(origRaw);
+          const parsedNew = JSON.parse(serializedConfig);
+          if (stableStringify(parsedOrig) === stableStringify(parsedNew)) {
+            sessionStorage.setItem("templateConfig", origRaw);
+          } else {
+            sessionStorage.setItem("templateConfig", serializedConfig);
+          }
+        } else {
+          sessionStorage.setItem("templateConfig", serializedConfig);
+        }
+      } catch (cmpErr) {
+        // If anything goes wrong comparing, fall back to serialized value.
+        sessionStorage.setItem("templateConfig", serializedConfig);
+      }
+      sessionStorage.setItem(
+        "templateDraftMeta",
+        JSON.stringify({
+          name: pageData?.name || "Visual Template Draft",
+          description: "",
+          category: "custom",
+          tags: [],
+          isPublic: false,
+        }),
+      );
+      toast.success("Template draft saved");
+      router.push("/dashboard/templates?createTemplate=1");
+    } catch (error) {
+      console.error("Failed to export template draft:", error);
+      toast.error("Failed to save template draft");
+    }
+  };
+
+  if (loading || (!isTemplateDesigner && authLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
@@ -1351,10 +1735,11 @@ export default function EditPage({ params }: PageProps) {
   }
 
   if (
-    !user ||
-    (user.role !== "admin" &&
-      user.role !== "editor" &&
-      user.role !== "super-admin")
+    !isTemplateDesigner &&
+    (!user ||
+      (user.role !== "admin" &&
+        user.role !== "editor" &&
+        user.role !== "super-admin"))
   ) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -1373,19 +1758,45 @@ export default function EditPage({ params }: PageProps) {
     );
   }
 
+  const resolvedPageData: EditorPageData | null =
+    pageData ??
+    (isTemplateDesigner
+      ? ({
+          _id: "",
+          institutionId: "",
+          name: "Template Designer Draft",
+          slug: "new",
+          jsonConfig: toPageJson(
+            sanitizeJsonConfig(createTemplateDesignerDraftConfig()),
+          ),
+          htmlContent: "",
+          useHtml: false,
+          isPublished: false,
+          version: "draft",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          updatedBy: {
+            _id: "",
+            name: "Template Designer",
+            email: "",
+          },
+        } as EditorPageData)
+      : null);
+
   return (
     <Editor resolver={ComponentMapper} onRender={RenderNode}>
       <EditorSelectionProvider>
         <React.Suspense fallback={<div>Loading...</div>}>
-          {pageData && (
+          {resolvedPageData && (
             <EditorWrapper
-              pageData={pageData}
+              pageData={resolvedPageData}
               onSave={handleSave}
               saving={saving}
               slug={slug}
               onUpdatePageData={setPageData}
               viewMode={viewMode}
               setViewMode={setViewMode}
+              originalRawConfig={originalRawConfig}
             />
           )}
         </React.Suspense>

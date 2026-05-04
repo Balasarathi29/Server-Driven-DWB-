@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEditor } from "@craftjs/core";
 import {
   Save,
+  LayoutTemplate,
   RotateCcw,
   RotateCw,
   Bot,
@@ -104,6 +105,7 @@ const ToolsDropdown = ({
 
 interface EditorToolbarProps {
   onSave: () => void;
+  onSaveAsTemplate?: () => void;
   onAIGenerate?: () => void;
   onResetPage?: () => void;
   isSaving?: boolean;
@@ -115,6 +117,7 @@ interface EditorToolbarProps {
 
 export const EditorToolbar = ({
   onSave,
+  onSaveAsTemplate,
   onAIGenerate,
   onResetPage,
   isSaving,
@@ -473,6 +476,16 @@ export const EditorToolbar = ({
           <Save className="w-4 h-4" />
           {isSaving ? "Saving..." : "Save"}
         </button>
+
+        {onSaveAsTemplate && (
+          <button
+            onClick={onSaveAsTemplate}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
+          >
+            <LayoutTemplate className="w-4 h-4" />
+            Save as Template
+          </button>
+        )}
 
         {/* Exit Editor */}
         <Link

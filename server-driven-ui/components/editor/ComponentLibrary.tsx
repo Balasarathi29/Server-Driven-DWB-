@@ -78,6 +78,7 @@ import {
 } from "../builder-components/Phase1Expansion";
 import { ComponentMapper } from "../renderer/ComponentMapper";
 import * as aiApi from "@/lib/api/ai.api";
+import { useSearchParams } from "next/navigation";
 import { Sparkles, Code } from "lucide-react";
 
 type CustomComponentItem = {
@@ -89,12 +90,18 @@ type CustomComponentItem = {
 
 export const ComponentLibrary = () => {
   const { connectors } = useEditor();
+  const searchParams = useSearchParams();
   const [search, setSearch] = React.useState("");
   const [customComponents, setCustomComponents] = React.useState<
     CustomComponentItem[]
   >([]);
+  const isTemplateDesigner = searchParams.get("templateDesigner") === "1";
 
   React.useEffect(() => {
+    if (isTemplateDesigner) {
+      return;
+    }
+
     const fetchCustom = async () => {
       try {
         const response = await aiApi.getCustomComponents();
@@ -112,7 +119,7 @@ export const ComponentLibrary = () => {
     window.addEventListener("customComponentGenerated", fetchCustom);
     return () =>
       window.removeEventListener("customComponentGenerated", fetchCustom);
-  }, []);
+  }, [isTemplateDesigner]);
 
   const components = [
     {
@@ -634,7 +641,7 @@ export const ComponentLibrary = () => {
           </div>
         )}
 
-        {customComponents.length > 0 && (
+        {!isTemplateDesigner && customComponents.length > 0 && (
           <>
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mt-8 mb-4 flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />

@@ -54,6 +54,7 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* Removed dev Object.keys override - rely on sanitized payloads and guarded deserialize */}
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <AuthProvider>

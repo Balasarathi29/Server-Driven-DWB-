@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Plus,
@@ -34,6 +35,7 @@ export const CreateCustomTemplateModal = ({
   onClose,
   onSuccess,
 }: CreateCustomTemplateModalProps) => {
+  const router = useRouter();
   const [step, setStep] = useState<"info" | "content">("info");
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -46,6 +48,43 @@ export const CreateCustomTemplateModal = ({
   const [currentTag, setCurrentTag] = useState("");
   const [thumbnail, setThumbnail] = useState<string>("");
   const [jsonConfig, setJsonConfig] = useState<any>({});
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const storedDraft = sessionStorage.getItem("templateDraftMeta");
+    const storedConfig = sessionStorage.getItem("templateConfig");
+
+    if (storedDraft) {
+      try {
+        const parsedDraft = JSON.parse(storedDraft);
+        setFormData((prev) => ({
+          ...prev,
+          name: parsedDraft.name || prev.name,
+          description: parsedDraft.description || prev.description,
+          category: parsedDraft.category || prev.category,
+          tags: Array.isArray(parsedDraft.tags) ? parsedDraft.tags : prev.tags,
+          isPublic:
+            typeof parsedDraft.isPublic === "boolean"
+              ? parsedDraft.isPublic
+              : prev.isPublic,
+        }));
+      } catch {
+        // Ignore bad stored metadata.
+      }
+    }
+
+    if (storedConfig) {
+      try {
+        setJsonConfig(JSON.parse(storedConfig));
+        setStep("content");
+      } catch {
+        setJsonConfig({});
+      }
+    }
+  }, [isOpen]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -86,6 +125,23 @@ export const CreateCustomTemplateModal = ({
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleOpenVisualEditor = () => {
+    sessionStorage.setItem(
+      "templateDraftMeta",
+      JSON.stringify({
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        tags: formData.tags,
+        isPublic: formData.isPublic,
+      }),
+    );
+
+    sessionStorage.setItem("templateConfig", JSON.stringify(jsonConfig || {}));
+    onClose();
+    router.push("/edit/new?templateDesigner=1");
   };
 
   const handleJsonConfigChange = (
@@ -257,6 +313,22 @@ export const CreateCustomTemplateModal = ({
                     </span>
                   </label>
                 </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-900">
+                  Prefer a visual editor?
+                </p>
+                <p className="mt-1 text-sm text-slate-600">
+                  Open the editor, design the layout visually, then come back
+                  here to save the template draft.
+                </p>
+                <button
+                  onClick={handleOpenVisualEditor}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
+                >
+                  Open Visual Editor
+                </button>
               </div>
 
               <div>
