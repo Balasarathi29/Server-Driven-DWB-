@@ -287,8 +287,20 @@ export class PageService {
     const page = await Page.findOne({ _id: pageId, institutionId });
 
     if (!page) {
+      console.error("PAGE_SERVICE_ERROR: Page not found", {
+        pageId,
+        institutionId,
+      });
       throw new AppError("Page not found", 404, "PAGE_NOT_FOUND");
     }
+
+    console.log("PAGE_SERVICE_UPDATE: Starting page update", {
+      pageId: page._id,
+      institutionId,
+      hasJsonConfig: !!data.jsonConfig,
+      jsonConfigKeys: data.jsonConfig ? Object.keys(data.jsonConfig).length : 0,
+      hasHtmlContent: !!data.htmlContent,
+    });
 
     if (data.slug && data.slug !== page.slug) {
       const existingPage = await Page.findOne({
@@ -308,7 +320,15 @@ export class PageService {
 
     if (data.name !== undefined) page.name = data.name;
     if (data.slug !== undefined) page.slug = data.slug;
-    if (data.jsonConfig) page.jsonConfig = data.jsonConfig;
+    if (data.jsonConfig !== undefined) {
+      console.log("PAGE_SERVICE_UPDATE: Setting jsonConfig", {
+        pageId: page._id,
+        jsonConfigKeys: data.jsonConfig
+          ? Object.keys(data.jsonConfig).length
+          : 0,
+      });
+      page.jsonConfig = data.jsonConfig;
+    }
     if (data.htmlContent !== undefined) page.htmlContent = data.htmlContent;
     if (data.useHtml !== undefined) page.useHtml = data.useHtml;
     if (data.orderIndex !== undefined) page.orderIndex = data.orderIndex;
@@ -346,23 +366,69 @@ export class PageService {
     }
 
     page.updatedBy = userId as unknown as IPage["updatedBy"];
-    await page.save();
 
-    const latestVersion = await Version.findOne({ pageId }).sort({
-      versionNumber: -1,
-    });
+    try {
+      await page.save();
+      console.log("PAGE_SERVICE_UPDATE_SUCCESS: Page saved to database", {
+        pageId: page._id,
+        hasJsonConfig: !!page.jsonConfig,
+        jsonConfigKeys: page.jsonConfig
+          ? Object.keys(page.jsonConfig).length
+          : 0,
+      });
+    } catch (saveErr) {
+      console.error(
+        "PAGE_SERVICE_UPDATE_ERROR: Failed to save page to database",
+        {
+          pageId: page._id,
+          error: saveErr,
+        },
+      );
+      throw saveErr;
+    }
 
-    const newVersionNumber = latestVersion
-      ? latestVersion.versionNumber + 1
-      : 1;
+    // Create a new version entry. This can race under concurrent updates
+    // (unique index on pageId+versionNumber). If a duplicate-key error
+    // occurs, log a warning and continue — the page update itself succeeded
+    // and we don't want to fail the whole request for a version bookkeeping
+    // collision.
+    try {
+      const latestVersion = await Version.findOne({ pageId }).sort({
+        versionNumber: -1,
+      });
 
-    await Version.create({
-      pageId: page._id,
-      versionNumber: newVersionNumber,
-      jsonConfig: page.jsonConfig,
-      changes: changes || "Updated page",
-      createdBy: userId,
-    });
+      const newVersionNumber = latestVersion
+        ? latestVersion.versionNumber + 1
+        : 1;
+
+      await Version.create({
+        pageId: page._id,
+        versionNumber: newVersionNumber,
+        jsonConfig: page.jsonConfig,
+        changes: changes || "Updated page",
+        createdBy: userId,
+      });
+    } catch (verErr: any) {
+      // Mongo duplicate key -> code 11000
+      if (
+        verErr &&
+        verErr.name === "MongoServerError" &&
+        verErr.code === 11000
+      ) {
+        console.warn(
+          "PAGE_SERVICE_WARN: Version create duplicate key, skipping version write",
+          {
+            pageId: page._id,
+            error: verErr,
+          },
+        );
+      } else {
+        console.error("PAGE_SERVICE_ERROR: Failed creating version record", {
+          pageId: page._id,
+          error: verErr,
+        });
+      }
+    }
 
     return page;
   }

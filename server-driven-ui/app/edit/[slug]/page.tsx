@@ -54,7 +54,7 @@ const stableStringify = (obj: unknown): string => {
   };
   try {
     return JSON.stringify(stringify(obj));
-  } catch (e) {
+  } catch {
     try {
       return JSON.stringify(obj);
     } catch {
@@ -95,8 +95,126 @@ type SerializedEditorQuery = { serialize: () => string };
 type EditorPageData = Page;
 
 const toPageJson = (value: unknown): PageJSON => value as PageJSON;
-const toCraftConfig = (value: unknown): Record<string, unknown> =>
-  (value ?? {}) as Record<string, unknown>;
+const createDefaultCraftNode = (
+  resolvedName = "Container",
+  isCanvas = false,
+  props: Record<string, unknown> = {},
+): Record<string, unknown> => ({
+  type: { resolvedName },
+  isCanvas,
+  props,
+  displayName: resolvedName,
+  custom: {},
+  hidden: false,
+  nodes: [],
+  linkedNodes: {},
+});
+
+const createCraftRoot = (
+  props: Record<string, unknown> = {
+    backgroundColor: "#ffffff",
+    paddingTop: "40px",
+    paddingRight: "40px",
+    paddingBottom: "40px",
+    paddingLeft: "40px",
+    minHeight: "800px",
+  },
+  nodes: string[] = [],
+): Record<string, unknown> => ({
+  type: { resolvedName: "Container" },
+  isCanvas: true,
+  props,
+  displayName: "Container",
+  custom: {},
+  hidden: false,
+  nodes,
+  linkedNodes: {},
+});
+
+const convertLegacyPageJsonToCraftConfig = (
+  pageJson: PageJSON,
+): Record<string, unknown> => {
+  const components = Array.isArray(pageJson?.components)
+    ? pageJson.components
+    : [];
+
+  if (components.length === 0) {
+    return createBlankCraftConfig();
+  }
+
+  const craftConfig: Record<string, unknown> = {};
+  const generatedIds = new WeakMap<object, string>();
+  const childIds = new Set<string>();
+
+  const normalizeId = (value: unknown, fallbackPrefix: string) => {
+    const raw = typeof value === "string" ? value.trim() : "";
+    return (
+      raw ||
+      `${fallbackPrefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+    );
+  };
+
+  const convertComponent = (component: any, fallbackPrefix: string): string => {
+    if (!component || typeof component !== "object") {
+      return normalizeId(undefined, fallbackPrefix);
+    }
+
+    const cachedId = generatedIds.get(component);
+    if (cachedId) {
+      return cachedId;
+    }
+
+    const nodeId = normalizeId(component.id, fallbackPrefix);
+    generatedIds.set(component, nodeId);
+
+    const children = Array.isArray(component.children)
+      ? component.children
+      : [];
+    const childNodeIds = children.map((child: unknown, index: number) => {
+      const childId = convertComponent(child, `${nodeId}_${index}`);
+      childIds.add(childId);
+      return childId;
+    });
+
+    craftConfig[nodeId] = {
+      ...createDefaultCraftNode(
+        typeof component.type === "string" && component.type.trim()
+          ? component.type
+          : "Container",
+        childNodeIds.length > 0,
+        (component.props && typeof component.props === "object"
+          ? component.props
+          : {}) as Record<string, unknown>,
+      ),
+      nodes: childNodeIds,
+    };
+
+    return nodeId;
+  };
+
+  const topLevelNodeIds = components
+    .map((component: unknown, index: number) =>
+      convertComponent(component, `component_${index}`),
+    )
+    .filter((nodeId) => !childIds.has(nodeId));
+
+  craftConfig.ROOT = createCraftRoot(undefined, topLevelNodeIds);
+
+  return craftConfig;
+};
+
+const toCraftConfig = (value: unknown): Record<string, unknown> => {
+  const config = (value ?? {}) as Record<string, unknown>;
+
+  if (
+    Array.isArray((config as unknown as PageJSON).components) &&
+    !(config as Record<string, unknown>).ROOT
+  ) {
+    return convertLegacyPageJsonToCraftConfig(config as unknown as PageJSON);
+  }
+
+  return config;
+};
 const createHtmlCraftConfig = (
   html: string,
   existingConfig?: unknown,
@@ -361,18 +479,18 @@ const sanitizeJsonConfig = (config: unknown): Record<string, unknown> => {
           if (validNodeIds.has(String(v))) linkedNodesObj[k] = v;
         });
       }
+      const existingNode = sanitizedConfig[nodeId] as
+        | Record<string, unknown>
+        | undefined;
       sanitizedConfig[nodeId] = {
-        ...sanitizedConfig[nodeId],
+        ...(existingNode && typeof existingNode === "object"
+          ? existingNode
+          : {}),
         linkedNodes: linkedNodesObj,
-        props:
-          (sanitizedConfig[nodeId] as Record<string, unknown>)?.props ?? {},
-        custom:
-          (sanitizedConfig[nodeId] as Record<string, unknown>)?.custom ?? {},
-        hidden: !!(sanitizedConfig[nodeId] as Record<string, unknown>)?.hidden,
-        displayName:
-          (sanitizedConfig[nodeId] as Record<string, unknown>)?.displayName ||
-          node.displayName ||
-          "",
+        props: existingNode?.props ?? {},
+        custom: existingNode?.custom ?? {},
+        hidden: !!existingNode?.hidden,
+        displayName: existingNode?.displayName || node.displayName || "",
       };
     });
 
@@ -768,21 +886,21 @@ const PromptModal = ({
 const EditorWrapper = ({
   pageData,
   onSave,
+  onSaveAsTemplate,
   saving,
   slug,
   onUpdatePageData,
   viewMode,
   setViewMode,
-  originalRawConfig,
 }: {
   pageData: EditorPageData;
   onSave: (query: SerializedEditorQuery) => void;
+  onSaveAsTemplate?: (query: SerializedEditorQuery) => void;
   saving: boolean;
   slug: string;
   onUpdatePageData: (data: EditorPageData) => void;
   viewMode: "visual" | "code";
   setViewMode: (mode: "visual" | "code") => void;
-  originalRawConfig?: string | null;
 }) => {
   const { query, nodes } = useEditor((state) => ({
     nodes: state.nodes,
@@ -804,7 +922,7 @@ const EditorWrapper = ({
               payload,
               new Error().stack,
             );
-          } catch (e) {
+          } catch {
             // ignore
           }
           return;
@@ -863,6 +981,7 @@ const EditorWrapper = ({
   const autoSaveTimerRef = useRef<number | null>(null);
   const latestSerializedQueryRef = useRef<string>("");
   const latestPageDataRef = useRef<EditorPageData | null>(pageData);
+  const hasHydratedEditorRef = useRef(false);
   const isFlushingRef = useRef(false);
   const [modalConfig, setModalConfig] = useState<{
     open: boolean;
@@ -928,16 +1047,29 @@ const EditorWrapper = ({
             "invalid node entries before deserialize",
           );
         // query.deserialize expects an object (not string)
-        if (query && typeof query.deserialize === "function") {
+        if (query && typeof (query as any).deserialize === "function") {
           try {
-            query.deserialize(normalizedCfg as any);
+            // Debug: log normalized config being passed into Craft deserialize
+            try {
+              console.debug(
+                "EDITOR_HYDRATE_NORMALIZED_CFG:",
+                Object.keys(ComponentMapper).slice(0, 200),
+                JSON.stringify(normalizedCfg).slice(0, 2000),
+              );
+            } catch (logErr) {
+              console.error("EDITOR_HYDRATE_NORMALIZED_CFG_ERR", logErr);
+            }
+
+            (query as any).deserialize(normalizedCfg as any);
+            hasHydratedEditorRef.current = true;
           } catch (err) {
             console.error(
               "Editor deserialize failed, attempting safe fallback:",
               err,
             );
             // Fallback: initialize blank page
-            query.deserialize(createTemplateDesignerDraftConfig());
+            (query as any).deserialize(createTemplateDesignerDraftConfig());
+            hasHydratedEditorRef.current = true;
           }
         }
       } catch (err) {
@@ -956,21 +1088,36 @@ const EditorWrapper = ({
       return;
     }
 
+    if (!hasHydratedEditorRef.current) {
+      return;
+    }
+
     const latestPage = latestPageDataRef.current;
     const latestSerialized = latestSerializedQueryRef.current;
 
     if (!latestPage?._id || !canAutoSavePage(latestPage)) {
+      if (!latestPage?._id) {
+        console.debug("AUTO_SAVE_SKIP: No page ID", {
+          hasPageData: !!latestPage,
+        });
+      }
       return;
     }
 
     if (!latestSerialized || latestSerialized === lastAutoSaveRef.current) {
+      if (!latestSerialized) {
+        console.debug("AUTO_SAVE_SKIP: No serialized data");
+      }
       return;
     }
 
     let parsedJson: unknown;
     try {
       parsedJson = JSON.parse(latestSerialized);
-    } catch {
+    } catch (parseErr) {
+      console.error("AUTO_SAVE_ERROR: Failed to parse serialized query", {
+        parseErr,
+      });
       return;
     }
 
@@ -978,14 +1125,32 @@ const EditorWrapper = ({
     void pagesApi
       .updatePage(latestPage._id, {
         jsonConfig: parsedJson as PageJSON,
-        htmlContent: latestPage.htmlContent,
-        useHtml: latestPage.useHtml,
+        htmlContent: latestPage.htmlContent || "",
+        useHtml: latestPage.useHtml || false,
       })
       .then(() => {
         lastAutoSaveRef.current = latestSerialized;
+        console.debug("AUTO_SAVE_SUCCESS: Page auto-saved", {
+          pageId: latestPage._id,
+        });
       })
-      .catch((error) => {
-        console.error("Auto-save flush failed:", error);
+      .catch((error: any) => {
+        const isCanceled =
+          error?.name === "CanceledError" ||
+          error?.name === "AbortError" ||
+          error?.code === "ERR_CANCELED";
+
+        if (isCanceled) {
+          return;
+        }
+
+        const errorMsg =
+          error?.response?.data?.message || error?.message || String(error);
+        console.warn("AUTO_SAVE_WARN: Auto-save flush failed", {
+          pageId: latestPage._id,
+          errorMsg,
+          errorStatus: error?.response?.status,
+        });
       })
       .finally(() => {
         isFlushingRef.current = false;
@@ -1205,7 +1370,9 @@ const EditorWrapper = ({
       {!pageData?.useHtml && (
         <EditorToolbar
           onSave={() => onSave(query)}
-          onSaveAsTemplate={() => handleSaveAsTemplate(query)}
+          onSaveAsTemplate={
+            onSaveAsTemplate ? () => onSaveAsTemplate(query) : undefined
+          }
           onAIGenerate={() => handleAIGenerate()}
           onResetPage={handleResetPage}
           isSaving={saving}
@@ -1316,7 +1483,13 @@ const EditorWrapper = ({
               className={`bg-white shadow-xl min-h-200 ${editorCanvasClass} mx-auto rounded-lg overflow-hidden relative transition-all duration-300`}
             >
               {showGrid && <GridOverlay />}
-              <Frame>
+              <Frame
+                data={
+                  pageData?.jsonConfig
+                    ? JSON.stringify(toCraftConfig(pageData.jsonConfig))
+                    : undefined
+                }
+              >
                 <Element
                   is={Container}
                   canvas
@@ -1496,7 +1669,7 @@ export default function EditPage({ params }: PageProps) {
                 };
                 jsonConfig = cfg;
               }
-            } catch (err) {
+            } catch {
               // ignore and continue — we'll validate below
             }
 
@@ -1533,7 +1706,7 @@ export default function EditPage({ params }: PageProps) {
               setPageData(data);
               setLoading(false);
               return;
-            } catch (createErr: any) {
+            } catch {
               const nowIso = new Date().toISOString();
               setPageData({
                 _id: "",
@@ -1589,10 +1762,28 @@ export default function EditPage({ params }: PageProps) {
             requestedSlug,
             (user?.institutionId as string) || "",
           );
+          console.log("FETCH_SUCCESS: Got page by slug", {
+            slug: requestedSlug,
+            pageId: data._id,
+            hasJsonConfig: !!data.jsonConfig,
+            jsonConfigKeys: data.jsonConfig
+              ? Object.keys(data.jsonConfig).length
+              : 0,
+          });
         } catch (error: any) {
           if (error?.response?.status !== 404) {
+            console.error("FETCH_ERROR: getPageBySlug failed", {
+              slug: requestedSlug,
+              status: error?.response?.status,
+              message: error?.message,
+            });
             throw error;
           }
+
+          console.log(
+            "FETCH_FALLBACK: Page not found by slug, fetching all pages",
+            { slug: requestedSlug },
+          );
 
           const allPages = await pagesApi.getAllPages();
           const matchedPage = allPages.find(
@@ -1600,9 +1791,16 @@ export default function EditPage({ params }: PageProps) {
           );
 
           if (!matchedPage) {
+            console.error("FETCH_ERROR: Page not found in any collection", {
+              slug: requestedSlug,
+            });
             throw error;
           }
 
+          console.log("FETCH_SUCCESS: Found page in fallback", {
+            slug: requestedSlug,
+            pageId: matchedPage._id,
+          });
           data = matchedPage;
         }
 
@@ -1621,33 +1819,66 @@ export default function EditPage({ params }: PageProps) {
           Boolean(data.htmlContent) &&
           (Boolean(data.useHtml) || !hasCraftRoot || !hasRootChildren);
 
-        console.log(
-          "DEBUG: fetched page raw jsonConfig type:",
-          typeof data?.jsonConfig,
-          data?.jsonConfig && Object.keys ? Object.keys(data.jsonConfig) : null,
-        );
-        setPageData(
-          canHydrateFromHtml
-            ? {
-                ...data,
-                useHtml: false,
-                jsonConfig: toPageJson(
-                  sanitizeJsonConfig(
-                    createHtmlCraftConfig(
-                      data.htmlContent as string,
-                      data.jsonConfig,
-                    ),
+        console.log("FETCH_DEBUG: Page configuration check", {
+          pageId: data._id,
+          jsonConfigType: typeof data?.jsonConfig,
+          jsonConfigKeys: data.jsonConfig ? Object.keys(data.jsonConfig) : [],
+          hasCraftRoot,
+          hasRootChildren,
+          hasHtmlContent: !!data.htmlContent,
+          useHtml: data.useHtml,
+          canHydrateFromHtml,
+        });
+
+        if (
+          !data.jsonConfig ||
+          (typeof data.jsonConfig === "object" &&
+            Object.keys(data.jsonConfig).length === 0)
+        ) {
+          console.warn("FETCH_WARN: jsonConfig is empty, using blank config");
+          data.jsonConfig = createBlankCraftConfig() as any as PageJSON;
+        }
+
+        const finalPageData = canHydrateFromHtml
+          ? {
+              ...data,
+              useHtml: false,
+              jsonConfig: toPageJson(
+                sanitizeJsonConfig(
+                  createHtmlCraftConfig(
+                    data.htmlContent as string,
+                    data.jsonConfig,
                   ),
                 ),
-              }
-            : {
-                ...data,
-                jsonConfig: toPageJson(sanitizeJsonConfig(data.jsonConfig)),
-              },
-        );
-      } catch (error) {
-        console.error("Failed to fetch page:", error);
-        toast.error("Page not found");
+              ),
+            }
+          : {
+              ...data,
+              jsonConfig: toPageJson(sanitizeJsonConfig(data.jsonConfig)),
+            };
+
+        // Debug: show a compact preview of the loaded page jsonConfig
+        try {
+          console.debug(
+            "PAGE_LOAD_JSON_PREVIEW:",
+            finalPageData._id,
+            JSON.stringify(finalPageData.jsonConfig).slice(0, 5000),
+          );
+        } catch (logErr) {
+          console.error("PAGE_LOAD_JSON_PREVIEW_ERR", logErr);
+        }
+
+        setPageData(finalPageData);
+      } catch (error: any) {
+        const errorMsg =
+          error?.response?.data?.message || error?.message || String(error);
+        console.error("FETCH_ERROR: Failed to fetch page", {
+          slug: slug,
+          errorMsg,
+          errorStatus: error?.response?.status,
+          fullError: error,
+        });
+        toast.error(`Failed to load page: ${errorMsg}`);
       } finally {
         setLoading(false);
       }
@@ -1659,23 +1890,80 @@ export default function EditPage({ params }: PageProps) {
   }, [slug, user, authLoading, router, isTemplateDesigner]);
 
   const handleSave = async (query: SerializedEditorQuery) => {
-    if (!pageData?._id) {
+    // Validate page data exists
+    if (!pageData) {
+      console.error("SAVE_ERROR: pageData is null/undefined", { pageData });
+      toast.error("Page data not loaded");
+      return;
+    }
+
+    if (!pageData._id || pageData._id.trim() === "") {
+      console.error("SAVE_ERROR: pageData._id is empty", { _id: pageData._id });
       toast.error("No page ID found to save");
       return;
     }
 
     setSaving(true);
     try {
-      const json = query.serialize();
+      // Serialize the editor state
+      let json: string;
+      try {
+        json = query.serialize();
+      } catch (serializeErr) {
+        console.error("SAVE_ERROR: query.serialize() failed", serializeErr);
+        toast.error("Failed to serialize editor state");
+        setSaving(false);
+        return;
+      }
+
+      if (!json || json.trim() === "") {
+        console.error("SAVE_ERROR: serialized JSON is empty", { json });
+        toast.error("Editor state is empty");
+        setSaving(false);
+        return;
+      }
+
+      // Parse JSON
+      let parsedJson: unknown;
+      try {
+        parsedJson = JSON.parse(json);
+      } catch (parseErr) {
+        console.error("SAVE_ERROR: JSON.parse() failed", {
+          json: json.slice(0, 200),
+          parseErr,
+        });
+        toast.error("Invalid JSON in editor state");
+        setSaving(false);
+        return;
+      }
+
+      // Validate parsed config has ROOT node
+      const configObj = parsedJson as Record<string, unknown>;
+      if (!configObj.ROOT) {
+        console.warn("SAVE_WARN: ROOT node missing from jsonConfig", {
+          configObj: JSON.stringify(configObj).slice(0, 500),
+        });
+      }
+
+      // Send to backend
       await pagesApi.updatePage(pageData._id, {
-        jsonConfig: JSON.parse(json),
-        htmlContent: pageData.htmlContent,
-        useHtml: pageData.useHtml,
+        jsonConfig: parsedJson as any,
+        htmlContent: pageData.htmlContent || "",
+        useHtml: pageData.useHtml || false,
       });
+
       toast.success("Page saved successfully");
-    } catch (error) {
-      console.error("Failed to save page:", error);
-      toast.error("Failed to save page");
+    } catch (error: any) {
+      const errorMsg =
+        error?.response?.data?.message || error?.message || String(error);
+      const errorStatus = error?.response?.status;
+      console.warn("SAVE_WARN: Failed to save page", {
+        errorMsg,
+        errorStatus,
+        errorCode: error?.response?.data?.code,
+        pageId: pageData._id,
+      });
+      toast.error(`Failed to save: ${errorMsg}`);
     } finally {
       setSaving(false);
     }
@@ -1701,7 +1989,7 @@ export default function EditPage({ params }: PageProps) {
         } else {
           sessionStorage.setItem("templateConfig", serializedConfig);
         }
-      } catch (cmpErr) {
+      } catch {
         // If anything goes wrong comparing, fall back to serialized value.
         sessionStorage.setItem("templateConfig", serializedConfig);
       }
@@ -1791,12 +2079,12 @@ export default function EditPage({ params }: PageProps) {
             <EditorWrapper
               pageData={resolvedPageData}
               onSave={handleSave}
+              onSaveAsTemplate={handleSaveAsTemplate}
               saving={saving}
               slug={slug}
               onUpdatePageData={setPageData}
               viewMode={viewMode}
               setViewMode={setViewMode}
-              originalRawConfig={originalRawConfig}
             />
           )}
         </React.Suspense>

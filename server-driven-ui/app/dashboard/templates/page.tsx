@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Search,
@@ -100,7 +100,6 @@ const CATEGORIES: {
 
 export default function TemplatesPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, isLoading: authLoading } = useAuth();
 
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -125,10 +124,13 @@ export default function TemplatesPage() {
   const [duplicating, setDuplicating] = useState<string | null>(null);
 
   useEffect(() => {
-    if (searchParams.get("createTemplate") === "1") {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("createTemplate") === "1") {
       setIsCreateOpen(true);
     }
-  }, [searchParams]);
+  }, []);
 
   // Fetch templates
   useEffect(() => {

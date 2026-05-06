@@ -66,6 +66,30 @@ export class PageController {
       changes,
     } = req.body;
 
+    // Add comprehensive logging for debugging save issues
+    console.log("PAGE_UPDATE_REQUEST: Received update request", {
+      pageId: id,
+      institutionId: req.user.institutionId,
+      userId: req.user.userId,
+      hasJsonConfig: !!jsonConfig,
+      jsonConfigKeys: jsonConfig ? Object.keys(jsonConfig).length : 0,
+      hasHtmlContent: !!htmlContent,
+      htmlContentLength: htmlContent?.length || 0,
+      useHtml,
+      hasName: !!name,
+      hasSlug: !!slug,
+    });
+
+    if (!jsonConfig) {
+      console.warn(
+        "PAGE_UPDATE_WARN: jsonConfig is missing from request body",
+        {
+          pageId: id,
+          bodyKeys: Object.keys(req.body),
+        },
+      );
+    }
+
     const page = await pageService.updatePage(
       id,
       req.user.institutionId,
@@ -83,6 +107,12 @@ export class PageController {
       },
       changes,
     );
+
+    console.log("PAGE_UPDATE_SUCCESS: Page updated successfully", {
+      pageId: page._id,
+      hasJsonConfig: !!page.jsonConfig,
+      jsonConfigKeys: page.jsonConfig ? Object.keys(page.jsonConfig).length : 0,
+    });
 
     return sendSuccess(res, page, "Page updated successfully");
   });
