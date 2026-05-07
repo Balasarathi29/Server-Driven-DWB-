@@ -1029,6 +1029,8 @@ const SeoSettingsModal = ({
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-slate-50 text-slate-400"
+            title="Close SEO settings"
+            aria-label="Close SEO settings"
           >
             <X className="w-5 h-5" />
           </button>
@@ -1173,6 +1175,8 @@ const ScheduleModal = ({
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-slate-50 text-slate-400"
+            title="Close scheduling"
+            aria-label="Close scheduling"
           >
             <X className="w-5 h-5" />
           </button>
@@ -1180,10 +1184,14 @@ const ScheduleModal = ({
 
         <div className="p-6 space-y-4">
           <div>
-            <label className="text-xs font-black uppercase tracking-wide text-slate-400">
+            <label
+              className="text-xs font-black uppercase tracking-wide text-slate-400"
+              htmlFor="publish-at"
+            >
               Schedule Publish At
             </label>
             <input
+              id="publish-at"
               type="datetime-local"
               value={publishAt}
               onChange={(e) => setPublishAt(e.target.value)}
@@ -1191,10 +1199,14 @@ const ScheduleModal = ({
             />
           </div>
           <div>
-            <label className="text-xs font-black uppercase tracking-wide text-slate-400">
+            <label
+              className="text-xs font-black uppercase tracking-wide text-slate-400"
+              htmlFor="unpublish-at"
+            >
               Schedule Unpublish At
             </label>
             <input
+              id="unpublish-at"
               type="datetime-local"
               value={unpublishAt}
               onChange={(e) => setUnpublishAt(e.target.value)}

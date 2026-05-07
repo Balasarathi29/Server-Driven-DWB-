@@ -232,8 +232,14 @@ export const FacultyGridSettings = () => {
   return (
     <div className="p-4 space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto">
       <div>
-        <label className="block text-sm font-medium mb-1">Title</label>
+        <label
+          className="block text-sm font-medium mb-1"
+          htmlFor="faculty-title"
+        >
+          Title
+        </label>
         <input
+          id="faculty-title"
           type="text"
           value={props.title || ""}
           onChange={(e) =>
@@ -243,8 +249,14 @@ export const FacultyGridSettings = () => {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Subtitle</label>
+        <label
+          className="block text-sm font-medium mb-1"
+          htmlFor="faculty-subtitle"
+        >
+          Subtitle
+        </label>
         <input
+          id="faculty-subtitle"
           type="text"
           value={props.subtitle || ""}
           onChange={(e) =>
@@ -255,8 +267,14 @@ export const FacultyGridSettings = () => {
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-sm font-medium mb-1">Columns</label>
+          <label
+            className="block text-sm font-medium mb-1"
+            htmlFor="faculty-columns"
+          >
+            Columns
+          </label>
           <select
+            id="faculty-columns"
             value={props.columns || 3}
             onChange={(e) =>
               setProp(
@@ -273,8 +291,14 @@ export const FacultyGridSettings = () => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Card Style</label>
+          <label
+            className="block text-sm font-medium mb-1"
+            htmlFor="faculty-card-style"
+          >
+            Card Style
+          </label>
           <select
+            id="faculty-card-style"
             value={props.cardStyle || "classic"}
             onChange={(e) =>
               setProp(
@@ -305,8 +329,14 @@ export const FacultyGridSettings = () => {
         </label>
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Click Behavior</label>
+        <label
+          className="block text-sm font-medium mb-1"
+          htmlFor="faculty-click-behavior"
+        >
+          Click Behavior
+        </label>
         <select
+          id="faculty-click-behavior"
           value={props.clickAction || "disabled"}
           onChange={(e) =>
             setProp(

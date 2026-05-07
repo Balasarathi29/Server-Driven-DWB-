@@ -1,14 +1,14 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 
 const editorUrl = "http://localhost:3000/edit/new?templateDesigner=1";
 
-async function seedAndSave(page, raw: string) {
+async function seedAndSave(page: Page, raw: string) {
   const messages: Array<{ type: string; text: string }> = [];
   const handler = (m: any) => messages.push({ type: m.type(), text: m.text() });
   page.on("console", handler);
 
   await page.goto("http://localhost:3000");
-  await page.evaluate((rawStr) => {
+  await page.evaluate((rawStr: string) => {
     sessionStorage.setItem("templateConfig", rawStr);
     sessionStorage.setItem(
       "templateDraftMeta",
